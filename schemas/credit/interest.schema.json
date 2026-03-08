@@ -1,0 +1,95 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "interest.schema.json",
+  "title": "Interest",
+  "description": "Rate definitions and interest period calculations for credit facilities",
+  "$defs": {
+    "RateDefinition": {
+      "type": "object",
+      "description": "Defines the interest rate structure for a facility or tranche",
+      "properties": {
+        "rate_type": {
+          "$ref": "enums.schema.json#/$defs/RateType"
+        },
+        "fixed_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Fixed interest rate component"
+        },
+        "spread": {
+          "$ref": "../core/percentage.schema.json#/$defs/BasisPoints",
+          "description": "Spread over the reference index in basis points"
+        },
+        "index": {
+          "$ref": "enums.schema.json#/$defs/RateIndex"
+        },
+        "floor": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Minimum rate floor"
+        },
+        "cap": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Maximum rate cap"
+        },
+        "day_count": {
+          "$ref": "../core/enums.schema.json#/$defs/DayCount"
+        },
+        "pik_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Payment-in-kind interest rate component"
+        }
+      },
+      "required": ["rate_type", "day_count"]
+    },
+    "InterestPeriod": {
+      "type": "object",
+      "description": "A single interest accrual period with calculated amounts",
+      "properties": {
+        "facility_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the parent facility"
+        },
+        "tranche_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to a specific tranche, if applicable"
+        },
+        "period_start": {
+          "type": "string",
+          "format": "date"
+        },
+        "period_end": {
+          "type": "string",
+          "format": "date"
+        },
+        "principal_balance": {
+          "$ref": "../core/money.schema.json#/$defs/Money"
+        },
+        "applicable_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "All-in rate applied for this period"
+        },
+        "interest_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money"
+        },
+        "pik_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Payment-in-kind interest capitalized to principal"
+        },
+        "paid": {
+          "type": "boolean",
+          "description": "Whether the cash interest for this period has been paid"
+        }
+      },
+      "required": [
+        "facility_id",
+        "period_start",
+        "period_end",
+        "principal_balance",
+        "applicable_rate",
+        "interest_amount",
+        "paid"
+      ]
+    }
+  }
+}

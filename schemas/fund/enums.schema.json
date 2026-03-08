@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enums.schema.json",
+  "title": "Fund enumerations",
+  "description": "Enumerations specific to the fund domain",
+  "$defs": {
+    "FundStrategy": {
+      "type": "string",
+      "enum": [
+        "BUYOUT",
+        "GROWTH_EQUITY",
+        "VENTURE_CAPITAL",
+        "DISTRESSED",
+        "MEZZANINE",
+        "INFRASTRUCTURE",
+        "REAL_ASSETS",
+        "FUND_OF_FUNDS",
+        "SECONDARIES",
+        "CO_INVESTMENT",
+        "SPECIAL_SITUATIONS"
+      ],
+      "description": "Investment strategy of the fund"
+    },
+    "FundStatus": {
+      "type": "string",
+      "enum": [
+        "FUNDRAISING",
+        "FIRST_CLOSE",
+        "FINAL_CLOSE",
+        "INVESTING",
+        "HARVESTING",
+        "FULLY_REALIZED",
+        "LIQUIDATED"
+      ],
+      "description": "Current lifecycle status of the fund"
+    },
+    "FundStructure": {
+      "type": "string",
+      "enum": [
+        "LIMITED_PARTNERSHIP",
+        "LLC",
+        "OFFSHORE_FEEDER",
+        "PARALLEL_FUND",
+        "CO_INVESTMENT_VEHICLE",
+        "SMA"
+      ],
+      "description": "Legal structure of the fund"
+    },
+    "FeeType": {
+      "type": "string",
+      "enum": [
+        "MANAGEMENT_FEE",
+        "CARRIED_INTEREST",
+        "ORGANIZATIONAL_EXPENSE",
+        "TRANSACTION_FEE",
+        "MONITORING_FEE"
+      ],
+      "description": "Type of fee charged by the fund"
+    }
+  }
+}

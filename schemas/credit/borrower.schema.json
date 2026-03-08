@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "borrower.schema.json",
+  "title": "Borrower",
+  "description": "Borrower entity extending the core Party with credit-specific attributes",
+  "$defs": {
+    "Borrower": {
+      "allOf": [
+        { "$ref": "../core/party.schema.json#/$defs/Party" },
+        {
+          "type": "object",
+          "properties": {
+            "industry": {
+              "type": "string",
+              "description": "Primary industry classification"
+            },
+            "revenue": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Most recent annual revenue"
+            },
+            "ebitda": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Most recent EBITDA"
+            },
+            "total_debt": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Total outstanding debt"
+            },
+            "credit_rating": {
+              "type": "string",
+              "description": "External or internal credit rating"
+            },
+            "sponsor_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to the PE sponsor party, if sponsor-backed"
+            }
+          },
+          "required": ["industry"]
+        }
+      ]
+    }
+  }
+}

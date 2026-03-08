@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "percentage.schema.json",
+  "title": "Percentage types",
+  "description": "Percentage and basis-point representations",
+  "$defs": {
+    "Percentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Decimal percentage (0.08 = 8%). Soft max of 1 (100%); some values may exceed."
+    },
+    "BasisPoints": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Rate in basis points (100 = 1%)"
+    }
+  }
+}

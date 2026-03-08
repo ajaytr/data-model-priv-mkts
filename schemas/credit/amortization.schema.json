@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "amortization.schema.json",
+  "title": "Amortization",
+  "description": "Amortization schedules and scheduled payments for credit facilities",
+  "$defs": {
+    "ScheduledPayment": {
+      "type": "object",
+      "description": "A single scheduled principal and/or interest payment",
+      "properties": {
+        "payment_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "principal_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money"
+        },
+        "interest_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Estimated or actual interest component"
+        },
+        "total_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["SCHEDULED", "PAID", "OVERDUE", "WAIVED"],
+          "description": "Current status of this payment"
+        }
+      },
+      "required": [
+        "payment_date",
+        "principal_amount",
+        "total_amount",
+        "status"
+      ]
+    },
+    "AmortizationSchedule": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "facility_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to the parent facility"
+            },
+            "schedule_type": {
+              "type": "string",
+              "enum": ["BULLET", "AMORTIZING", "CUSTOM", "INTEREST_ONLY"],
+              "description": "Repayment structure type"
+            },
+            "payments": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ScheduledPayment" }
+            }
+          },
+          "required": [
+            "facility_id",
+            "schedule_type",
+            "payments"
+          ]
+        }
+      ]
+    }
+  }
+}

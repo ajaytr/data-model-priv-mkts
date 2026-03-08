@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enums.schema.json",
+  "title": "Real estate enumerations",
+  "description": "Enumerations specific to the real estate domain",
+  "$defs": {
+    "PropertyType": {
+      "type": "string",
+      "enum": [
+        "OFFICE",
+        "RETAIL",
+        "INDUSTRIAL",
+        "MULTIFAMILY",
+        "HOSPITALITY",
+        "MIXED_USE",
+        "DATA_CENTER",
+        "LIFE_SCIENCE",
+        "SELF_STORAGE",
+        "STUDENT_HOUSING",
+        "SENIOR_LIVING",
+        "HEALTHCARE"
+      ],
+      "description": "Classification of the real estate property"
+    },
+    "PropertyStatus": {
+      "type": "string",
+      "enum": [
+        "ACQUISITION",
+        "DEVELOPMENT",
+        "STABILIZED",
+        "VALUE_ADD",
+        "REPOSITIONING",
+        "DISPOSITION",
+        "SOLD"
+      ],
+      "description": "Current lifecycle status of the property"
+    },
+    "LeaseType": {
+      "type": "string",
+      "enum": [
+        "GROSS",
+        "NET",
+        "DOUBLE_NET",
+        "TRIPLE_NET",
+        "MODIFIED_GROSS",
+        "PERCENTAGE"
+      ],
+      "description": "Classification of the lease structure"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "portfolio.schema.json",
+  "title": "Portfolio",
+  "description": "A portfolio containing positions across asset types",
+  "$defs": {
+    "Portfolio": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "owner_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party that owns this portfolio"
+            },
+            "as_of_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "positions": {
+              "type": "array",
+              "items": { "$ref": "position.schema.json#/$defs/Position" }
+            },
+            "total_nav": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "total_commitments": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "total_unfunded": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            }
+          },
+          "required": ["name", "owner_id", "as_of_date"]
+        }
+      ]
+    }
+  }
+}

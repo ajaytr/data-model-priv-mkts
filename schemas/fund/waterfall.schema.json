@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "waterfall.schema.json",
+  "title": "Waterfall",
+  "description": "Distribution waterfall structures and carried interest allocations",
+  "$defs": {
+    "WaterfallStructure": {
+      "type": "object",
+      "description": "The distribution waterfall model for a fund",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "fund_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the fund"
+        },
+        "model": {
+          "type": "string",
+          "enum": ["EUROPEAN", "AMERICAN", "HYBRID"],
+          "description": "Waterfall model type"
+        },
+        "tiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/WaterfallTier"
+          },
+          "description": "Ordered tiers of the waterfall"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "fund_id", "model", "tiers"
+      ]
+    },
+    "WaterfallTier": {
+      "type": "object",
+      "description": "A single tier in the distribution waterfall",
+      "properties": {
+        "tier_name": {
+          "type": "string",
+          "description": "Human-readable name of the tier"
+        },
+        "tier_order": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Order of this tier in the waterfall (1 = first)"
+        },
+        "threshold_type": {
+          "type": "string",
+          "enum": ["PREFERRED_RETURN", "CATCH_UP", "CARRIED_INTEREST", "RETURN_OF_CAPITAL"],
+          "description": "Type of threshold for this tier"
+        },
+        "threshold_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Rate threshold, if applicable"
+        },
+        "gp_split": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "GP share of distributions in this tier"
+        },
+        "lp_split": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "LP share of distributions in this tier"
+        }
+      },
+      "required": ["tier_name", "tier_order", "threshold_type", "gp_split", "lp_split"]
+    },
+    "CarryAllocation": {
+      "type": "object",
+      "description": "Carried interest allocation for a distribution period",
+      "properties": {
+        "waterfall_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the waterfall structure"
+        },
+        "distribution_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the distribution"
+        },
+        "period": {
+          "$ref": "../core/dates.schema.json#/$defs/ReportingPeriod",
+          "description": "Reporting period for this allocation"
+        },
+        "gross_proceeds": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total gross proceeds being distributed"
+        },
+        "lp_share": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "LP share of the distribution"
+        },
+        "gp_carry": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "GP carried interest amount"
+        },
+        "clawback_reserve": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Amount reserved for potential clawback"
+        }
+      },
+      "required": ["waterfall_id", "distribution_id", "period", "gross_proceeds", "lp_share", "gp_carry"]
+    }
+  }
+}

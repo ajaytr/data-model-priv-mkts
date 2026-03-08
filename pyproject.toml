@@ -1,0 +1,14 @@
+[project]
+name = "data-model-priv-mkts"
+version = "0.1.0"
+description = "Private markets data model — JSON Schema definitions, examples, and tooling"
+requires-python = ">=3.11"
+dependencies = [
+    "jsonschema[format]>=4.21,<5",
+    "referencing>=0.33,<1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4",
+]

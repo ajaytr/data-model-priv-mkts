@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trade.schema.json",
+  "title": "Trade",
+  "description": "Trade entity and state transitions for the trade lifecycle",
+  "$defs": {
+    "TradeStatus": {
+      "type": "string",
+      "enum": [
+        "INDICATIVE",
+        "NEGOTIATING",
+        "AGREED",
+        "PENDING_DOCUMENTATION",
+        "PENDING_SETTLEMENT",
+        "SETTLED",
+        "CANCELLED",
+        "FAILED"
+      ]
+    },
+    "Trade": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "trade_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "settlement_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "buyer_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party"
+            },
+            "seller_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party"
+            },
+            "broker_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party (optional broker/intermediary)"
+            },
+            "asset_description": {
+              "type": "string",
+              "description": "Human-readable description of the traded asset"
+            },
+            "asset_reference_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID reference to the underlying asset (fund position, facility, etc.)"
+            },
+            "price": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "notional_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "status": {
+              "$ref": "#/$defs/TradeStatus"
+            },
+            "transitions": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/TradeStateTransition" }
+            },
+            "documents": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "description": "References to Document entities"
+            }
+          },
+          "required": ["trade_date", "buyer_id", "seller_id", "price", "status"]
+        }
+      ]
+    },
+    "TradeStateTransition": {
+      "type": "object",
+      "properties": {
+        "from_status": { "$ref": "#/$defs/TradeStatus" },
+        "to_status": { "$ref": "#/$defs/TradeStatus" },
+        "transition_date": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "transitioned_by": {
+          "type": "string",
+          "description": "User or system that triggered the transition"
+        },
+        "notes": { "type": "string" }
+      },
+      "required": ["from_status", "to_status", "transition_date"]
+    }
+  }
+}

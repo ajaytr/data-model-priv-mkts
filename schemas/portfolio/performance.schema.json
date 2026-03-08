@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "performance.schema.json",
+  "title": "Performance Metrics",
+  "description": "Performance analytics for positions and funds",
+  "$defs": {
+    "PerformanceMetrics": {
+      "type": "object",
+      "description": "Common performance metrics for any private markets position",
+      "properties": {
+        "as_of_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "irr_net": {
+          "type": "number",
+          "description": "Net IRR (decimal, e.g., 0.15 = 15%)"
+        },
+        "irr_gross": {
+          "type": "number",
+          "description": "Gross IRR"
+        },
+        "tvpi": {
+          "type": "number",
+          "description": "Total Value to Paid-In multiple"
+        },
+        "dpi": {
+          "type": "number",
+          "description": "Distributions to Paid-In multiple"
+        },
+        "rvpi": {
+          "type": "number",
+          "description": "Residual Value to Paid-In multiple"
+        },
+        "moic": {
+          "type": "number",
+          "description": "Multiple on Invested Capital"
+        },
+        "pme": {
+          "type": "number",
+          "description": "Public Market Equivalent (Kaplan-Schoar)"
+        }
+      },
+      "required": ["as_of_date"]
+    },
+    "FundPerformance": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "fund_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "reporting_period": {
+              "$ref": "../core/dates.schema.json#/$defs/ReportingPeriod"
+            },
+            "metrics": {
+              "$ref": "#/$defs/PerformanceMetrics"
+            },
+            "total_committed": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "total_called": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "total_distributed": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "total_nav": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "num_investments": {
+              "type": "integer"
+            },
+            "num_realized": {
+              "type": "integer"
+            },
+            "num_unrealized": {
+              "type": "integer"
+            }
+          },
+          "required": ["fund_id", "reporting_period", "metrics"]
+        }
+      ]
+    }
+  }
+}

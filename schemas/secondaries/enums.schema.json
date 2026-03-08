@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enums.schema.json",
+  "title": "Secondaries enumerations",
+  "description": "Enumerations for secondary market transactions",
+  "$defs": {
+    "TradeDirection": {
+      "type": "string",
+      "enum": ["BUY", "SELL"]
+    },
+    "SecondaryTradeType": {
+      "type": "string",
+      "enum": [
+        "LP_INTEREST_TRANSFER",
+        "DIRECT_SECONDARY",
+        "GP_LED_SECONDARY",
+        "TENDER_OFFER",
+        "STRIP_SALE",
+        "STAPLED_SECONDARY",
+        "PREFERRED_EQUITY"
+      ]
+    },
+    "TransactionStage": {
+      "type": "string",
+      "enum": [
+        "MARKETING",
+        "BIDDING",
+        "EXCLUSIVITY",
+        "DUE_DILIGENCE",
+        "DOCUMENTATION",
+        "GP_CONSENT",
+        "CLOSING",
+        "SETTLED",
+        "CANCELLED"
+      ]
+    }
+  }
+}

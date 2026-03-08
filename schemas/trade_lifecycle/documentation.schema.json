@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "documentation.schema.json",
+  "title": "Documentation",
+  "description": "Document tracking for trade lifecycle and deal management",
+  "$defs": {
+    "Document": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "document_type": {
+              "$ref": "../core/enums.schema.json#/$defs/DocumentType"
+            },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "file_name": { "type": "string" },
+            "mime_type": { "type": "string" },
+            "file_size_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "storage_url": {
+              "type": "string",
+              "format": "uri",
+              "description": "URL or path to the stored document"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "uploaded_by": { "type": "string" },
+            "entity_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID of the related entity (deal, trade, fund, etc.)"
+            },
+            "entity_type": {
+              "type": "string",
+              "description": "Type of the related entity"
+            },
+            "execution_date": {
+              "type": "string",
+              "format": "date",
+              "description": "Date the document was executed/signed"
+            },
+            "expiry_date": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          "required": ["document_type", "title"]
+        }
+      ]
+    },
+    "DocumentRequirement": {
+      "type": "object",
+      "description": "A required document for a deal or trade",
+      "properties": {
+        "document_type": {
+          "$ref": "../core/enums.schema.json#/$defs/DocumentType"
+        },
+        "description": { "type": "string" },
+        "required": {
+          "type": "boolean",
+          "default": true
+        },
+        "received": {
+          "type": "boolean",
+          "default": false
+        },
+        "document_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the received Document, if any"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": ["document_type"]
+    }
+  }
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "created_at": "2024-01-15T10:00:00Z",
+    "updated_at": "2024-06-01T14:30:00Z",
+    "name": "Apex Capital Partners LLC",
+    "short_name": "Apex Capital",
+    "party_type": "GP",
+    "external_ids": [
+      { "system": "LEI", "value": "549300EXAMPLE00GP01" }
+    ],
+    "address": {
+      "line1": "200 Park Avenue",
+      "line2": "Suite 4500",
+      "city": "New York",
+      "state_province": "NY",
+      "postal_code": "10166",
+      "country": "US"
+    },
+    "contacts": [
+      {
+        "name": "Sarah Chen",
+        "email": "schen@apexcapital.com",
+        "phone": "+1-212-555-0100",
+        "title": "Managing Partner"
+      }
+    ]
+  },
+  {
+    "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+    "created_at": "2024-02-01T09:00:00Z",
+    "name": "State Teachers Retirement System",
+    "short_name": "State Teachers",
+    "party_type": "LP",
+    "external_ids": [
+      { "system": "CRD", "value": "123456" }
+    ],
+    "address": {
+      "line1": "100 Capitol Mall",
+      "city": "Sacramento",
+      "state_province": "CA",
+      "postal_code": "95814",
+      "country": "US"
+    },
+    "contacts": [
+      {
+        "name": "Michael Rodriguez",
+        "email": "mrodriguez@strs.gov",
+        "title": "Director of Private Markets"
+      }
+    ]
+  },
+  {
+    "id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+    "created_at": "2024-01-20T11:00:00Z",
+    "name": "Northern Trust Fund Services",
+    "short_name": "Northern Trust",
+    "party_type": "FUND_ADMIN",
+    "address": {
+      "line1": "50 South LaSalle Street",
+      "city": "Chicago",
+      "state_province": "IL",
+      "postal_code": "60603",
+      "country": "US"
+    },
+    "contacts": [
+      {
+        "name": "Jennifer Park",
+        "email": "jpark@northerntrust.com",
+        "title": "Senior Fund Administrator"
+      }
+    ]
+  }
+]

@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enums.schema.json",
+  "title": "Credit enumerations",
+  "description": "Enumerations specific to private credit facilities and instruments",
+  "$defs": {
+    "FacilityType": {
+      "type": "string",
+      "enum": [
+        "TERM_LOAN",
+        "REVOLVING_CREDIT",
+        "DELAYED_DRAW",
+        "BRIDGE_LOAN",
+        "UNITRANCHE",
+        "FIRST_LIEN",
+        "SECOND_LIEN",
+        "MEZZANINE",
+        "PIK"
+      ],
+      "description": "Type of credit facility"
+    },
+    "RateType": {
+      "type": "string",
+      "enum": [
+        "FIXED",
+        "FLOATING",
+        "PIK",
+        "FIXED_PLUS_PIK",
+        "FLOATING_PLUS_PIK"
+      ],
+      "description": "Interest rate structure type"
+    },
+    "RateIndex": {
+      "type": "string",
+      "enum": [
+        "SOFR",
+        "TERM_SOFR",
+        "EURIBOR",
+        "SONIA",
+        "PRIME",
+        "FED_FUNDS"
+      ],
+      "description": "Reference rate index for floating-rate instruments"
+    },
+    "SeniorityLevel": {
+      "type": "string",
+      "enum": [
+        "SUPER_SENIOR",
+        "SENIOR_SECURED",
+        "SENIOR_UNSECURED",
+        "SUBORDINATED",
+        "MEZZANINE",
+        "JUNIOR",
+        "EQUITY"
+      ],
+      "description": "Position in the capital structure"
+    }
+  }
+}

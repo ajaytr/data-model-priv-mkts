@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "portfolio_company.schema.json",
+  "title": "Portfolio company",
+  "description": "Portfolio companies, investments, and realizations",
+  "$defs": {
+    "PortfolioCompany": {
+      "type": "object",
+      "description": "A company in which one or more funds have invested",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Legal name of the portfolio company"
+        },
+        "sector": {
+          "type": "string",
+          "description": "Primary industry sector"
+        },
+        "subsector": {
+          "type": "string",
+          "description": "Industry subsector"
+        },
+        "region": {
+          "$ref": "../core/enums.schema.json#/$defs/Region"
+        },
+        "country": {
+          "$ref": "../core/enums.schema.json#/$defs/Country"
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the company"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "description": "Company website URL"
+        },
+        "founding_year": {
+          "type": "integer",
+          "minimum": 1800,
+          "maximum": 2100,
+          "description": "Year the company was founded"
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "../core/identifiers.schema.json#/$defs/ExternalId"
+          },
+          "description": "External system identifiers"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "name", "sector"
+      ]
+    },
+    "Investment": {
+      "type": "object",
+      "description": "A fund's investment in a portfolio company",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "fund_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the fund"
+        },
+        "portfolio_company_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the portfolio company"
+        },
+        "investment_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of the investment"
+        },
+        "instrument_type": {
+          "type": "string",
+          "enum": ["EQUITY", "PREFERRED_EQUITY", "CONVERTIBLE_NOTE", "WARRANT", "MEZZANINE"],
+          "description": "Type of investment instrument"
+        },
+        "cost_basis": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total cost basis of the investment"
+        },
+        "fair_value": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Current fair value"
+        },
+        "ownership_percentage": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Ownership stake in the company"
+        },
+        "board_seat": {
+          "type": "boolean",
+          "description": "Whether the fund holds a board seat"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ACTIVE", "PARTIALLY_REALIZED", "FULLY_REALIZED", "WRITTEN_OFF"],
+          "description": "Current status of the investment"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "fund_id", "portfolio_company_id", "investment_date", "instrument_type", "cost_basis", "fair_value", "status"
+      ]
+    },
+    "Realization": {
+      "type": "object",
+      "description": "A realization event (exit) for an investment",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "investment_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the investment"
+        },
+        "realization_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of the realization event"
+        },
+        "proceeds": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total proceeds from the realization"
+        },
+        "realization_type": {
+          "type": "string",
+          "enum": ["IPO", "TRADE_SALE", "SECONDARY", "RECAPITALIZATION", "WRITE_OFF", "DIVIDEND_RECAP"],
+          "description": "Type of exit or realization"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "investment_id", "realization_date", "proceeds", "realization_type"
+      ]
+    }
+  }
+}

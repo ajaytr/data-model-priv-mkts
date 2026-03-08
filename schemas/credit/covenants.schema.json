@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenants.schema.json",
+  "title": "Covenants",
+  "description": "Financial and operational covenants attached to credit facilities",
+  "$defs": {
+    "CovenantType": {
+      "type": "string",
+      "enum": [
+        "LEVERAGE_RATIO",
+        "INTEREST_COVERAGE",
+        "FIXED_CHARGE_COVERAGE",
+        "DEBT_TO_EBITDA",
+        "MINIMUM_LIQUIDITY",
+        "MINIMUM_REVENUE",
+        "CAPEX_LIMIT",
+        "INCURRENCE",
+        "SPRINGING",
+        "OTHER"
+      ],
+      "description": "Category of financial or operational covenant"
+    },
+    "Covenant": {
+      "type": "object",
+      "description": "A covenant condition attached to a credit facility",
+      "properties": {
+        "facility_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the parent facility"
+        },
+        "covenant_type": {
+          "$ref": "#/$defs/CovenantType"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the covenant"
+        },
+        "threshold_value": {
+          "type": "number",
+          "description": "Numeric threshold for compliance testing"
+        },
+        "threshold_operator": {
+          "type": "string",
+          "enum": ["LTE", "GTE", "LT", "GT", "EQ"],
+          "description": "Comparison operator applied to actual vs threshold"
+        },
+        "testing_frequency": {
+          "type": "string",
+          "enum": ["MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL"],
+          "description": "How often the covenant is tested"
+        },
+        "cure_period_days": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Days allowed to cure a breach"
+        },
+        "springing_trigger": {
+          "type": "string",
+          "description": "Condition that activates a springing covenant"
+        }
+      },
+      "required": [
+        "facility_id",
+        "covenant_type",
+        "description",
+        "threshold_value",
+        "threshold_operator",
+        "testing_frequency"
+      ]
+    },
+    "CovenantTest": {
+      "type": "object",
+      "description": "Result of a single covenant compliance test",
+      "properties": {
+        "covenant_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the covenant being tested"
+        },
+        "test_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "actual_value": {
+          "type": "number",
+          "description": "Measured value at the test date"
+        },
+        "threshold_value": {
+          "type": "number",
+          "description": "Threshold in effect at the test date"
+        },
+        "in_compliance": {
+          "type": "boolean",
+          "description": "Whether the borrower is in compliance"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional context or commentary"
+        }
+      },
+      "required": [
+        "covenant_id",
+        "test_date",
+        "actual_value",
+        "threshold_value",
+        "in_compliance"
+      ]
+    }
+  }
+}

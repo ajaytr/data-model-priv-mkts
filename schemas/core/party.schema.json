@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "party.schema.json",
+  "title": "Party",
+  "description": "Parties, addresses, and contact information",
+  "$defs": {
+    "Address": {
+      "type": "object",
+      "properties": {
+        "line1": { "type": "string" },
+        "line2": { "type": "string" },
+        "city": { "type": "string" },
+        "state_province": { "type": "string" },
+        "postal_code": { "type": "string" },
+        "country": { "$ref": "enums.schema.json#/$defs/Country" }
+      },
+      "required": ["line1", "city", "country"]
+    },
+    "ContactInfo": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "title": { "type": "string", "description": "Job title" }
+      },
+      "required": ["name", "email"]
+    },
+    "PartyType": {
+      "type": "string",
+      "enum": ["GP", "LP", "FUND_ADMIN", "CUSTODIAN", "PLACEMENT_AGENT", "LEGAL_COUNSEL", "AUDITOR", "BORROWER", "LENDER", "BROKER", "OTHER"]
+    },
+    "Party": {
+      "allOf": [
+        { "$ref": "base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Legal name of the party"
+            },
+            "short_name": {
+              "type": "string",
+              "description": "Short or common name"
+            },
+            "party_type": {
+              "$ref": "#/$defs/PartyType"
+            },
+            "external_ids": {
+              "type": "array",
+              "items": { "$ref": "identifiers.schema.json#/$defs/ExternalId" }
+            },
+            "address": {
+              "$ref": "#/$defs/Address"
+            },
+            "contacts": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/ContactInfo" }
+            }
+          },
+          "required": ["name", "party_type"]
+        }
+      ]
+    }
+  }
+}

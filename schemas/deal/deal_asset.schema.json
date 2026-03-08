@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "deal_asset.schema.json",
+  "title": "Deal Asset",
+  "description": "References to domain-specific assets within a deal",
+  "$defs": {
+    "DealAsset": {
+      "type": "object",
+      "description": "A reference to an underlying asset in a deal, discriminated by asset_type",
+      "properties": {
+        "asset_type": {
+          "$ref": "enums.schema.json#/$defs/DealAssetType"
+        },
+        "label": {
+          "type": "string",
+          "description": "Human-readable label (e.g., 'Senior Term Loan', 'Equity Co-Invest')"
+        },
+        "facility_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to credit/Facility (when asset_type = FACILITY)"
+        },
+        "investment_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to fund/Investment (when asset_type = INVESTMENT)"
+        },
+        "property_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to real_estate/Property (when asset_type = PROPERTY)"
+        },
+        "lp_interest_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to secondaries/LPInterest (when asset_type = LP_INTEREST)"
+        },
+        "notional_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Notional or face value of this asset within the deal"
+        }
+      },
+      "required": ["asset_type", "label"]
+    }
+  }
+}

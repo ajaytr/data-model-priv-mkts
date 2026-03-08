@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enums.schema.json",
+  "title": "Deal enumerations",
+  "description": "Enumerations for deal management",
+  "$defs": {
+    "DealStage": {
+      "type": "string",
+      "enum": [
+        "SOURCING",
+        "SCREENING",
+        "DUE_DILIGENCE",
+        "IC_REVIEW",
+        "TERM_SHEET",
+        "DOCUMENTATION",
+        "CLOSING",
+        "ACTIVE",
+        "MONITORING",
+        "EXIT",
+        "CLOSED",
+        "PASSED"
+      ]
+    },
+    "DealRole": {
+      "type": "string",
+      "enum": [
+        "LEAD",
+        "CO_LEAD",
+        "CO_INVESTOR",
+        "SYNDICATE_MEMBER",
+        "ADVISOR",
+        "ARRANGER",
+        "AGENT"
+      ]
+    },
+    "AssetClass": {
+      "type": "string",
+      "enum": [
+        "PRIVATE_EQUITY",
+        "VENTURE_CAPITAL",
+        "PRIVATE_CREDIT",
+        "REAL_ESTATE",
+        "INFRASTRUCTURE",
+        "NATURAL_RESOURCES",
+        "SECONDARIES"
+      ]
+    },
+    "DealAssetType": {
+      "type": "string",
+      "enum": [
+        "FACILITY",
+        "INVESTMENT",
+        "PROPERTY",
+        "LP_INTEREST"
+      ],
+      "description": "Discriminator for DealAsset to indicate the referenced domain entity"
+    }
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lease.schema.json",
+  "title": "Lease",
+  "description": "Lease, tenant, lease options, and rent roll definitions",
+  "$defs": {
+    "Tenant": {
+      "type": "object",
+      "description": "A tenant occupying leased space",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for the tenant"
+        },
+        "name": {
+          "type": "string",
+          "description": "Legal name of the tenant"
+        },
+        "industry": {
+          "type": "string",
+          "description": "Industry classification of the tenant"
+        },
+        "credit_rating": {
+          "type": "string",
+          "description": "Credit rating of the tenant (e.g., AAA, BB+)"
+        }
+      },
+      "required": ["tenant_id", "name"]
+    },
+    "LeaseOption": {
+      "type": "object",
+      "description": "An option embedded within a lease agreement",
+      "properties": {
+        "option_type": {
+          "type": "string",
+          "enum": [
+            "RENEWAL",
+            "EXPANSION",
+            "TERMINATION",
+            "RIGHT_OF_FIRST_REFUSAL",
+            "PURCHASE"
+          ],
+          "description": "Type of lease option"
+        },
+        "exercise_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date by which the option must be exercised"
+        },
+        "terms": {
+          "type": "string",
+          "description": "Free-text description of option terms"
+        }
+      },
+      "required": ["option_type", "exercise_date"]
+    },
+    "Lease": {
+      "type": "object",
+      "description": "A lease agreement for space within a property",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "property_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the Property being leased"
+        },
+        "tenant": {
+          "$ref": "#/$defs/Tenant",
+          "description": "Tenant information"
+        },
+        "suite_unit": {
+          "type": "string",
+          "description": "Suite or unit identifier within the property"
+        },
+        "leased_sqft": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Square footage leased to the tenant"
+        },
+        "lease_type": {
+          "$ref": "enums.schema.json#/$defs/LeaseType",
+          "description": "Type of lease structure"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Lease commencement date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Lease expiration date"
+        },
+        "base_rent_monthly": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Monthly base rent amount"
+        },
+        "annual_escalation": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Annual rent escalation rate"
+        },
+        "free_rent_months": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of rent-free months granted"
+        },
+        "tenant_improvement_allowance": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Landlord contribution for tenant build-out"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LeaseOption"
+          },
+          "description": "Lease options (renewal, expansion, etc.)"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "property_id", "tenant", "leased_sqft", "lease_type",
+        "start_date", "end_date", "base_rent_monthly"
+      ]
+    },
+    "RentRoll": {
+      "type": "object",
+      "description": "A point-in-time snapshot of all leases for a property",
+      "properties": {
+        "property_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the Property"
+        },
+        "as_of_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of the rent roll snapshot"
+        },
+        "leases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "References to active Lease entities"
+        },
+        "total_monthly_rent": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Sum of all monthly base rents"
+        },
+        "occupied_sqft": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total occupied square footage"
+        },
+        "total_sqft": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total leasable square footage"
+        },
+        "occupancy_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Occupancy rate (occupied_sqft / total_sqft)"
+        }
+      },
+      "required": [
+        "property_id", "as_of_date", "leases",
+        "total_monthly_rent", "occupied_sqft", "total_sqft", "occupancy_rate"
+      ]
+    }
+  }
+}

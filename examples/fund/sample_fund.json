@@ -1,0 +1,32 @@
+{
+  "id": "f1a2b3c4-d5e6-7890-abcd-ef1234560001",
+  "created_at": "2023-06-15T08:00:00Z",
+  "updated_at": "2025-01-10T16:00:00Z",
+  "name": "Apex Capital Partners Fund V",
+  "short_name": "Apex V",
+  "strategy": "BUYOUT",
+  "status": "INVESTING",
+  "structure": "LIMITED_PARTNERSHIP",
+  "vintage_year": 2023,
+  "target_size": { "amount": "2000000000", "currency": "USD" },
+  "final_close_size": { "amount": "2350000000", "currency": "USD" },
+  "gp_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "fund_admin_id": "c3d4e5f6-a7b8-9012-cdef-123456789012",
+  "domicile": "US",
+  "region": "NORTH_AMERICA",
+  "inception_date": "2023-06-01",
+  "external_ids": [
+    { "system": "ILPA", "value": "APEX-V-2023" }
+  ],
+  "terms": {
+    "fund_life_years": 10,
+    "investment_period_years": 5,
+    "management_fee_rate": 0.02,
+    "carried_interest_rate": 0.20,
+    "preferred_return": 0.08,
+    "gp_commitment_rate": 0.02,
+    "hurdle_rate": 0.08,
+    "clawback": true,
+    "key_person_clause": true
+  }
+}

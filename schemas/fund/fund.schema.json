@@ -1,0 +1,127 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "fund.schema.json",
+  "title": "Fund",
+  "description": "Fund entity and fund terms for private market funds",
+  "$defs": {
+    "Fund": {
+      "type": "object",
+      "description": "A private markets fund vehicle",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full legal name of the fund"
+        },
+        "short_name": {
+          "type": "string",
+          "description": "Abbreviated or marketing name"
+        },
+        "strategy": {
+          "$ref": "enums.schema.json#/$defs/FundStrategy"
+        },
+        "status": {
+          "$ref": "enums.schema.json#/$defs/FundStatus"
+        },
+        "structure": {
+          "$ref": "enums.schema.json#/$defs/FundStructure"
+        },
+        "vintage_year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2100,
+          "description": "Year of first capital call or fund inception"
+        },
+        "target_size": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Target fundraising size"
+        },
+        "final_close_size": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total commitments at final close"
+        },
+        "gp_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the general partner (Party)"
+        },
+        "fund_admin_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the fund administrator (Party)"
+        },
+        "terms": {
+          "$ref": "#/$defs/FundTerms"
+        },
+        "domicile": {
+          "$ref": "../core/enums.schema.json#/$defs/Country"
+        },
+        "region": {
+          "$ref": "../core/enums.schema.json#/$defs/Region"
+        },
+        "inception_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the fund was established"
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "../core/identifiers.schema.json#/$defs/ExternalId"
+          },
+          "description": "External system identifiers"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "name", "strategy", "status", "structure", "vintage_year", "gp_id"
+      ]
+    },
+    "FundTerms": {
+      "type": "object",
+      "description": "Economic and governance terms of a fund",
+      "properties": {
+        "fund_life_years": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total fund life in years (typically 10-12)"
+        },
+        "investment_period_years": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Investment period in years (typically 4-6)"
+        },
+        "management_fee_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Annual management fee rate"
+        },
+        "carried_interest_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Carried interest rate (typically 20%)"
+        },
+        "preferred_return": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Preferred return (hurdle) rate"
+        },
+        "gp_commitment_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "GP commitment as a percentage of fund size"
+        },
+        "hurdle_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Hurdle rate for carried interest calculation"
+        },
+        "clawback": {
+          "type": "boolean",
+          "description": "Whether a GP clawback provision exists"
+        },
+        "key_person_clause": {
+          "type": "boolean",
+          "description": "Whether a key person clause exists"
+        }
+      }
+    }
+  }
+}

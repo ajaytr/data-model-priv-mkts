@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "settlement.schema.json",
+  "title": "Settlement",
+  "description": "Settlement instructions for trade execution",
+  "$defs": {
+    "SettlementInstruction": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "trade_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Trade"
+            },
+            "payment_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "settlement_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "payer_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party"
+            },
+            "payee_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party"
+            },
+            "payment_method": {
+              "type": "string",
+              "enum": ["WIRE", "ACH", "CHECK", "DTC", "IN_KIND"]
+            },
+            "bank_name": { "type": "string" },
+            "account_number": { "type": "string" },
+            "routing_number": { "type": "string" },
+            "swift_code": { "type": "string" },
+            "reference": { "type": "string" },
+            "status": {
+              "type": "string",
+              "enum": ["PENDING", "INSTRUCTED", "CONFIRMED", "SETTLED", "FAILED", "CANCELLED"]
+            },
+            "settled_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": ["trade_id", "payment_amount", "settlement_date", "payer_id", "payee_id", "status"]
+        }
+      ]
+    }
+  }
+}

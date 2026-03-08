@@ -1,0 +1,47 @@
+{
+  "id": "st112233-4455-6677-8899-aabbccdde001",
+  "created_at": "2025-01-15T09:00:00Z",
+  "updated_at": "2025-02-28T16:00:00Z",
+  "trade_type": "LP_INTEREST_TRANSFER",
+  "lp_interest_id": "li112233-4455-6677-8899-aabbccdde001",
+  "direction": "SELL",
+  "buyer_id": "p4444444-5555-6666-7777-888899990000",
+  "seller_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "broker_id": "p5555555-6666-7777-8888-999900001111",
+  "agreed_price_pct_nav": 0.93,
+  "agreed_amount": { "amount": "23250000", "currency": "USD" },
+  "unfunded_assumed": { "amount": "5000000", "currency": "USD" },
+  "trade_date": "2025-02-01",
+  "expected_close_date": "2025-04-15",
+  "bids": [
+    {
+      "bid_id": "bd112233-4455-6677-8899-aabbccdde001",
+      "bidder_id": "p4444444-5555-6666-7777-888899990000",
+      "bid_date": "2025-01-20",
+      "bid_price_pct_nav": 0.90,
+      "bid_amount": { "amount": "22500000", "currency": "USD" },
+      "assumes_unfunded": true,
+      "status": "REJECTED"
+    },
+    {
+      "bid_id": "bd112233-4455-6677-8899-aabbccdde002",
+      "bidder_id": "p4444444-5555-6666-7777-888899990000",
+      "bid_date": "2025-01-28",
+      "bid_price_pct_nav": 0.93,
+      "bid_amount": { "amount": "23250000", "currency": "USD" },
+      "assumes_unfunded": true,
+      "status": "ACCEPTED"
+    }
+  ],
+  "offers": [
+    {
+      "offer_id": "of112233-4455-6677-8899-aabbccdde001",
+      "seller_id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+      "offer_date": "2025-01-15",
+      "asking_price_pct_nav": 0.95,
+      "asking_amount": { "amount": "23750000", "currency": "USD" },
+      "includes_unfunded": true,
+      "status": "WITHDRAWN"
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vehicle.schema.json",
+  "title": "RE Vehicle",
+  "description": "Real estate investment vehicle definition",
+  "$defs": {
+    "REVehicle": {
+      "type": "object",
+      "description": "A real estate investment vehicle (fund, REIT, JV, etc.)",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name of the investment vehicle"
+        },
+        "vehicle_type": {
+          "type": "string",
+          "enum": [
+            "OPEN_END_FUND",
+            "CLOSED_END_FUND",
+            "REIT",
+            "JOINT_VENTURE",
+            "SEPARATE_ACCOUNT",
+            "CLUB_DEAL"
+          ],
+          "description": "Type of investment vehicle structure"
+        },
+        "strategy": {
+          "type": "string",
+          "enum": [
+            "CORE",
+            "CORE_PLUS",
+            "VALUE_ADD",
+            "OPPORTUNISTIC",
+            "DEVELOPMENT"
+          ],
+          "description": "Investment strategy of the vehicle"
+        },
+        "target_size": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Target fundraising or capitalization size"
+        },
+        "gp_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the general partner (Party)"
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "References to Property entities held by this vehicle"
+        },
+        "region": {
+          "$ref": "../core/enums.schema.json#/$defs/Region",
+          "description": "Primary geographic focus"
+        },
+        "vintage_year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2100,
+          "description": "Year the vehicle was launched or first capital deployed"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "FUNDRAISING",
+            "INVESTING",
+            "STABILIZED",
+            "HARVESTING",
+            "LIQUIDATED"
+          ],
+          "description": "Current lifecycle status of the vehicle"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "name", "vehicle_type", "strategy", "gp_id", "region", "status"
+      ]
+    }
+  }
+}

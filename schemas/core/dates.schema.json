@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dates.schema.json",
+  "title": "Date types",
+  "description": "Quarter, reporting period, and date range types",
+  "$defs": {
+    "Quarter": {
+      "type": "object",
+      "description": "A fiscal quarter",
+      "properties": {
+        "year": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2100
+        },
+        "quarter": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        }
+      },
+      "required": ["year", "quarter"]
+    },
+    "ReportingPeriod": {
+      "type": "object",
+      "description": "A reporting period with start/end dates and optional quarter",
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "quarter": {
+          "$ref": "#/$defs/Quarter"
+        }
+      },
+      "required": ["start_date", "end_date"]
+    },
+    "DateRange": {
+      "type": "object",
+      "description": "An arbitrary date range",
+      "properties": {
+        "start_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": ["start_date", "end_date"]
+    }
+  }
+}

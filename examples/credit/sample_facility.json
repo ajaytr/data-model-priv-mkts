@@ -1,0 +1,49 @@
+{
+  "id": "fa112233-4455-6677-8899-aabbccdde001",
+  "created_at": "2024-02-15T10:00:00Z",
+  "updated_at": "2025-01-05T12:00:00Z",
+  "name": "Acme Corp Senior Secured Term Loan",
+  "borrower_id": "d4e5f6a7-b890-1234-5678-9abcdef01234",
+  "facility_type": "TERM_LOAN",
+  "total_commitment": { "amount": "500000000", "currency": "USD" },
+  "funded_amount": { "amount": "500000000", "currency": "USD" },
+  "unfunded_amount": { "amount": "0", "currency": "USD" },
+  "currency": "USD",
+  "seniority": "SENIOR_SECURED",
+  "closing_date": "2024-02-15",
+  "maturity_date": "2029-02-15",
+  "status": "ACTIVE",
+  "external_ids": [
+    { "system": "LoanX", "value": "LX123456" }
+  ],
+  "tranches": [
+    {
+      "tranche_id": "tr112233-4455-6677-8899-aabbccdde001",
+      "tranche_name": "Term Loan A",
+      "commitment_amount": { "amount": "300000000", "currency": "USD" },
+      "funded_amount": { "amount": "300000000", "currency": "USD" },
+      "rate_definition": {
+        "rate_type": "FLOATING",
+        "spread": 450,
+        "index": "TERM_SOFR",
+        "floor": 0.01,
+        "day_count": "ACT_360"
+      },
+      "seniority": "SENIOR_SECURED"
+    },
+    {
+      "tranche_id": "tr112233-4455-6677-8899-aabbccdde002",
+      "tranche_name": "Term Loan B",
+      "commitment_amount": { "amount": "200000000", "currency": "USD" },
+      "funded_amount": { "amount": "200000000", "currency": "USD" },
+      "rate_definition": {
+        "rate_type": "FLOATING",
+        "spread": 600,
+        "index": "TERM_SOFR",
+        "floor": 0.0125,
+        "day_count": "ACT_360"
+      },
+      "seniority": "SENIOR_SECURED"
+    }
+  ]
+}

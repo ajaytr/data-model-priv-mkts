@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "capital_activity.schema.json",
+  "title": "Capital activity",
+  "description": "Capital calls, distributions, and their per-investor allocations",
+  "$defs": {
+    "CapitalCall": {
+      "type": "object",
+      "description": "A capital call issued by the fund to its investors",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "fund_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the fund"
+        },
+        "call_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Sequential capital call number"
+        },
+        "call_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the capital call was issued"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date payment is due"
+        },
+        "total_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total amount called"
+        },
+        "purpose": {
+          "type": "string",
+          "enum": ["INVESTMENT", "FEES", "EXPENSES", "FOLLOW_ON", "BRIDGE"],
+          "description": "Purpose of the capital call"
+        },
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CallAllocation"
+          },
+          "description": "Per-investor call allocations"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "fund_id", "call_number", "call_date", "due_date", "total_amount", "purpose"
+      ]
+    },
+    "CallAllocation": {
+      "type": "object",
+      "description": "A single investor's share of a capital call",
+      "properties": {
+        "commitment_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the commitment"
+        },
+        "investor_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the investor (Party)"
+        },
+        "called_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Amount called from this investor"
+        },
+        "ownership_percentage": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Investor's ownership percentage at time of call"
+        }
+      },
+      "required": ["commitment_id", "investor_id", "called_amount", "ownership_percentage"]
+    },
+    "Distribution": {
+      "type": "object",
+      "description": "A distribution from the fund to its investors",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "fund_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the fund"
+        },
+        "distribution_number": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Sequential distribution number"
+        },
+        "distribution_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of distribution"
+        },
+        "total_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total amount distributed"
+        },
+        "distribution_type": {
+          "type": "string",
+          "enum": ["RETURN_OF_CAPITAL", "REALIZED_GAIN", "DIVIDEND", "INTEREST", "RECALLABLE"],
+          "description": "Type of distribution"
+        },
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DistributionAllocation"
+          },
+          "description": "Per-investor distribution allocations"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "fund_id", "distribution_number", "distribution_date", "total_amount", "distribution_type"
+      ]
+    },
+    "DistributionAllocation": {
+      "type": "object",
+      "description": "A single investor's share of a distribution",
+      "properties": {
+        "commitment_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the commitment"
+        },
+        "investor_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the investor (Party)"
+        },
+        "amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Amount distributed to this investor"
+        },
+        "withholding_tax": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Tax withheld from this distribution"
+        }
+      },
+      "required": ["commitment_id", "investor_id", "amount"]
+    }
+  }
+}

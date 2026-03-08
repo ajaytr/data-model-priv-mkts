@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "deal.schema.json",
+  "title": "Deal",
+  "description": "Central deal entity with participants and milestones",
+  "$defs": {
+    "DealParticipant": {
+      "type": "object",
+      "description": "A party participating in a deal",
+      "properties": {
+        "party_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to Party"
+        },
+        "role": {
+          "$ref": "enums.schema.json#/$defs/DealRole"
+        },
+        "fund_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Fund through which this party is investing (optional)"
+        },
+        "commitment_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money"
+        },
+        "ownership_percentage": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+        }
+      },
+      "required": ["party_id", "role"]
+    },
+    "DealMilestone": {
+      "type": "object",
+      "description": "A stage in the deal lifecycle",
+      "properties": {
+        "stage": {
+          "$ref": "enums.schema.json#/$defs/DealStage"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "completed": {
+          "type": "boolean",
+          "default": false
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": ["stage", "date"]
+    },
+    "Deal": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Deal name (e.g., 'Acme Corp LBO')"
+            },
+            "description": {
+              "type": "string"
+            },
+            "asset_class": {
+              "$ref": "enums.schema.json#/$defs/AssetClass"
+            },
+            "stage": {
+              "$ref": "enums.schema.json#/$defs/DealStage"
+            },
+            "deal_size": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Total deal size"
+            },
+            "target_company": {
+              "type": "string",
+              "description": "Name of the target company or asset"
+            },
+            "sector": {
+              "type": "string"
+            },
+            "region": {
+              "$ref": "../core/enums.schema.json#/$defs/Region"
+            },
+            "country": {
+              "$ref": "../core/enums.schema.json#/$defs/Country"
+            },
+            "sourced_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "expected_close_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "actual_close_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "participants": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/DealParticipant" }
+            },
+            "assets": {
+              "type": "array",
+              "items": { "$ref": "deal_asset.schema.json#/$defs/DealAsset" }
+            },
+            "milestones": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/DealMilestone" }
+            },
+            "documents": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "description": "References to Document entities"
+            }
+          },
+          "required": ["name", "asset_class", "stage"]
+        }
+      ]
+    }
+  }
+}

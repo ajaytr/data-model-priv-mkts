@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "facility.schema.json",
+  "title": "Facility",
+  "description": "Credit facility and tranche definitions",
+  "$defs": {
+    "Tranche": {
+      "type": "object",
+      "description": "A sub-division of a facility with its own commitment and rate terms",
+      "properties": {
+        "tranche_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for this tranche"
+        },
+        "tranche_name": {
+          "type": "string",
+          "description": "Descriptive name (e.g., Term Loan A, Revolver)"
+        },
+        "commitment_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money"
+        },
+        "funded_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money"
+        },
+        "rate_definition": {
+          "$ref": "interest.schema.json#/$defs/RateDefinition"
+        },
+        "seniority": {
+          "$ref": "enums.schema.json#/$defs/SeniorityLevel"
+        }
+      },
+      "required": [
+        "tranche_id",
+        "tranche_name",
+        "commitment_amount",
+        "rate_definition",
+        "seniority"
+      ]
+    },
+    "Facility": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Facility name"
+            },
+            "borrower_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to the borrower party"
+            },
+            "facility_type": {
+              "$ref": "enums.schema.json#/$defs/FacilityType"
+            },
+            "total_commitment": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "funded_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "unfunded_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "currency": {
+              "$ref": "../core/enums.schema.json#/$defs/Currency"
+            },
+            "seniority": {
+              "$ref": "enums.schema.json#/$defs/SeniorityLevel"
+            },
+            "closing_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "maturity_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "tranches": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/Tranche" }
+            },
+            "status": {
+              "type": "string",
+              "enum": ["ACTIVE", "DRAWN", "FULLY_REPAID", "DEFAULTED", "RESTRUCTURED"],
+              "description": "Current status of the facility"
+            },
+            "external_ids": {
+              "type": "array",
+              "items": { "$ref": "../core/identifiers.schema.json#/$defs/ExternalId" }
+            }
+          },
+          "required": [
+            "name",
+            "borrower_id",
+            "facility_type",
+            "total_commitment",
+            "currency",
+            "seniority",
+            "closing_date",
+            "maturity_date",
+            "status"
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "nav.schema.json",
+  "title": "NAV reporting",
+  "description": "Net asset value statements, investor NAV, and investment valuations",
+  "$defs": {
+    "NAVStatement": {
+      "type": "object",
+      "description": "A fund-level net asset value statement for a reporting period",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "fund_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the fund"
+        },
+        "reporting_period": {
+          "$ref": "../core/dates.schema.json#/$defs/ReportingPeriod",
+          "description": "The period this NAV statement covers"
+        },
+        "total_nav": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total fund NAV"
+        },
+        "total_contributions": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Cumulative contributions to date"
+        },
+        "total_distributions": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Cumulative distributions to date"
+        },
+        "investment_valuations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InvestmentValuation"
+          },
+          "description": "Per-investment valuations"
+        },
+        "investor_navs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InvestorNAV"
+          },
+          "description": "Per-investor NAV breakdown"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "fund_id", "reporting_period", "total_nav", "total_contributions", "total_distributions"
+      ]
+    },
+    "InvestorNAV": {
+      "type": "object",
+      "description": "An individual investor's NAV within a fund",
+      "properties": {
+        "commitment_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the commitment"
+        },
+        "investor_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the investor (Party)"
+        },
+        "nav": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Investor's NAV"
+        },
+        "ownership_percentage": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Investor's ownership share"
+        },
+        "total_contributed": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total capital contributed by this investor"
+        },
+        "total_distributed": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total distributions received by this investor"
+        }
+      },
+      "required": ["commitment_id", "investor_id", "nav", "ownership_percentage", "total_contributed", "total_distributed"]
+    },
+    "InvestmentValuation": {
+      "type": "object",
+      "description": "Fair value of a single portfolio investment",
+      "properties": {
+        "investment_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the investment"
+        },
+        "company_name": {
+          "type": "string",
+          "description": "Name of the portfolio company"
+        },
+        "fair_value": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Current fair value"
+        },
+        "cost_basis": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Original cost basis"
+        },
+        "unrealized_gain_loss": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Unrealized gain or loss (fair_value - cost_basis)"
+        },
+        "valuation_method": {
+          "type": "string",
+          "enum": ["MARKET_COMPARABLE", "DCF", "RECENT_TRANSACTION", "THIRD_PARTY_APPRAISAL", "COST"],
+          "description": "Methodology used for valuation"
+        }
+      },
+      "required": ["investment_id", "company_name", "fair_value", "cost_basis", "unrealized_gain_loss", "valuation_method"]
+    }
+  }
+}

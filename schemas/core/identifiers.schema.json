@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "identifiers.schema.json",
+  "title": "Identifiers",
+  "description": "External identifier types",
+  "$defs": {
+    "ExternalId": {
+      "type": "object",
+      "description": "Reference to an identifier in an external system",
+      "properties": {
+        "system": {
+          "type": "string",
+          "description": "Name of the external system (e.g., LEI, CUSIP, Bloomberg)"
+        },
+        "value": {
+          "type": "string",
+          "description": "The identifier value in the external system"
+        }
+      },
+      "required": ["system", "value"]
+    }
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "base.schema.json",
+  "title": "Base definitions",
+  "description": "Auditable base type for all domain entities",
+  "$defs": {
+    "Auditable": {
+      "type": "object",
+      "description": "Common fields for all persistent entities",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the record was created"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the record was last updated"
+        }
+      },
+      "required": ["id", "created_at"]
+    }
+  }
+}

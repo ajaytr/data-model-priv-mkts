@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enums.schema.json",
+  "title": "Core enumerations",
+  "description": "Shared enumerations used across all domains",
+  "$defs": {
+    "Currency": {
+      "type": "string",
+      "enum": ["USD", "EUR", "GBP", "CHF", "JPY", "CAD", "AUD", "SGD", "HKD", "CNY", "KRW", "SEK", "NOK", "DKK", "NZD", "BRL", "INR"],
+      "description": "ISO 4217 currency codes commonly used in private markets"
+    },
+    "Region": {
+      "type": "string",
+      "enum": ["NORTH_AMERICA", "EUROPE", "ASIA_PACIFIC", "LATIN_AMERICA", "MIDDLE_EAST", "AFRICA", "GLOBAL"],
+      "description": "Geographic region"
+    },
+    "Country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2 country code"
+    },
+    "DayCount": {
+      "type": "string",
+      "enum": ["ACT_360", "ACT_365", "ACT_ACT", "30_360", "30E_360"],
+      "description": "Day-count convention for interest calculations"
+    },
+    "DocumentType": {
+      "type": "string",
+      "enum": [
+        "LPA",
+        "SIDE_LETTER",
+        "SUBSCRIPTION_AGREEMENT",
+        "CAPITAL_CALL_NOTICE",
+        "DISTRIBUTION_NOTICE",
+        "FINANCIAL_STATEMENT",
+        "VALUATION_REPORT",
+        "TAX_DOCUMENT",
+        "CREDIT_AGREEMENT",
+        "AMENDMENT",
+        "WAIVER",
+        "TRANSFER_AGREEMENT",
+        "PURCHASE_AGREEMENT",
+        "OTHER"
+      ],
+      "description": "Type of legal or operational document"
+    }
+  }
+}

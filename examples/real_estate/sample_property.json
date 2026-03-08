@@ -1,0 +1,33 @@
+{
+  "id": "pr112233-4455-6677-8899-aabbccdde001",
+  "created_at": "2023-09-01T08:00:00Z",
+  "updated_at": "2025-01-15T10:00:00Z",
+  "name": "One Market Plaza",
+  "property_type": "OFFICE",
+  "status": "STABILIZED",
+  "address": {
+    "line1": "1 Market Street",
+    "city": "San Francisco",
+    "state_province": "CA",
+    "postal_code": "94105",
+    "country": "US"
+  },
+  "square_footage": 1200000,
+  "year_built": 1976,
+  "year_renovated": 2019,
+  "num_floors": 27,
+  "occupancy_rate": 0.92,
+  "acquisition_date": "2023-09-15",
+  "acquisition_price": { "amount": "450000000", "currency": "USD" },
+  "current_valuation": {
+    "valuation_date": "2024-12-31",
+    "appraised_value": { "amount": "475000000", "currency": "USD" },
+    "cap_rate": 0.055,
+    "price_per_sqft": { "amount": "395.83", "currency": "USD" },
+    "valuation_method": "APPRAISAL",
+    "appraiser": "CBRE Valuation & Advisory"
+  },
+  "external_ids": [
+    { "system": "NCREIF", "value": "NPI-SF-001234" }
+  ]
+}

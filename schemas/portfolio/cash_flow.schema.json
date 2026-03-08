@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cash_flow.schema.json",
+  "title": "Cash Flow",
+  "description": "Unified cash flow representation across asset types",
+  "$defs": {
+    "CashFlowType": {
+      "type": "string",
+      "enum": [
+        "CAPITAL_CALL",
+        "DISTRIBUTION",
+        "INTEREST_PAYMENT",
+        "PRINCIPAL_PAYMENT",
+        "FEE",
+        "DIVIDEND",
+        "RENT",
+        "PURCHASE",
+        "SALE",
+        "OTHER"
+      ]
+    },
+    "CashFlow": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "portfolio_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "position_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to the Position that generated this cash flow"
+            },
+            "cash_flow_type": {
+              "$ref": "#/$defs/CashFlowType"
+            },
+            "direction": {
+              "type": "string",
+              "enum": ["INFLOW", "OUTFLOW"]
+            },
+            "amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "cash_flow_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": {
+              "type": "string"
+            },
+            "source_entity_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID of the originating entity (CapitalCall, Distribution, InterestPeriod, etc.)"
+            },
+            "source_entity_type": {
+              "type": "string"
+            }
+          },
+          "required": ["cash_flow_type", "direction", "amount", "cash_flow_date"]
+        }
+      ]
+    }
+  }
+}

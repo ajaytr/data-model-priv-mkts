@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "transaction.schema.json",
+  "title": "Transaction",
+  "description": "Secondary transaction lifecycle",
+  "$defs": {
+    "TransactionMilestone": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "$ref": "enums.schema.json#/$defs/TransactionStage"
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "completed": {
+          "type": "boolean",
+          "default": false
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": ["stage", "date"]
+    },
+    "Transaction": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "trade_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to SecondaryTrade"
+            },
+            "stage": {
+              "$ref": "enums.schema.json#/$defs/TransactionStage"
+            },
+            "milestones": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/TransactionMilestone" }
+            },
+            "gp_consent_required": {
+              "type": "boolean",
+              "default": true
+            },
+            "gp_consent_received": {
+              "type": "boolean",
+              "default": false
+            },
+            "gp_consent_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "transfer_agent": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party handling the transfer"
+            },
+            "legal_counsel_buyer": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "legal_counsel_seller": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "documents": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "description": "References to Document entities"
+            },
+            "closing_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "effective_date": {
+              "type": "string",
+              "format": "date",
+              "description": "Date the transfer becomes effective on the fund's books"
+            }
+          },
+          "required": ["trade_id", "stage"]
+        }
+      ]
+    }
+  }
+}

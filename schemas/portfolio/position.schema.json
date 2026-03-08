@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "position.schema.json",
+  "title": "Position",
+  "description": "Portfolio positions across asset types, using discriminated union",
+  "$defs": {
+    "PositionType": {
+      "type": "string",
+      "enum": ["FUND", "CREDIT", "REAL_ESTATE"]
+    },
+    "FundPosition": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "position_type": {
+              "const": "FUND"
+            },
+            "fund_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "commitment_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "commitment_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "funded_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "unfunded_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "distributions_received": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "current_nav": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "nav_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "dpi": {
+              "type": "number",
+              "description": "Distributions to Paid-In"
+            },
+            "tvpi": {
+              "type": "number",
+              "description": "Total Value to Paid-In"
+            },
+            "irr": {
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+              "description": "Net IRR"
+            }
+          },
+          "required": ["position_type", "fund_id", "commitment_amount", "current_nav"]
+        }
+      ]
+    },
+    "CreditPosition": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "position_type": {
+              "const": "CREDIT"
+            },
+            "facility_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "tranche_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "par_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "market_value": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "accrued_interest": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "current_rate": {
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+            },
+            "maturity_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "price": {
+              "type": "number",
+              "description": "Current price as percentage of par (e.g., 98.5)"
+            }
+          },
+          "required": ["position_type", "facility_id", "par_amount", "market_value"]
+        }
+      ]
+    },
+    "RealEstatePosition": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "position_type": {
+              "const": "REAL_ESTATE"
+            },
+            "property_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "vehicle_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to REVehicle"
+            },
+            "ownership_percentage": {
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+            },
+            "cost_basis": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "current_valuation": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "valuation_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "noi_annual": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "cap_rate": {
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+            }
+          },
+          "required": ["position_type", "property_id", "cost_basis", "current_valuation"]
+        }
+      ]
+    },
+    "Position": {
+      "oneOf": [
+        { "$ref": "#/$defs/FundPosition" },
+        { "$ref": "#/$defs/CreditPosition" },
+        { "$ref": "#/$defs/RealEstatePosition" }
+      ],
+      "discriminator": {
+        "propertyName": "position_type"
+      }
+    }
+  }
+}

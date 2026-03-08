@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "commitment.schema.json",
+  "title": "Commitment",
+  "description": "LP commitments to a fund and associated side letter terms",
+  "$defs": {
+    "Commitment": {
+      "type": "object",
+      "description": "An LP's capital commitment to a fund",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "fund_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the fund"
+        },
+        "investor_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to the investor (Party)"
+        },
+        "commitment_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total committed capital"
+        },
+        "unfunded_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Remaining unfunded commitment"
+        },
+        "commitment_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the commitment was made"
+        },
+        "side_letter": {
+          "$ref": "#/$defs/SideLetterTerms",
+          "description": "Negotiated side letter terms, if any"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING", "ACTIVE", "TRANSFERRED", "DEFAULTED"],
+          "description": "Current status of the commitment"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "fund_id", "investor_id", "commitment_amount", "unfunded_amount", "commitment_date", "status"
+      ]
+    },
+    "SideLetterTerms": {
+      "type": "object",
+      "description": "Terms negotiated in a side letter agreement",
+      "properties": {
+        "fee_discount": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Discount on management fee rate"
+        },
+        "co_investment_rights": {
+          "type": "boolean",
+          "description": "Whether the investor has co-investment rights"
+        },
+        "most_favored_nation": {
+          "type": "boolean",
+          "description": "Whether MFN rights apply"
+        },
+        "excuse_rights": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Sectors or investment types the investor may opt out of"
+        },
+        "reporting_requirements": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Additional reporting obligations"
+        }
+      }
+    }
+  }
+}

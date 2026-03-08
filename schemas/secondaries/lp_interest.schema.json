@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "lp_interest.schema.json",
+  "title": "LP Interest",
+  "description": "LP interest positions available for secondary trading",
+  "$defs": {
+    "LPInterest": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "fund_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Fund"
+            },
+            "fund_name": {
+              "type": "string",
+              "description": "Denormalized fund name for convenience"
+            },
+            "seller_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party (current LP)"
+            },
+            "commitment_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Commitment"
+            },
+            "total_commitment": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "funded_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "unfunded_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "nav": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Most recent NAV"
+            },
+            "nav_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "distributions_received": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "vintage_year": {
+              "type": "integer"
+            },
+            "fund_strategy": {
+              "type": "string",
+              "description": "Fund strategy (denormalized from Fund)"
+            },
+            "remaining_fund_life_years": {
+              "type": "number"
+            }
+          },
+          "required": ["fund_id", "seller_id", "total_commitment", "nav"]
+        }
+      ]
+    }
+  }
+}

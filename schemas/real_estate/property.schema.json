@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "property.schema.json",
+  "title": "Property",
+  "description": "Real estate property and valuation definitions",
+  "$defs": {
+    "PropertyValuation": {
+      "type": "object",
+      "description": "A point-in-time valuation of a property",
+      "properties": {
+        "valuation_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of the valuation"
+        },
+        "appraised_value": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Appraised market value"
+        },
+        "cap_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Capitalization rate"
+        },
+        "price_per_sqft": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Price per square foot"
+        },
+        "valuation_method": {
+          "type": "string",
+          "enum": ["APPRAISAL", "COMPARABLE_SALES", "DCF", "REPLACEMENT_COST"],
+          "description": "Methodology used for the valuation"
+        },
+        "appraiser": {
+          "type": "string",
+          "description": "Name of the appraiser or appraisal firm"
+        }
+      },
+      "required": ["valuation_date", "appraised_value", "valuation_method"]
+    },
+    "Property": {
+      "type": "object",
+      "description": "A real estate property asset",
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Name or title of the property"
+        },
+        "property_type": {
+          "$ref": "enums.schema.json#/$defs/PropertyType",
+          "description": "Classification of the property"
+        },
+        "status": {
+          "$ref": "enums.schema.json#/$defs/PropertyStatus",
+          "description": "Current lifecycle status"
+        },
+        "address": {
+          "$ref": "../core/party.schema.json#/$defs/Address",
+          "description": "Physical address of the property"
+        },
+        "square_footage": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total square footage of the property"
+        },
+        "year_built": {
+          "type": "integer",
+          "minimum": 1800,
+          "maximum": 2100,
+          "description": "Year the property was originally constructed"
+        },
+        "year_renovated": {
+          "type": "integer",
+          "minimum": 1800,
+          "maximum": 2100,
+          "description": "Year of last major renovation"
+        },
+        "num_units": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of units (e.g., apartments, suites)"
+        },
+        "num_floors": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of floors in the building"
+        },
+        "occupancy_rate": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Current occupancy rate"
+        },
+        "acquisition_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date the property was acquired"
+        },
+        "acquisition_price": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Purchase price at acquisition"
+        },
+        "current_valuation": {
+          "$ref": "#/$defs/PropertyValuation",
+          "description": "Most recent property valuation"
+        },
+        "external_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "../core/identifiers.schema.json#/$defs/ExternalId"
+          },
+          "description": "External system identifiers"
+        }
+      },
+      "required": [
+        "id", "created_at",
+        "name", "property_type", "status", "address", "square_footage"
+      ]
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "transfer.schema.json",
+  "title": "Transfer Record",
+  "description": "Record of completed LP interest transfers",
+  "$defs": {
+    "TransferRecord": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "transaction_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Transaction"
+            },
+            "fund_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "from_investor_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Selling LP (Party)"
+            },
+            "to_investor_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Buying LP (Party)"
+            },
+            "old_commitment_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to original Commitment being transferred"
+            },
+            "new_commitment_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to newly created Commitment for the buyer"
+            },
+            "transferred_commitment": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "transferred_unfunded": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "purchase_price": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "effective_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "settlement_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "transfer_fee": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Fee charged by the GP for processing the transfer"
+            }
+          },
+          "required": [
+            "transaction_id",
+            "fund_id",
+            "from_investor_id",
+            "to_investor_id",
+            "transferred_commitment",
+            "purchase_price",
+            "effective_date"
+          ]
+        }
+      ]
+    }
+  }
+}

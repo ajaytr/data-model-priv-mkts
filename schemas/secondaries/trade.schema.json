@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "trade.schema.json",
+  "title": "Secondary Trade",
+  "description": "Secondary market trade with bids and offers",
+  "$defs": {
+    "Bid": {
+      "type": "object",
+      "properties": {
+        "bid_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bidder_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to Party"
+        },
+        "bid_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "bid_price_pct_nav": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Bid as percentage of NAV (e.g., 0.92 = 92% of NAV)"
+        },
+        "bid_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Absolute bid amount"
+        },
+        "assumes_unfunded": {
+          "type": "boolean",
+          "description": "Whether the buyer assumes unfunded commitments"
+        },
+        "conditions": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["SUBMITTED", "ACCEPTED", "REJECTED", "EXPIRED", "WITHDRAWN"]
+        }
+      },
+      "required": ["bid_id", "bidder_id", "bid_date", "bid_price_pct_nav", "status"]
+    },
+    "Offer": {
+      "type": "object",
+      "properties": {
+        "offer_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "seller_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to Party"
+        },
+        "offer_date": {
+          "type": "string",
+          "format": "date"
+        },
+        "asking_price_pct_nav": {
+          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+          "description": "Asking price as percentage of NAV"
+        },
+        "asking_amount": {
+          "$ref": "../core/money.schema.json#/$defs/Money"
+        },
+        "includes_unfunded": {
+          "type": "boolean"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ACTIVE", "ACCEPTED", "EXPIRED", "WITHDRAWN"]
+        }
+      },
+      "required": ["offer_id", "seller_id", "offer_date", "asking_price_pct_nav", "status"]
+    },
+    "SecondaryTrade": {
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "trade_type": {
+              "$ref": "enums.schema.json#/$defs/SecondaryTradeType"
+            },
+            "lp_interest_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to LPInterest"
+            },
+            "direction": {
+              "$ref": "enums.schema.json#/$defs/TradeDirection"
+            },
+            "buyer_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party"
+            },
+            "seller_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party"
+            },
+            "broker_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to Party (intermediary)"
+            },
+            "agreed_price_pct_nav": {
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+            },
+            "agreed_amount": {
+              "$ref": "../core/money.schema.json#/$defs/Money"
+            },
+            "unfunded_assumed": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Amount of unfunded commitments assumed by buyer"
+            },
+            "trade_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "expected_close_date": {
+              "type": "string",
+              "format": "date"
+            },
+            "bids": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/Bid" }
+            },
+            "offers": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/Offer" }
+            }
+          },
+          "required": ["trade_type", "lp_interest_id", "buyer_id", "seller_id", "trade_date"]
+        }
+      ]
+    }
+  }
+}
