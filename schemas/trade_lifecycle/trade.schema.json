@@ -25,11 +25,13 @@
           "properties": {
             "trade_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "settlement_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "buyer_id": {
               "type": "string",
@@ -87,8 +89,8 @@
         "from_status": { "$ref": "#/$defs/TradeStatus" },
         "to_status": { "$ref": "#/$defs/TradeStatus" },
         "transition_date": {
-          "type": "string",
-          "format": "date-time"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/UtcDateTime" }],
+          "description": "UTC timestamp of the state transition. Example: '2024-06-15T14:30:00Z'"
         },
         "transitioned_by": {
           "type": "string",

@@ -80,7 +80,8 @@
         },
         "test_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "actual_value": {
           "type": "number",

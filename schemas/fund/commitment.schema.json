@@ -32,7 +32,7 @@
         "commitment_date": {
           "type": "string",
           "format": "date",
-          "description": "Date the commitment was made"
+          "description": "Date the commitment was made. ISO 8601 date, e.g. '2024-06-15'"
         },
         "side_letter": {
           "$ref": "#/$defs/SideLetterTerms",

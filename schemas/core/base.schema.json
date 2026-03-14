@@ -14,14 +14,12 @@
           "description": "Unique identifier"
         },
         "created_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp when the record was created"
+          "allOf": [{ "$ref": "dates.schema.json#/$defs/UtcDateTime" }],
+          "description": "UTC timestamp when the record was created. Example: '2024-06-15T14:30:00Z'"
         },
         "updated_at": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp when the record was last updated"
+          "allOf": [{ "$ref": "dates.schema.json#/$defs/UtcDateTime" }],
+          "description": "UTC timestamp when the record was last updated. Example: '2024-06-15T14:30:00Z'"
         }
       },
       "required": ["id", "created_at"]

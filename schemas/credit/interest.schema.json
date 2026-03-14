@@ -56,11 +56,13 @@
         },
         "period_start": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "period_end": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "principal_balance": {
           "$ref": "../core/money.schema.json#/$defs/Money"

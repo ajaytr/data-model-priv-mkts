@@ -10,7 +10,8 @@
       "properties": {
         "as_of_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "irr_net": {
           "type": "number",

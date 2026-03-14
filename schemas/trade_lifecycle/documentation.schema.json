@@ -44,11 +44,12 @@
             "execution_date": {
               "type": "string",
               "format": "date",
-              "description": "Date the document was executed/signed"
+              "description": "Date the document was executed/signed. ISO 8601 date, e.g. '2024-06-15'"
             },
             "expiry_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             }
           },
           "required": ["document_type", "title"]
@@ -78,7 +79,8 @@
         },
         "due_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         }
       },
       "required": ["document_type"]

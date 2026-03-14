@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Private Markets Data Model</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2128;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --accent: #58a6ff;
+  --core: #8b949e;
+  --fund: #58a6ff;
+  --credit: #d29922;
+  --real_estate: #3fb950;
+  --deal: #bc8cff;
+  --secondaries: #39d2c0;
+  --portfolio: #6e7681;
+  --trade_lifecycle: #f47067;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+#sidebar {
+  width: 340px;
+  min-width: 280px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+#sidebar-header h1 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+#search {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+#search:focus { border-color: var(--accent); }
+#search::placeholder { color: var(--text2); }
+#tree-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+#detail {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+}
+#breadcrumb {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text2);
+  flex-wrap: wrap;
+}
+#breadcrumb span { cursor: pointer; color: var(--accent); }
+#breadcrumb span:hover { text-decoration: underline; }
+#breadcrumb .sep { color: var(--text2); cursor: default; }
+#detail-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+#detail-meta {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 16px;
+}
+.badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 6px;
+  border: 1px solid;
+}
+.detail-section { margin-bottom: 20px; }
+.detail-section h3 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 2px solid var(--border);
+  color: var(--text2);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:hover td { background: var(--bg3); }
+.prop-name { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; color: var(--accent); }
+.prop-type { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; color: var(--text2); }
+.prop-req { color: var(--text2); font-size: 11px; }
+.ref-link {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--accent);
+}
+.ref-link:hover { border-bottom-style: solid; }
+.enum-vals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.enum-val {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-family: 'SF Mono', Consolas, monospace;
+}
+
+/* Tree styles */
+.tree-root { padding: 0 8px; }
+.tree-root-label {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  user-select: none;
+}
+.tree-root-label:hover { background: var(--bg3); }
+.tree-root-label .arrow {
+  width: 16px;
+  font-size: 10px;
+  color: var(--text2);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+.tree-root-label .arrow.open { transform: rotate(90deg); }
+.tree-children {
+  display: none;
+  padding-left: 12px;
+}
+.tree-children.open { display: block; }
+.tree-node { position: relative; }
+.tree-node::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+.tree-item {
+  display: flex;
+  align-items: center;
+  padding: 3px 8px 3px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 13px;
+  position: relative;
+  user-select: none;
+}
+.tree-item::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: var(--border);
+}
+.tree-item:hover { background: var(--bg3); }
+.tree-item.selected { background: rgba(88,166,255,0.15); }
+.tree-item .arrow {
+  width: 14px;
+  font-size: 9px;
+  color: var(--text2);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+.tree-item .arrow.open { transform: rotate(90deg); }
+.tree-item .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+.tree-item-children {
+  display: none;
+  padding-left: 16px;
+}
+.tree-item-children.open { display: block; }
+.tree-item .entity-name { flex: 1; }
+.tree-item .array-badge {
+  font-size: 10px;
+  color: var(--text2);
+  margin-left: 4px;
+}
+.hidden { display: none !important; }
+
+#welcome { color: var(--text2); }
+#welcome h2 { color: var(--text); margin-bottom: 12px; font-size: 18px; }
+#welcome p { margin-bottom: 8px; font-size: 14px; line-height: 1.6; }
+#welcome ul { margin: 8px 0 8px 20px; font-size: 14px; line-height: 1.8; }
+#loading { color: var(--text2); font-size: 14px; padding: 20px; }
+
+@media (max-width: 768px) {
+  body { flex-direction: column; }
+  #sidebar { width: 100%; height: 45vh; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); }
+  #detail { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>Private Markets Data Model</h1>
+    <input type="text" id="search" placeholder="Search entities...">
+  </div>
+  <div id="tree-container"><div id="loading">Loading schemas...</div></div>
+</div>
+
+<div id="detail">
+  <div id="breadcrumb"></div>
+  <div id="detail-content">
+    <div id="welcome">
+      <h2>Schema Explorer</h2>
+      <p>Navigate the private markets data model using the tree on the left. Two entry points:</p>
+      <ul>
+        <li><strong>Deal</strong> — cross-asset deal structuring with participants and linked assets</li>
+        <li><strong>Fund</strong> — PE/VC fund lifecycle from commitments through realizations</li>
+      </ul>
+      <p>Click any entity to see its properties. Click linked entity names to navigate between schemas.</p>
+      <p style="margin-top:12px;font-size:12px;color:var(--text2)">All data loaded dynamically from the JSON Schema source files.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Schema file manifest ────────────────────────────────────
+// Every .schema.json file, grouped by domain
+const SCHEMA_FILES = {
+  core: ["base.schema.json","money.schema.json","percentage.schema.json","party.schema.json","identifiers.schema.json","dates.schema.json","enums.schema.json"],
+  fund: ["enums.schema.json","fund.schema.json","commitment.schema.json","capital_activity.schema.json","nav.schema.json","waterfall.schema.json","portfolio_company.schema.json"],
+  credit: ["enums.schema.json","facility.schema.json","interest.schema.json","covenants.schema.json","amortization.schema.json","borrower.schema.json"],
+  real_estate: ["enums.schema.json","property.schema.json","vehicle.schema.json","lease.schema.json","metrics.schema.json"],
+  deal: ["enums.schema.json","deal.schema.json","deal_asset.schema.json"],
+  secondaries: ["enums.schema.json","lp_interest.schema.json","trade.schema.json","transaction.schema.json","transfer.schema.json"],
+  portfolio: ["position.schema.json","portfolio.schema.json","cash_flow.schema.json","performance.schema.json"],
+  trade_lifecycle: ["trade.schema.json","settlement.schema.json","documentation.schema.json"],
+};
+
+const DOMAIN_COLORS = {
+  core:"var(--core)",fund:"var(--fund)",credit:"var(--credit)",
+  real_estate:"var(--real_estate)",deal:"var(--deal)",secondaries:"var(--secondaries)",
+  portfolio:"var(--portfolio)",trade_lifecycle:"var(--trade_lifecycle)"
+};
+
+// Known UUID-ref property -> entity mappings (property name -> entity name)
+// This maps uuid foreign keys to their target entities for cross-referencing
+const UUID_REF_MAP = {
+  gp_id:"Party", fund_admin_id:"Party", investor_id:"Party", party_id:"Party",
+  buyer_id:"Party", seller_id:"Party", broker_id:"Party", bidder_id:"Party",
+  payer_id:"Party", payee_id:"Party", from_investor_id:"Party", to_investor_id:"Party",
+  transfer_agent:"Party", legal_counsel_buyer:"Party", legal_counsel_seller:"Party",
+  owner_id:"Party", sponsor_id:"Party",
+  fund_id:"Fund", borrower_id:"Borrower",
+  facility_id:"Facility", tranche_id:"Tranche",
+  property_id:"Property", vehicle_id:"REVehicle",
+  commitment_id:"Commitment", old_commitment_id:"Commitment", new_commitment_id:"Commitment",
+  investment_id:"Investment", portfolio_company_id:"PortfolioCompany",
+  lp_interest_id:"LPInterest", trade_id:"Trade",
+  transaction_id:"Transaction", waterfall_id:"WaterfallStructure",
+  distribution_id:"Distribution", covenant_id:"Covenant",
+  portfolio_id:"Portfolio", position_id:"Position",
+  document_id:"Document",
+};
+
+// ── Parsed entity store ─────────────────────────────────────
+// Populated dynamically from fetched schemas
+// ENTITIES[name] = { domain, file, auditable, extendsParty, isEnum, isDiscriminated, discriminator, variants, scalar, scalarType, scalarDesc, properties:[], values:[] }
+const ENTITIES = {};
+// Raw schema cache: rawSchemas["domain/file"] = parsed JSON
+const rawSchemas = {};
+
+// ── Fetch and parse all schemas ─────────────────────────────
+async function loadAllSchemas() {
+  const basePath = "./schemas";
+  const fetches = [];
+  for (const [domain, files] of Object.entries(SCHEMA_FILES)) {
+    for (const file of files) {
+      const key = `${domain}/${file}`;
+      fetches.push(
+        fetch(`${basePath}/${key}`)
+          .then(r => { if (!r.ok) throw new Error(`Failed to fetch ${key}`); return r.json(); })
+          .then(schema => { rawSchemas[key] = schema; })
+      );
+    }
+  }
+  await Promise.all(fetches);
+  parseAllSchemas();
+}
+
+function resolveRef(ref, currentDomain) {
+  // Returns { defName, domain, file } for a $ref string
+  // e.g. "../core/money.schema.json#/$defs/Money" -> { defName:"Money", domain:"core", file:"money.schema.json" }
+  // e.g. "#/$defs/FundStrategy" -> local ref
+  // e.g. "enums.schema.json#/$defs/Currency" -> same-domain ref
+  if (ref.startsWith("#/$defs/")) {
+    return { defName: ref.split("/").pop(), local: true };
+  }
+  const [path, fragment] = ref.split("#");
+  const defName = fragment ? fragment.split("/").pop() : null;
+  let resolvedPath = path;
+  if (path.startsWith("../")) {
+    resolvedPath = path.replace("../", "");
+  } else if (!path.includes("/")) {
+    resolvedPath = `${currentDomain}/${path}`;
+  }
+  return { defName, path: resolvedPath };
+}
+
+function getRefEntityName(ref, currentDomain, currentFile) {
+  // Given a $ref, return the entity name it points to
+  if (!ref) return null;
+  if (ref.startsWith("#/$defs/")) return ref.split("/").pop();
+  const r = resolveRef(ref, currentDomain);
+  return r.defName;
+}
+
+function parsePropertySchema(propSchema, currentDomain, currentFile) {
+  // Parse a single property definition into our normalized format
+  const prop = {};
+
+  // Handle allOf (used for $ref + description pattern)
+  let effective = propSchema;
+  if (propSchema.allOf && propSchema.allOf.length > 0) {
+    // Merge: take the $ref from allOf entries, keep sibling description
+    const refEntry = propSchema.allOf.find(e => e.$ref);
+    if (refEntry) {
+      effective = { ...refEntry, ...propSchema };
+      delete effective.allOf;
+      if (!effective.$ref) effective.$ref = refEntry.$ref;
+    }
+  }
+
+  if (effective.$ref) {
+    const refName = getRefEntityName(effective.$ref, currentDomain, currentFile);
+    prop.ref = refName;
+    prop.t = refName;
+  }
+
+  if (effective.type) prop.t = effective.type;
+  if (effective.format) prop.f = effective.format;
+  if (effective.const !== undefined) { prop.t = "const"; prop.constVal = effective.const; }
+  if (effective.description) prop.d = effective.description;
+  if (effective.enum) { prop.t = "enum"; prop.ev = effective.enum; }
+  if (effective.pattern) prop.pattern = effective.pattern;
+
+  // Array items
+  if (effective.type === "array" && effective.items) {
+    prop.arr = true;
+    if (effective.items.$ref) {
+      const itemRef = getRefEntityName(effective.items.$ref, currentDomain, currentFile);
+      prop.ref = itemRef;
+      prop.t = itemRef + "[]";
+    } else if (effective.items.type === "string" && effective.items.format === "uuid") {
+      prop.t = "uuid[]";
+    } else if (effective.items.type) {
+      prop.t = effective.items.type + "[]";
+    }
+  }
+
+  // If it's a uuid format with no ref, check UUID_REF_MAP
+  if (effective.format === "uuid" && !prop.ref) {
+    // Will be checked by caller with property name
+  }
+
+  return prop;
+}
+
+function parseAllSchemas() {
+  for (const [domain, files] of Object.entries(SCHEMA_FILES)) {
+    for (const file of files) {
+      const key = `${domain}/${file}`;
+      const schema = rawSchemas[key];
+      if (!schema || !schema.$defs) continue;
+
+      for (const [defName, defSchema] of Object.entries(schema.$defs)) {
+        const entity = {
+          domain,
+          file,
+          auditable: false,
+          properties: [],
+        };
+
+        // Check if it's an enum type
+        if (defSchema.enum) {
+          entity.isEnum = true;
+          entity.values = defSchema.enum;
+          if (defSchema.description) entity.scalarDesc = defSchema.description;
+          if (defSchema.pattern) entity.scalarDesc = (entity.scalarDesc || "") + (entity.scalarDesc ? " " : "") + `Pattern: ${defSchema.pattern}`;
+          ENTITIES[defName] = entity;
+          continue;
+        }
+
+        // Check if it's a simple scalar type (like Percentage, BasisPoints)
+        if (defSchema.type && defSchema.type !== "object" && !defSchema.allOf && !defSchema.properties && !defSchema.oneOf) {
+          entity.scalar = true;
+          entity.scalarType = defSchema.type;
+          let desc = defSchema.description || "";
+          if (defSchema.minimum !== undefined) desc += ` Min: ${defSchema.minimum}.`;
+          if (defSchema.maximum !== undefined) desc += ` Max: ${defSchema.maximum}.`;
+          if (defSchema.pattern) desc += ` Pattern: ${defSchema.pattern}`;
+          entity.scalarDesc = desc.trim();
+          ENTITIES[defName] = entity;
+          continue;
+        }
+
+        // Check for oneOf (discriminated union like Position)
+        if (defSchema.oneOf) {
+          entity.isDiscriminated = true;
+          entity.discriminator = defSchema.discriminator ? defSchema.discriminator.propertyName : null;
+          entity.variants = defSchema.oneOf.map(v => {
+            if (v.$ref) return getRefEntityName(v.$ref, domain, file);
+            return "unknown";
+          });
+          ENTITIES[defName] = entity;
+          continue;
+        }
+
+        // Handle allOf (Auditable composition or Party extension)
+        let propsSource = defSchema;
+        if (defSchema.allOf) {
+          for (const sub of defSchema.allOf) {
+            if (sub.$ref) {
+              if (sub.$ref.includes("base.schema.json#/$defs/Auditable")) {
+                entity.auditable = true;
+              } else if (sub.$ref.includes("party.schema.json#/$defs/Party")) {
+                entity.auditable = true;
+                entity.extendsParty = true;
+              }
+            }
+            if (sub.properties) {
+              propsSource = sub;
+            }
+          }
+        }
+
+        // Extract properties
+        const props = propsSource.properties || {};
+        const required = new Set(propsSource.required || []);
+
+        for (const [propName, propSchema] of Object.entries(props)) {
+          const parsed = parsePropertySchema(propSchema, domain, file);
+          parsed.n = propName;
+          parsed.r = required.has(propName);
+
+          // Apply UUID_REF_MAP for uuid fields without explicit $ref
+          if (parsed.f === "uuid" && !parsed.ref && UUID_REF_MAP[propName]) {
+            parsed.ref = UUID_REF_MAP[propName];
+          }
+
+          entity.properties.push(parsed);
+        }
+
+        ENTITIES[defName] = entity;
+      }
+    }
+  }
+}
+
+// ── Tree Definitions ────────────────────────────────────────
+const DEAL_TREE = {
+  name:"Deal", entity:"Deal", children:[
+    {name:"DealParticipant", entity:"DealParticipant", arr:true, children:[
+      {name:"Party", entity:"Party", children:[
+        {name:"Address", entity:"Address", children:[]},
+        {name:"ContactInfo", entity:"ContactInfo", arr:true, children:[]},
+      ]},
+      {name:"Fund", entity:"Fund", children:[]},
+    ]},
+    {name:"DealAsset", entity:"DealAsset", arr:true, children:[
+      {name:"Facility (FACILITY)", entity:"Facility", children:[
+        {name:"Tranche", entity:"Tranche", arr:true, children:[
+          {name:"RateDefinition", entity:"RateDefinition", children:[]},
+        ]},
+        {name:"Borrower", entity:"Borrower", children:[]},
+        {name:"Covenant", entity:"Covenant", children:[
+          {name:"CovenantTest", entity:"CovenantTest", children:[]},
+        ]},
+        {name:"AmortizationSchedule", entity:"AmortizationSchedule", children:[
+          {name:"ScheduledPayment", entity:"ScheduledPayment", arr:true, children:[]},
+        ]},
+        {name:"InterestPeriod", entity:"InterestPeriod", children:[]},
+      ]},
+      {name:"Investment (INVESTMENT)", entity:"Investment", children:[
+        {name:"PortfolioCompany", entity:"PortfolioCompany", children:[]},
+        {name:"Realization", entity:"Realization", children:[]},
+      ]},
+      {name:"Property (PROPERTY)", entity:"Property", children:[
+        {name:"PropertyValuation", entity:"PropertyValuation", children:[]},
+        {name:"Lease", entity:"Lease", children:[
+          {name:"Tenant", entity:"Tenant", children:[]},
+          {name:"LeaseOption", entity:"LeaseOption", arr:true, children:[]},
+        ]},
+        {name:"RentRoll", entity:"RentRoll", children:[]},
+        {name:"NOIStatement", entity:"NOIStatement", children:[]},
+        {name:"Appraisal", entity:"Appraisal", children:[]},
+      ]},
+      {name:"LPInterest (LP_INTEREST)", entity:"LPInterest", children:[
+        {name:"SecondaryTrade", entity:"SecondaryTrade", children:[
+          {name:"Bid", entity:"Bid", arr:true, children:[]},
+          {name:"Offer", entity:"Offer", arr:true, children:[]},
+        ]},
+        {name:"Transaction", entity:"Transaction", children:[
+          {name:"TransactionMilestone", entity:"TransactionMilestone", arr:true, children:[]},
+          {name:"TransferRecord", entity:"TransferRecord", children:[]},
+        ]},
+      ]},
+    ]},
+    {name:"DealMilestone", entity:"DealMilestone", arr:true, children:[]},
+    {name:"Document", entity:"Document", children:[]},
+  ]
+};
+
+const FUND_TREE = {
+  name:"Fund", entity:"Fund", children:[
+    {name:"FundTerms", entity:"FundTerms", children:[]},
+    {name:"Party (GP)", entity:"Party", children:[
+      {name:"Address", entity:"Address", children:[]},
+      {name:"ContactInfo", entity:"ContactInfo", arr:true, children:[]},
+    ]},
+    {name:"Commitment", entity:"Commitment", children:[
+      {name:"SideLetterTerms", entity:"SideLetterTerms", children:[]},
+    ]},
+    {name:"CapitalCall", entity:"CapitalCall", children:[
+      {name:"CallAllocation", entity:"CallAllocation", arr:true, children:[]},
+    ]},
+    {name:"Distribution", entity:"Distribution", children:[
+      {name:"DistributionAllocation", entity:"DistributionAllocation", arr:true, children:[]},
+    ]},
+    {name:"NAVStatement", entity:"NAVStatement", children:[
+      {name:"InvestorNAV", entity:"InvestorNAV", arr:true, children:[]},
+      {name:"InvestmentValuation", entity:"InvestmentValuation", arr:true, children:[]},
+    ]},
+    {name:"WaterfallStructure", entity:"WaterfallStructure", children:[
+      {name:"WaterfallTier", entity:"WaterfallTier", arr:true, children:[]},
+      {name:"CarryAllocation", entity:"CarryAllocation", children:[]},
+    ]},
+    {name:"Investment", entity:"Investment", children:[
+      {name:"PortfolioCompany", entity:"PortfolioCompany", children:[]},
+      {name:"Realization", entity:"Realization", children:[]},
+    ]},
+    {name:"Portfolio", entity:"Portfolio", children:[
+      {name:"Position", entity:"Position", children:[
+        {name:"FundPosition", entity:"FundPosition", children:[]},
+        {name:"CreditPosition", entity:"CreditPosition", children:[]},
+        {name:"RealEstatePosition", entity:"RealEstatePosition", children:[]},
+      ]},
+      {name:"CashFlow", entity:"CashFlow", children:[]},
+    ]},
+    {name:"FundPerformance", entity:"FundPerformance", children:[
+      {name:"PerformanceMetrics", entity:"PerformanceMetrics", children:[]},
+    ]},
+  ]
+};
+
+// ── State ───
+let breadcrumb = [];
+let selectedEl = null;
+
+// ── Render Tree ─────────────────────────────────────────────
+function renderTree(node, container) {
+  const ent = ENTITIES[node.entity];
+  const color = ent ? DOMAIN_COLORS[ent.domain] : "var(--text2)";
+  const hasChildren = node.children && node.children.length > 0;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "tree-node";
+  wrapper.dataset.entity = node.entity;
+  wrapper.dataset.name = node.name.toLowerCase();
+
+  const item = document.createElement("div");
+  item.className = "tree-item";
+  item.innerHTML = `
+    ${hasChildren ? '<span class="arrow">▶</span>' : '<span style="width:14px;display:inline-block"></span>'}
+    <span class="dot" style="background:${color}"></span>
+    <span class="entity-name">${node.name}</span>
+    ${node.arr ? '<span class="array-badge">[]</span>' : ''}
+  `;
+
+  item.addEventListener("click", (e) => {
+    e.stopPropagation();
+    selectEntity(node.entity, node.name, item);
+    if (hasChildren) {
+      const ch = wrapper.querySelector(":scope > .tree-item-children");
+      const arrow = item.querySelector(".arrow");
+      if (ch) { ch.classList.toggle("open"); arrow && arrow.classList.toggle("open"); }
+    }
+  });
+
+  wrapper.appendChild(item);
+
+  if (hasChildren) {
+    const childContainer = document.createElement("div");
+    childContainer.className = "tree-item-children";
+    node.children.forEach(c => renderTree(c, childContainer));
+    wrapper.appendChild(childContainer);
+  }
+
+  container.appendChild(wrapper);
+}
+
+function buildSidebar() {
+  const tc = document.getElementById("tree-container");
+  tc.innerHTML = "";
+
+  [{ label:"Deal", tree:DEAL_TREE, color:"var(--deal)" },
+   { label:"Fund", tree:FUND_TREE, color:"var(--fund)" }].forEach(root => {
+    const section = document.createElement("div");
+    section.className = "tree-root";
+
+    const label = document.createElement("div");
+    label.className = "tree-root-label";
+    label.innerHTML = `<span class="arrow open">▶</span><span class="dot" style="background:${root.color};width:10px;height:10px;border-radius:50%;margin:0 8px 0 4px;flex-shrink:0"></span>${root.label}`;
+
+    const children = document.createElement("div");
+    children.className = "tree-children open";
+
+    const rootItem = document.createElement("div");
+    rootItem.className = "tree-item";
+    rootItem.style.paddingLeft = "20px";
+    rootItem.innerHTML = `<span style="width:14px;display:inline-block"></span><span class="dot" style="background:${root.color}"></span><span class="entity-name">${root.tree.name} (root)</span>`;
+    rootItem.addEventListener("click", (e) => {
+      e.stopPropagation();
+      selectEntity(root.tree.entity, root.tree.name, rootItem);
+    });
+    rootItem.dataset.entity = root.tree.entity;
+    rootItem.dataset.name = root.tree.name.toLowerCase();
+    children.appendChild(rootItem);
+
+    root.tree.children.forEach(c => renderTree(c, children));
+
+    label.addEventListener("click", () => {
+      children.classList.toggle("open");
+      label.querySelector(".arrow").classList.toggle("open");
+    });
+
+    section.appendChild(label);
+    section.appendChild(children);
+    tc.appendChild(section);
+  });
+}
+
+// ── Detail Panel ────────────────────────────────────────────
+function selectEntity(entityKey, displayName, treeEl) {
+  if (selectedEl) selectedEl.classList.remove("selected");
+  if (treeEl) { treeEl.classList.add("selected"); selectedEl = treeEl; }
+
+  const existingIdx = breadcrumb.findIndex(b => b.key === entityKey);
+  if (existingIdx >= 0) {
+    breadcrumb = breadcrumb.slice(0, existingIdx + 1);
+  } else {
+    breadcrumb.push({ key: entityKey, name: displayName || entityKey });
+  }
+  renderBreadcrumb();
+  renderDetail(entityKey);
+}
+
+function navigateToEntity(entityKey) {
+  const allItems = document.querySelectorAll(".tree-item");
+  let target = null;
+  allItems.forEach(el => {
+    const wrapper = el.parentElement;
+    if (wrapper && wrapper.dataset.entity === entityKey) {
+      target = el;
+    }
+  });
+
+  if (target) {
+    let parent = target.parentElement;
+    while (parent) {
+      if (parent.classList.contains("tree-item-children") || parent.classList.contains("tree-children")) {
+        parent.classList.add("open");
+        const prev = parent.previousElementSibling;
+        if (prev) {
+          const arrow = prev.querySelector(".arrow");
+          if (arrow) arrow.classList.add("open");
+        }
+      }
+      parent = parent.parentElement;
+    }
+  }
+
+  selectEntity(entityKey, entityKey, target);
+}
+
+function renderBreadcrumb() {
+  const bc = document.getElementById("breadcrumb");
+  bc.innerHTML = "";
+  breadcrumb.forEach((b, i) => {
+    if (i > 0) {
+      const sep = document.createElement("span");
+      sep.className = "sep";
+      sep.textContent = "›";
+      bc.appendChild(sep);
+    }
+    const span = document.createElement("span");
+    span.textContent = b.name;
+    if (i < breadcrumb.length - 1) {
+      span.addEventListener("click", () => navigateToEntity(b.key));
+    } else {
+      span.style.color = "var(--text)";
+      span.style.cursor = "default";
+    }
+    bc.appendChild(span);
+  });
+}
+
+function escHtml(s) {
+  const d = document.createElement("div");
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function renderDetail(entityKey) {
+  const ent = ENTITIES[entityKey];
+  if (!ent) return;
+  const dc = document.getElementById("detail-content");
+  const color = DOMAIN_COLORS[ent.domain];
+  let html = "";
+
+  html += `<div id="detail-title">${escHtml(entityKey)}</div>`;
+  html += `<div id="detail-meta">`;
+  html += `<span class="badge" style="color:${color};border-color:${color}">${ent.domain.replace(/_/g,' ')}</span>`;
+  if (ent.auditable) html += `<span class="badge" style="color:var(--accent);border-color:var(--accent)">Auditable</span>`;
+  if (ent.isEnum) html += `<span class="badge" style="color:var(--text2);border-color:var(--text2)">Enum</span>`;
+  if (ent.isDiscriminated) html += `<span class="badge" style="color:#d29922;border-color:#d29922">Discriminated Union</span>`;
+  if (ent.extendsParty) html += `<span class="badge" style="color:var(--core);border-color:var(--core)">extends Party</span>`;
+  html += `<br><span style="font-family:monospace;font-size:12px;color:var(--text2)">schemas/${ent.domain}/${ent.file}</span>`;
+  html += `</div>`;
+
+  if (ent.scalar) {
+    html += `<div class="detail-section"><h3>Type</h3><p style="font-size:14px">${escHtml(ent.scalarType)} — ${escHtml(ent.scalarDesc || "")}</p></div>`;
+  }
+
+  if (ent.isEnum && ent.values && ent.values.length > 0) {
+    html += `<div class="detail-section"><h3>Values</h3><div class="enum-vals">`;
+    ent.values.forEach(v => html += `<span class="enum-val">${escHtml(String(v))}</span>`);
+    html += `</div></div>`;
+  }
+  if (ent.isEnum && ent.scalarDesc) {
+    html += `<div class="detail-section"><p style="font-size:13px;color:var(--text2)">${escHtml(ent.scalarDesc)}</p></div>`;
+  }
+
+  if (ent.isDiscriminated) {
+    html += `<div class="detail-section"><h3>Discriminator: ${escHtml(ent.discriminator || "")}</h3>`;
+    html += `<div style="display:flex;gap:8px;flex-wrap:wrap">`;
+    (ent.variants || []).forEach(v => {
+      html += `<span class="ref-link" onclick="navigateToEntity('${v}')">${escHtml(v)}</span>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (ent.auditable) {
+    html += `<div class="detail-section"><h3>Inherited from Auditable</h3>`;
+    html += `<table><tr><th>Property</th><th>Type</th><th>Req</th><th>Description</th></tr>`;
+    // Render Auditable fields from the actual parsed schema
+    const auditable = ENTITIES["Auditable"];
+    if (auditable) {
+      auditable.properties.forEach(p => {
+        const typeStr = `<span class="prop-type">${escHtml(p.t || "")}${p.f ? " (" + escHtml(p.f) + ")" : ""}</span>`;
+        html += `<tr><td class="prop-name">${escHtml(p.n)}</td><td>${typeStr}</td><td class="prop-req">${p.r ? "Yes" : "No"}</td><td style="font-size:12px">${escHtml(p.d || "")}</td></tr>`;
+      });
+    }
+    html += `</table></div>`;
+  }
+
+  if (ent.properties && ent.properties.length > 0) {
+    html += `<div class="detail-section"><h3>Properties</h3>`;
+    html += `<table><tr><th>Property</th><th>Type</th><th>Req</th><th>Description</th></tr>`;
+    ent.properties.forEach(p => {
+      let typeStr = "";
+      if (p.ref && ENTITIES[p.ref]) {
+        typeStr = `<span class="ref-link" onclick="navigateToEntity('${p.ref}')">${escHtml(p.t || p.ref)}</span>`;
+      } else if (p.ev) {
+        typeStr = `<span class="prop-type">enum</span>`;
+      } else if (p.constVal !== undefined) {
+        typeStr = `<span class="prop-type">"${escHtml(String(p.constVal))}"</span>`;
+      } else {
+        typeStr = `<span class="prop-type">${escHtml(p.t || "any")}${p.f ? " (" + escHtml(p.f) + ")" : ""}</span>`;
+      }
+
+      let desc = escHtml(p.d || "");
+      if (p.ev) {
+        desc += `<div class="enum-vals" style="margin-top:2px">`;
+        p.ev.forEach(v => desc += `<span class="enum-val">${escHtml(String(v))}</span>`);
+        desc += `</div>`;
+      }
+
+      html += `<tr>
+        <td class="prop-name">${escHtml(p.n)}</td>
+        <td>${typeStr}</td>
+        <td class="prop-req">${p.r ? "Yes" : "No"}</td>
+        <td style="font-size:12px">${desc}</td>
+      </tr>`;
+    });
+    html += `</table></div>`;
+  }
+
+  dc.innerHTML = html;
+}
+
+// ── Search ──────────────────────────────────────────────────
+document.getElementById("search").addEventListener("input", (e) => {
+  const q = e.target.value.toLowerCase().trim();
+  const allNodes = document.querySelectorAll(".tree-node");
+
+  if (!q) {
+    allNodes.forEach(n => n.classList.remove("hidden"));
+    return;
+  }
+
+  allNodes.forEach(node => {
+    const name = node.dataset.name || "";
+    const entity = node.dataset.entity || "";
+    const matches = name.includes(q) || entity.toLowerCase().includes(q);
+    node.classList.toggle("hidden", !matches);
+
+    if (matches) {
+      let parent = node.parentElement;
+      while (parent) {
+        if (parent.classList.contains("tree-node")) parent.classList.remove("hidden");
+        if (parent.classList.contains("tree-item-children") || parent.classList.contains("tree-children")) {
+          parent.classList.add("open");
+          const prev = parent.previousElementSibling;
+          if (prev) {
+            const arrow = prev.querySelector(".arrow");
+            if (arrow) arrow.classList.add("open");
+          }
+        }
+        parent = parent.parentElement;
+      }
+    }
+  });
+});
+
+// ── Init ────────────────────────────────────────────────────
+loadAllSchemas().then(() => {
+  buildSidebar();
+}).catch(err => {
+  document.getElementById("loading").textContent = "Error loading schemas: " + err.message;
+  console.error(err);
+});
+</script>
+</body>
+</html>

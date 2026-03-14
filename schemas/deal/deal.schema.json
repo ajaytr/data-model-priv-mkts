@@ -39,7 +39,8 @@
         },
         "date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "completed": {
           "type": "boolean",
@@ -89,15 +90,18 @@
             },
             "sourced_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "expected_close_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "actual_close_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "participants": {
               "type": "array",

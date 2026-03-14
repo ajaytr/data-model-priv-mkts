@@ -2,8 +2,14 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dates.schema.json",
   "title": "Date types",
-  "description": "Quarter, reporting period, and date range types",
+  "description": "Quarter, reporting period, date range, and UTC date-time types",
   "$defs": {
+    "UtcDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$",
+      "description": "ISO 8601 date-time in UTC. Must end with 'Z'. Example: '2024-06-15T14:30:00Z'"
+    },
     "Quarter": {
       "type": "object",
       "description": "A fiscal quarter",
@@ -27,11 +33,13 @@
       "properties": {
         "start_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "end_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "quarter": {
           "$ref": "#/$defs/Quarter"
@@ -45,11 +53,13 @@
       "properties": {
         "start_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "end_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         }
       },
       "required": ["start_date", "end_date"]

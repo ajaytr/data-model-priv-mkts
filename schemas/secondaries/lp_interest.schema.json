@@ -44,7 +44,8 @@
             },
             "nav_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "distributions_received": {
               "$ref": "../core/money.schema.json#/$defs/Money"

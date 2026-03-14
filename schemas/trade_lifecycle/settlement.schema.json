@@ -20,7 +20,8 @@
             },
             "settlement_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "payer_id": {
               "type": "string",
@@ -46,8 +47,8 @@
               "enum": ["PENDING", "INSTRUCTED", "CONFIRMED", "SETTLED", "FAILED", "CANCELLED"]
             },
             "settled_at": {
-              "type": "string",
-              "format": "date-time"
+              "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/UtcDateTime" }],
+              "description": "UTC timestamp when settlement was completed. Example: '2024-06-15T14:30:00Z'"
             }
           },
           "required": ["trade_id", "payment_amount", "settlement_date", "payer_id", "payee_id", "status"]

@@ -46,7 +46,7 @@
         "exercise_date": {
           "type": "string",
           "format": "date",
-          "description": "Date by which the option must be exercised"
+          "description": "Date by which the option must be exercised. ISO 8601 date, e.g. '2024-06-15'"
         },
         "terms": {
           "type": "string",
@@ -87,12 +87,12 @@
         "start_date": {
           "type": "string",
           "format": "date",
-          "description": "Lease commencement date"
+          "description": "Lease commencement date. ISO 8601 date, e.g. '2024-06-15'"
         },
         "end_date": {
           "type": "string",
           "format": "date",
-          "description": "Lease expiration date"
+          "description": "Lease expiration date. ISO 8601 date, e.g. '2024-06-15'"
         },
         "base_rent_monthly": {
           "$ref": "../core/money.schema.json#/$defs/Money",
@@ -137,7 +137,7 @@
         "as_of_date": {
           "type": "string",
           "format": "date",
-          "description": "Date of the rent roll snapshot"
+          "description": "Date of the rent roll snapshot. ISO 8601 date, e.g. '2024-06-15'"
         },
         "leases": {
           "type": "array",

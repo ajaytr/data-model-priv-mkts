@@ -24,12 +24,12 @@
         "call_date": {
           "type": "string",
           "format": "date",
-          "description": "Date the capital call was issued"
+          "description": "Date the capital call was issued. ISO 8601 date, e.g. '2024-06-15'"
         },
         "due_date": {
           "type": "string",
           "format": "date",
-          "description": "Date payment is due"
+          "description": "Date payment is due. ISO 8601 date, e.g. '2024-06-15'"
         },
         "total_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
@@ -98,7 +98,7 @@
         "distribution_date": {
           "type": "string",
           "format": "date",
-          "description": "Date of distribution"
+          "description": "Date of distribution. ISO 8601 date, e.g. '2024-06-15'"
         },
         "total_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",

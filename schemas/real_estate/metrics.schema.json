@@ -63,7 +63,7 @@
         "appraisal_date": {
           "type": "string",
           "format": "date",
-          "description": "Date of the appraisal"
+          "description": "Date of the appraisal. ISO 8601 date, e.g. '2024-06-15'"
         },
         "appraised_value": {
           "$ref": "../core/money.schema.json#/$defs/Money",

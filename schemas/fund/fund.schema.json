@@ -64,7 +64,7 @@
         "inception_date": {
           "type": "string",
           "format": "date",
-          "description": "Date the fund was established"
+          "description": "Date the fund was established. ISO 8601 date, e.g. '2024-06-15'"
         },
         "external_ids": {
           "type": "array",

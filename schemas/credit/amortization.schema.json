@@ -10,7 +10,8 @@
       "properties": {
         "payment_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "principal_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money"

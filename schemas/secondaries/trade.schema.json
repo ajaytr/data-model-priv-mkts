@@ -18,7 +18,8 @@
         },
         "bid_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "bid_price_pct_nav": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
@@ -56,7 +57,8 @@
         },
         "offer_date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "asking_price_pct_nav": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
@@ -119,11 +121,13 @@
             },
             "trade_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "expected_close_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "bids": {
               "type": "array",

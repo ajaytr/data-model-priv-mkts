@@ -12,7 +12,8 @@
         },
         "date": {
           "type": "string",
-          "format": "date"
+          "format": "date",
+          "description": "ISO 8601 date, e.g. '2024-06-15'"
         },
         "completed": {
           "type": "boolean",
@@ -52,7 +53,8 @@
             },
             "gp_consent_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "transfer_agent": {
               "type": "string",
@@ -77,12 +79,13 @@
             },
             "closing_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "effective_date": {
               "type": "string",
               "format": "date",
-              "description": "Date the transfer becomes effective on the fund's books"
+              "description": "Date the transfer becomes effective on the fund's books. ISO 8601 date, e.g. '2024-06-15'"
             }
           },
           "required": ["trade_id", "stage"]

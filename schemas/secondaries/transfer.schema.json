@@ -50,11 +50,13 @@
             },
             "effective_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "settlement_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "transfer_fee": {
               "$ref": "../core/money.schema.json#/$defs/Money",

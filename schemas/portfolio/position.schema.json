@@ -42,7 +42,8 @@
             },
             "nav_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "dpi": {
               "type": "number",
@@ -92,7 +93,8 @@
             },
             "maturity_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "price": {
               "type": "number",
@@ -132,7 +134,8 @@
             },
             "valuation_date": {
               "type": "string",
-              "format": "date"
+              "format": "date",
+              "description": "ISO 8601 date, e.g. '2024-06-15'"
             },
             "noi_annual": {
               "$ref": "../core/money.schema.json#/$defs/Money"
