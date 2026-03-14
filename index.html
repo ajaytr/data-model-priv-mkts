@@ -290,7 +290,7 @@ const SCHEMA_FILES = {
   fund: ["enums.schema.json","fund.schema.json","commitment.schema.json","capital_activity.schema.json","nav.schema.json","waterfall.schema.json","portfolio_company.schema.json"],
   credit: ["enums.schema.json","facility.schema.json","interest.schema.json","covenants.schema.json","amortization.schema.json","borrower.schema.json"],
   real_estate: ["enums.schema.json","property.schema.json","vehicle.schema.json","lease.schema.json","metrics.schema.json"],
-  deal: ["enums.schema.json","deal.schema.json","deal_asset.schema.json"],
+  deal: ["enums.schema.json","deal.schema.json","deal_asset.schema.json","issuer.schema.json"],
   secondaries: ["enums.schema.json","lp_interest.schema.json","trade.schema.json","transaction.schema.json","transfer.schema.json"],
   portfolio: ["position.schema.json","portfolio.schema.json","cash_flow.schema.json","performance.schema.json"],
   trade_lifecycle: ["trade.schema.json","settlement.schema.json","documentation.schema.json"],
@@ -310,7 +310,7 @@ const UUID_REF_MAP = {
   payer_id:"Party", payee_id:"Party", from_investor_id:"Party", to_investor_id:"Party",
   transfer_agent:"Party", legal_counsel_buyer:"Party", legal_counsel_seller:"Party",
   owner_id:"Party", sponsor_id:"Party",
-  fund_id:"Fund", borrower_id:"Borrower",
+  fund_id:"Fund", borrower_id:"Borrower", issuer_id:"Issuer",
   facility_id:"Facility", tranche_id:"Tranche",
   property_id:"Property", vehicle_id:"REVehicle",
   commitment_id:"Commitment", old_commitment_id:"Commitment", new_commitment_id:"Commitment",
@@ -519,6 +519,7 @@ function parseAllSchemas() {
 // ── Tree Definitions ────────────────────────────────────────
 const DEAL_TREE = {
   name:"Deal", entity:"Deal", children:[
+    {name:"Issuer", entity:"Issuer", children:[]},
     {name:"DealParticipant", entity:"DealParticipant", arr:true, children:[
       {name:"Party", entity:"Party", children:[
         {name:"Address", entity:"Address", children:[]},
@@ -667,6 +668,7 @@ function buildTypesTree() {
         { name: "DealRole", entity: "DealRole", children: [] },
         { name: "AssetClass", entity: "AssetClass", children: [] },
         { name: "DealAssetType", entity: "DealAssetType", children: [] },
+        { name: "IssuerType", entity: "IssuerType", children: [] },
       ]},
       { name: "Enums — Secondaries", entity: null, children: [
         { name: "TradeDirection", entity: "TradeDirection", children: [] },

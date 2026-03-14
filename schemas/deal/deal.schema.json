@@ -102,25 +102,10 @@
               ],
               "description": "Total enterprise value or aggregate transaction size across all components. This is the headline number for the deal, not any single participant's commitment. Example: {\"amount\": \"750000000\", \"currency\": \"USD\"}"
             },
-            "target_company": {
+            "issuer_id": {
               "type": "string",
-              "description": "Legal or commonly known name of the target company, asset, or portfolio being acquired. For real estate deals, this may be the property or portfolio name. Example: 'Acme Corporation'"
-            },
-            "sector": {
-              "type": "string",
-              "description": "Industry sector or sub-sector of the target. Use consistent taxonomy across deals for portfolio analytics (e.g., GICS, internal classification). Example: 'Industrials', 'Healthcare — Life Sciences', 'Technology — Enterprise SaaS'"
-            },
-            "region": {
-              "allOf": [
-                { "$ref": "../core/enums.schema.json#/$defs/Region" }
-              ],
-              "description": "Primary geographic region of the target company or asset. For multi-region deals, use the region where the majority of revenue or assets are located. Example: 'NORTH_AMERICA'"
-            },
-            "country": {
-              "allOf": [
-                { "$ref": "../core/enums.schema.json#/$defs/Country" }
-              ],
-              "description": "ISO 3166-1 alpha-2 country code of the target's primary jurisdiction. Determines regulatory and tax treatment. Example: 'US'"
+              "format": "uuid",
+              "description": "UUID reference to the Issuer entity — the company, government, SPV, or fund on the other side of this deal. The Issuer carries sector, jurisdiction, and classification attributes. Every deal should have an issuer; omit only for deals in very early sourcing where the target has not yet been formally created as an Issuer record. Example: 'is112233-4455-6677-8899-aabbccdde001'"
             },
             "sourced_date": {
               "allOf": [

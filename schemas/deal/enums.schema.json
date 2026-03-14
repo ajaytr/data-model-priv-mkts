@@ -49,6 +49,19 @@
       ],
       "description": "Broad asset class classification for a deal asset. Assigned at the DealAsset level, not the Deal level, because a single deal can comprise components across multiple asset classes (e.g., an LBO with private credit facilities and an equity co-invest). PRIVATE_EQUITY: Direct equity investment in a private company (buyout, growth equity). VENTURE_CAPITAL: Equity investment in early- or growth-stage companies. PRIVATE_CREDIT: Privately negotiated debt — term loans, direct lending, mezzanine, unitranche. PUBLIC_CREDIT: Broadly syndicated or traded debt — leveraged loans, high-yield bonds, CLOs. REAL_ESTATE: Direct property investment or real estate debt. INFRASTRUCTURE: Investments in infrastructure assets (energy, transport, digital). NATURAL_RESOURCES: Investments in natural resource assets (mining, timber, agriculture, energy). SECONDARIES: Purchase of existing LP interests or fund portfolios on the secondary market. Example: 'PRIVATE_CREDIT'"
     },
+    "IssuerType": {
+      "type": "string",
+      "enum": [
+        "CORPORATE",
+        "SOVEREIGN",
+        "MUNICIPALITY",
+        "SPV",
+        "FUND",
+        "JOINT_VENTURE",
+        "OTHER"
+      ],
+      "description": "Classification of the entity on the other side of a deal — the issuer, borrower, or target. CORPORATE: A private or public operating company (e.g., LBO target, direct lending borrower). SOVEREIGN: A national government or sovereign entity (e.g., sovereign debt, government-backed infrastructure). MUNICIPALITY: A sub-national government body — state, city, county, or public authority (e.g., municipal bonds, public infrastructure). SPV: A special purpose vehicle or special purpose entity created for a specific transaction or asset isolation (e.g., securitization vehicle, project finance SPV). FUND: An investment fund being acquired or invested in (e.g., secondary purchase of LP interests, fund-of-funds investment). JOINT_VENTURE: A jointly owned entity formed by two or more parties for a specific project or investment. OTHER: Any issuer type not covered above. Example: 'CORPORATE'"
+    },
     "DealAssetType": {
       "type": "string",
       "enum": [

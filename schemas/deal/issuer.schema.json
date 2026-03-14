@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "issuer.schema.json",
+  "title": "Issuer",
+  "description": "The entity on the other side of a deal — the company, government, SPV, or fund that is issuing securities, borrowing, or being acquired. Distinct from Party, which represents participants in the ecosystem (GPs, LPs, lenders). An Issuer may optionally link to a Party record if the issuer is also a counterparty in other contexts.",
+  "$defs": {
+    "Issuer": {
+      "allOf": [
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
+        {
+          "type": "object",
+          "description": "The counterparty or target in a deal. An Issuer represents what you are investing in or lending to, not who you are transacting with as a service provider. A corporate issuer might be an LBO target; a sovereign issuer might be a government issuing debt; an SPV might be a securitization vehicle. The Issuer carries sector, jurisdiction, and classification attributes that describe the underlying risk, not the deal structure. Example: {\"name\": \"Acme Corporation\", \"issuer_type\": \"CORPORATE\", \"sector\": \"Industrials\", \"industry\": \"Industrial Automation\", \"domicile_country\": \"US\", \"domicile_region\": \"NORTH_AMERICA\"}",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Full legal name of the issuer as it appears on legal documents, regulatory filings, or offering materials. For SPVs, use the SPV's registered name. For sovereigns, use the country name. Example: 'Acme Corporation', 'Republic of Brazil', 'Project Falcon SPV LLC'"
+            },
+            "short_name": {
+              "type": "string",
+              "description": "Abbreviated or commonly known name used in deal discussions, screening, and reporting. Example: 'Acme', 'Brazil', 'Falcon SPV'"
+            },
+            "issuer_type": {
+              "allOf": [
+                { "$ref": "enums.schema.json#/$defs/IssuerType" }
+              ],
+              "description": "Classification of the issuer entity. Determines what additional context is relevant — CORPORATE issuers have sector/industry, SOVEREIGN issuers have credit ratings by country, SPVs have a sponsoring entity, etc. Example: 'CORPORATE'"
+            },
+            "description": {
+              "type": "string",
+              "description": "Narrative description of the issuer — what they do, their market position, key characteristics relevant to the investment thesis. Should provide enough context for someone unfamiliar with the issuer to understand the opportunity. Example: 'Leading North American industrial automation company with $200M EBITDA, 40% recurring revenue, serving aerospace and automotive OEMs'"
+            },
+            "sector": {
+              "type": "string",
+              "description": "Primary industry sector of the issuer. Use a consistent taxonomy across your organization for portfolio analytics and concentration reporting (e.g., GICS sectors, internal classification). Omit for sovereigns and SPVs where sector is not meaningful. Examples: 'Industrials', 'Healthcare', 'Technology', 'Financial Services', 'Energy'"
+            },
+            "industry": {
+              "type": "string",
+              "description": "Sub-sector or specific industry within the broader sector. Provides more granular classification for peer comparison and industry-level risk analysis. Examples: 'Industrial Automation', 'Enterprise SaaS', 'Specialty Pharma', 'Midstream Oil & Gas'"
+            },
+            "domicile_country": {
+              "allOf": [
+                { "$ref": "../core/enums.schema.json#/$defs/Country" }
+              ],
+              "description": "ISO 3166-1 alpha-2 country code of the issuer's legal domicile or primary jurisdiction. Determines regulatory regime, tax treatment, and legal framework applicable to the investment. For SPVs, use the SPV's jurisdiction of incorporation (often 'KY' for Cayman, 'LU' for Luxembourg). Example: 'US'"
+            },
+            "domicile_region": {
+              "allOf": [
+                { "$ref": "../core/enums.schema.json#/$defs/Region" }
+              ],
+              "description": "Geographic region of the issuer's primary operations or domicile. For multi-region issuers, use the region where the majority of revenue or assets are concentrated. Used for portfolio geographic diversification analysis. Example: 'NORTH_AMERICA'"
+            },
+            "party_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Optional UUID reference to a Party record, if the issuer also exists as a counterparty in the system (e.g., a borrower that is both an Issuer on deals and a Party on credit facilities). Allows linking issuer-level data to party-level data (contacts, addresses, external IDs). Omit if no corresponding Party record exists. Example: 'p4444444-5555-6666-7777-888899990000'"
+            },
+            "external_ids": {
+              "type": "array",
+              "items": { "$ref": "../core/identifiers.schema.json#/$defs/ExternalId" },
+              "description": "References to this issuer in external systems — LEI, DUNS, Bloomberg, PitchBook, rating agency identifiers, etc. Essential for matching across data providers and regulatory reporting. Example: [{\"system\": \"LEI\", \"value\": \"5493001KJTIIGC8Y1R12\"}, {\"system\": \"DUNS\", \"value\": \"06-118-7443\"}]"
+            }
+          },
+          "required": [
+            "name",
+            "issuer_type"
+          ]
+        }
+      ]
+    }
+  }
+}
