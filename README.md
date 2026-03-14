@@ -4,6 +4,8 @@ A comprehensive, language-agnostic data model for private markets — covering P
 
 All models are defined as **JSON Schema 2020-12** files. No code generation lock-in — schemas serve as the single source of truth and can drive code generation for any language.
 
+**[Interactive Schema Explorer](https://ajaytr.github.io/data-model-priv-mkts/)** — browse the full data model with drill-down navigation across Deal, Fund, and base Types.
+
 ## Domains
 
 | Domain | Schemas | Description |
@@ -85,6 +87,17 @@ Or load schemas programmatically in Python, TypeScript, Go, etc. to generate typ
 | Dates as ISO 8601 | `"2024-06-15"`, `"2024-06-15T14:30:00Z"` |
 | Entity references as UUIDs | `"fund_id": "f1a2b3c4-d5e6-7890-abcd-ef1234560001"` |
 | Money amounts as strings | `"amount": "2000000000"` |
+
+## Acknowledgments & References
+
+This data model was not derived from a single open-source project, but its design draws on established industry standards and conventions:
+
+- **[ILPA Reporting Standards](https://ilpa.org/reporting-template/)** — Institutional Limited Partners Association templates for LP reporting, capital call/distribution notices, and fund performance metrics. Influenced the fund domain's capital activity, NAV, and waterfall structures.
+- **[ISDA CDM (Common Domain Model)](https://www.isda.org/a/z3igE/Digital-Regulatory-Reporting-ISDA-CDM-and-Beyond-December-2019.pdf)** — ISDA's standardized model for derivatives and financial products. Informed the trade lifecycle state machine, settlement patterns, and the approach to representing financial instruments as composable schemas.
+- **[LSTA (Loan Syndications and Trading Association)](https://www.lsta.org/)** — Market conventions for par and distressed loan trading. Shaped the credit domain's facility/tranche structure, day-count conventions, and settlement workflows.
+- **[FIX Protocol](https://www.fixtrading.org/)** — Financial Information eXchange standard for trade messaging. Influenced trade state transitions, settlement instruction fields, and party role classifications.
+- **[ISO Standards](https://www.iso.org/)** — ISO 4217 (currency codes), ISO 3166-1 (country codes), ISO 8601 (date/time formats), and UUID (RFC 4122) are used throughout for interoperability.
+- **[JSON Schema 2020-12 Specification](https://json-schema.org/specification)** — The schema language itself. All files conform to the 2020-12 draft, using `$ref`, `allOf` composition, `oneOf` with discriminator, and `$defs` for type definitions.
 
 ## License
 
