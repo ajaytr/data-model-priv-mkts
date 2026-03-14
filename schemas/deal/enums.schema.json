@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "enums.schema.json",
   "title": "Deal enumerations",
-  "description": "Enumerations for deal management",
+  "description": "Enumerations for deal management, participant roles, and asset classification",
   "$defs": {
     "DealStage": {
       "type": "string",
@@ -19,7 +19,8 @@
         "EXIT",
         "CLOSED",
         "PASSED"
-      ]
+      ],
+      "description": "Stage in the deal lifecycle, representing the current phase of work. SOURCING: Deal has been identified but not yet evaluated. SCREENING: Initial assessment of fit with fund strategy and return profile. DUE_DILIGENCE: Detailed analysis of financials, legal, operations, and market. IC_REVIEW: Investment Committee review and approval process (IC Memo stage). TERM_SHEET: Negotiating and executing indicative terms with counterparty. DOCUMENTATION: Drafting and negotiating definitive legal agreements. CLOSING: Executing final documents, funding, and conditions precedent. ACTIVE: Deal has closed and the investment is live. MONITORING: Ongoing portfolio monitoring phase (post-close). EXIT: Actively pursuing exit (sale, IPO, refinancing, or wind-down). CLOSED: Deal has been fully exited and realized. PASSED: Deal was evaluated but declined — no investment made. Example: 'DUE_DILIGENCE'"
     },
     "DealRole": {
       "type": "string",
@@ -31,7 +32,8 @@
         "ADVISOR",
         "ARRANGER",
         "AGENT"
-      ]
+      ],
+      "description": "Role a participant plays in a deal. LEAD: Primary sponsor or investor driving the deal — controls terms, governance, and board seats. CO_LEAD: Co-leads alongside the lead, typically with significant allocation and shared governance rights. CO_INVESTOR: Invests alongside lead/co-lead, usually with smaller allocation and limited governance. SYNDICATE_MEMBER: Participates in a syndicated credit facility or club deal. ADVISOR: Provides advisory services (financial, strategic, or operational) but does not invest. ARRANGER: Structures and arranges the financing (common in credit deals — the bank that syndicates the loan). AGENT: Administrative or collateral agent for a credit facility, responsible for servicing and lender communication. Example: 'LEAD'"
     },
     "AssetClass": {
       "type": "string",
@@ -39,11 +41,13 @@
         "PRIVATE_EQUITY",
         "VENTURE_CAPITAL",
         "PRIVATE_CREDIT",
+        "PUBLIC_CREDIT",
         "REAL_ESTATE",
         "INFRASTRUCTURE",
         "NATURAL_RESOURCES",
         "SECONDARIES"
-      ]
+      ],
+      "description": "Broad asset class classification for a deal asset. Assigned at the DealAsset level, not the Deal level, because a single deal can comprise components across multiple asset classes (e.g., an LBO with private credit facilities and an equity co-invest). PRIVATE_EQUITY: Direct equity investment in a private company (buyout, growth equity). VENTURE_CAPITAL: Equity investment in early- or growth-stage companies. PRIVATE_CREDIT: Privately negotiated debt — term loans, direct lending, mezzanine, unitranche. PUBLIC_CREDIT: Broadly syndicated or traded debt — leveraged loans, high-yield bonds, CLOs. REAL_ESTATE: Direct property investment or real estate debt. INFRASTRUCTURE: Investments in infrastructure assets (energy, transport, digital). NATURAL_RESOURCES: Investments in natural resource assets (mining, timber, agriculture, energy). SECONDARIES: Purchase of existing LP interests or fund portfolios on the secondary market. Example: 'PRIVATE_CREDIT'"
     },
     "DealAssetType": {
       "type": "string",
@@ -53,7 +57,7 @@
         "PROPERTY",
         "LP_INTEREST"
       ],
-      "description": "Discriminator for DealAsset to indicate the referenced domain entity"
+      "description": "Discriminator indicating which domain entity a DealAsset references. Determines which UUID reference field is populated. FACILITY: References a credit/Facility — populate facility_id. INVESTMENT: References a fund/Investment (portfolio company equity stake) — populate investment_id. PROPERTY: References a real_estate/Property — populate property_id. LP_INTEREST: References a secondaries/LPInterest — populate lp_interest_id. Example: 'FACILITY'"
     }
   }
 }

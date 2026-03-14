@@ -4,7 +4,6 @@
   "updated_at": "2024-06-15T14:00:00Z",
   "name": "Acme Corp LBO",
   "description": "Leveraged buyout of Acme Corp, a leading industrial automation company",
-  "asset_class": "PRIVATE_EQUITY",
   "stage": "ACTIVE",
   "deal_size": { "amount": "750000000", "currency": "USD" },
   "target_company": "Acme Corporation",
@@ -37,18 +36,21 @@
   "assets": [
     {
       "asset_type": "FACILITY",
+      "asset_class": "PRIVATE_CREDIT",
       "label": "Senior Term Loan",
       "facility_id": "fa112233-4455-6677-8899-aabbccdde001",
       "notional_amount": { "amount": "500000000", "currency": "USD" }
     },
     {
       "asset_type": "FACILITY",
+      "asset_class": "PRIVATE_CREDIT",
       "label": "Mezzanine Tranche",
       "facility_id": "fa112233-4455-6677-8899-aabbccdde002",
       "notional_amount": { "amount": "100000000", "currency": "USD" }
     },
     {
       "asset_type": "INVESTMENT",
+      "asset_class": "PRIVATE_EQUITY",
       "label": "Equity Co-Invest",
       "investment_id": "in112233-4455-6677-8899-aabbccdde001",
       "notional_amount": { "amount": "150000000", "currency": "USD" }

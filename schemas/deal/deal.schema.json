@@ -2,30 +2,39 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "deal.schema.json",
   "title": "Deal",
-  "description": "Central deal entity with participants and milestones",
+  "description": "Central deal entity that ties together participants, assets, milestones, and documents across asset classes. A single deal can span multiple asset classes — e.g., an LBO with both credit facilities and equity co-investments.",
   "$defs": {
     "DealParticipant": {
       "type": "object",
-      "description": "A party participating in a deal",
+      "description": "A party participating in a deal, with their role, investment vehicle, and economic terms. A single party may appear multiple times if they participate through different funds or in different capacities. Example: {\"party_id\": \"...\", \"role\": \"LEAD\", \"fund_id\": \"...\", \"commitment_amount\": {\"amount\": \"50000000\", \"currency\": \"USD\"}, \"ownership_percentage\": 0.60}",
       "properties": {
         "party_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to Party"
+          "description": "UUID of the Party entity representing this participant. Must reference an existing Party record. Example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'"
         },
         "role": {
-          "$ref": "enums.schema.json#/$defs/DealRole"
+          "allOf": [
+            { "$ref": "enums.schema.json#/$defs/DealRole" }
+          ],
+          "description": "The participant's role in this deal (LEAD, CO_INVESTOR, ADVISOR, etc.). Determines governance rights and reporting obligations. Example: 'LEAD'"
         },
         "fund_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Fund through which this party is investing (optional)"
+          "description": "UUID of the Fund entity through which this party is investing, if applicable. Omit for advisors, arrangers, and other non-investing participants. Links the deal participation to a specific fund vehicle for allocation and reporting purposes. Example: 'f1a2b3c4-d5e6-7890-abcd-ef1234560001'"
         },
         "commitment_amount": {
-          "$ref": "../core/money.schema.json#/$defs/Money"
+          "allOf": [
+            { "$ref": "../core/money.schema.json#/$defs/Money" }
+          ],
+          "description": "Total capital this participant has committed to the deal. May differ from funded amount if capital is called over time. Omit for non-investing participants (advisors, agents). Example: {\"amount\": \"50000000\", \"currency\": \"USD\"}"
         },
         "ownership_percentage": {
-          "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+          "allOf": [
+            { "$ref": "../core/percentage.schema.json#/$defs/Percentage" }
+          ],
+          "description": "This participant's share of the deal's total equity or economics, as a decimal (0.60 = 60%). Should sum to approximately 1.0 across all equity participants. Omit for non-investing participants. Example: 0.60"
         }
       },
       "required": [
@@ -35,20 +44,28 @@
     },
     "DealMilestone": {
       "type": "object",
-      "description": "A stage in the deal lifecycle",
+      "description": "A milestone marking a stage in the deal lifecycle. Milestones are additive — as the deal progresses, new milestones are appended. The most recent completed milestone indicates the current deal state. Example: {\"stage\": \"IC_REVIEW\", \"date\": \"2024-04-01\", \"completed\": true, \"notes\": \"IC approved unanimously\"}",
       "properties": {
         "stage": {
-          "$ref": "enums.schema.json#/$defs/DealStage"
+          "allOf": [
+            { "$ref": "enums.schema.json#/$defs/DealStage" }
+          ],
+          "description": "The deal stage this milestone represents. Example: 'IC_REVIEW'"
         },
         "date": {
-          "$ref": "../core/dates.schema.json#/$defs/Date"
+          "allOf": [
+            { "$ref": "../core/dates.schema.json#/$defs/Date" }
+          ],
+          "description": "Date this milestone was reached or is expected to be reached. For future milestones, this is the target date. Example: '2024-04-01'"
         },
         "completed": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Whether this milestone has been completed. false = planned/in-progress, true = done. Future milestones should be false. Example: true"
         },
         "notes": {
-          "type": "string"
+          "type": "string",
+          "description": "Free-text notes on this milestone — IC decision rationale, conditions, blockers, or key outcomes. Example: 'IC approved unanimously, subject to final DD on environmental liabilities'"
         }
       },
       "required": [
@@ -63,63 +80,86 @@
         },
         {
           "type": "object",
+          "description": "A deal is the central organizing entity that connects participants, assets, and milestones across one or more asset classes. A deal does NOT have a single asset class — each DealAsset carries its own asset_class, because a single deal can comprise credit, equity, real estate, and other components simultaneously.",
           "properties": {
             "name": {
               "type": "string",
-              "description": "Deal name (e.g., 'Acme Corp LBO')"
+              "description": "Short, recognizable deal name used in internal communications and reporting. Typically includes the target company and deal type. Example: 'Acme Corp LBO'"
             },
             "description": {
-              "type": "string"
-            },
-            "asset_class": {
-              "$ref": "enums.schema.json#/$defs/AssetClass"
+              "type": "string",
+              "description": "Longer narrative description of the deal — the investment thesis, transaction structure, or strategic rationale. Useful for deal screening and IC presentations. Example: 'Leveraged buyout of Acme Corp, a leading industrial automation company with $200M EBITDA'"
             },
             "stage": {
-              "$ref": "enums.schema.json#/$defs/DealStage"
+              "allOf": [
+                { "$ref": "enums.schema.json#/$defs/DealStage" }
+              ],
+              "description": "Current stage of the deal in its lifecycle. Should correspond to the most recent completed milestone. Updated as the deal progresses. Example: 'ACTIVE'"
             },
             "deal_size": {
-              "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Total deal size"
+              "allOf": [
+                { "$ref": "../core/money.schema.json#/$defs/Money" }
+              ],
+              "description": "Total enterprise value or aggregate transaction size across all components. This is the headline number for the deal, not any single participant's commitment. Example: {\"amount\": \"750000000\", \"currency\": \"USD\"}"
             },
             "target_company": {
               "type": "string",
-              "description": "Name of the target company or asset"
+              "description": "Legal or commonly known name of the target company, asset, or portfolio being acquired. For real estate deals, this may be the property or portfolio name. Example: 'Acme Corporation'"
             },
             "sector": {
-              "type": "string"
+              "type": "string",
+              "description": "Industry sector or sub-sector of the target. Use consistent taxonomy across deals for portfolio analytics (e.g., GICS, internal classification). Example: 'Industrials', 'Healthcare — Life Sciences', 'Technology — Enterprise SaaS'"
             },
             "region": {
-              "$ref": "../core/enums.schema.json#/$defs/Region"
+              "allOf": [
+                { "$ref": "../core/enums.schema.json#/$defs/Region" }
+              ],
+              "description": "Primary geographic region of the target company or asset. For multi-region deals, use the region where the majority of revenue or assets are located. Example: 'NORTH_AMERICA'"
             },
             "country": {
-              "$ref": "../core/enums.schema.json#/$defs/Country"
+              "allOf": [
+                { "$ref": "../core/enums.schema.json#/$defs/Country" }
+              ],
+              "description": "ISO 3166-1 alpha-2 country code of the target's primary jurisdiction. Determines regulatory and tax treatment. Example: 'US'"
             },
             "sourced_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "allOf": [
+                { "$ref": "../core/dates.schema.json#/$defs/Date" }
+              ],
+              "description": "Date the deal was first sourced or entered the pipeline. Used for tracking deal velocity (days from sourcing to close). Example: '2024-01-10'"
             },
             "expected_close_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "allOf": [
+                { "$ref": "../core/dates.schema.json#/$defs/Date" }
+              ],
+              "description": "Target date for deal closing. May be updated as negotiations progress. Null or absent for passed deals. Example: '2024-06-01'"
             },
             "actual_close_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "allOf": [
+                { "$ref": "../core/dates.schema.json#/$defs/Date" }
+              ],
+              "description": "Actual date the deal closed and funded. Only set once the deal has reached CLOSING/ACTIVE stage. Null for deals still in progress or passed. Example: '2024-06-15'"
             },
             "participants": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/DealParticipant"
-              }
+              },
+              "description": "All parties involved in the deal — investors, advisors, arrangers, agents. Each entry specifies the party's role, fund vehicle (if investing), and economic terms."
             },
             "assets": {
               "type": "array",
               "items": {
                 "$ref": "deal_asset.schema.json#/$defs/DealAsset"
-              }
+              },
+              "description": "The individual asset components that make up this deal. Each asset has its own asset_class and references a domain entity (Facility, Investment, Property, or LPInterest). A deal typically has one or more assets — e.g., an LBO might have a senior term loan, a mezz tranche, and an equity co-invest."
             },
             "milestones": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/DealMilestone"
-              }
+              },
+              "description": "Ordered list of deal lifecycle milestones. Append new milestones as the deal progresses. The most recent completed milestone should match the deal's stage field."
             },
             "documents": {
               "type": "array",
@@ -127,12 +167,11 @@
                 "type": "string",
                 "format": "uuid"
               },
-              "description": "References to Document entities"
+              "description": "UUID references to Document entities associated with this deal — IC memos, term sheets, credit agreements, purchase agreements, etc. Example: ['dc112233-4455-6677-8899-aabbccdde001']"
             }
           },
           "required": [
             "name",
-            "asset_class",
             "stage"
           ]
         }

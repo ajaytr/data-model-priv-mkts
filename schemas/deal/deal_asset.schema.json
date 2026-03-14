@@ -2,45 +2,56 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "deal_asset.schema.json",
   "title": "Deal Asset",
-  "description": "References to domain-specific assets within a deal",
+  "description": "An individual asset component within a deal. Each deal asset carries its own asset class and references a domain-specific entity. A single deal can have multiple assets across different asset classes.",
   "$defs": {
     "DealAsset": {
       "type": "object",
-      "description": "A reference to an underlying asset in a deal, discriminated by asset_type",
+      "description": "A reference to an underlying asset in a deal, with its asset class and a discriminated reference to the domain entity. Each asset in a deal can be a different asset class — e.g., one deal might combine PRIVATE_CREDIT facilities with a PRIVATE_EQUITY co-invest. Example: {\"asset_type\": \"FACILITY\", \"asset_class\": \"PRIVATE_CREDIT\", \"label\": \"Senior Term Loan\", \"facility_id\": \"...\", \"notional_amount\": {\"amount\": \"500000000\", \"currency\": \"USD\"}}",
       "properties": {
         "asset_type": {
-          "$ref": "enums.schema.json#/$defs/DealAssetType"
+          "allOf": [
+            { "$ref": "enums.schema.json#/$defs/DealAssetType" }
+          ],
+          "description": "Discriminator indicating which domain entity this asset references. Determines which UUID reference field should be populated: FACILITY → facility_id, INVESTMENT → investment_id, PROPERTY → property_id, LP_INTEREST → lp_interest_id. Example: 'FACILITY'"
+        },
+        "asset_class": {
+          "allOf": [
+            { "$ref": "enums.schema.json#/$defs/AssetClass" }
+          ],
+          "description": "Broad asset class classification for this specific component of the deal. Each deal asset is independently classified — a single deal may have assets spanning PRIVATE_CREDIT, PRIVATE_EQUITY, PUBLIC_CREDIT, and other classes. Example: 'PRIVATE_CREDIT'"
         },
         "label": {
           "type": "string",
-          "description": "Human-readable label (e.g., 'Senior Term Loan', 'Equity Co-Invest')"
+          "description": "Human-readable label identifying this asset within the deal. Should be unique within the deal's asset list and descriptive enough to distinguish components (e.g., 'Senior Term Loan A' vs 'Revolving Credit Facility'). Example: 'Senior Term Loan'"
         },
         "facility_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to credit/Facility (when asset_type = FACILITY)"
+          "description": "UUID reference to a credit/Facility entity. Populate only when asset_type = FACILITY. Example: 'fa112233-4455-6677-8899-aabbccdde001'"
         },
         "investment_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to fund/Investment (when asset_type = INVESTMENT)"
+          "description": "UUID reference to a fund/Investment (portfolio company equity stake). Populate only when asset_type = INVESTMENT. Example: 'in112233-4455-6677-8899-aabbccdde001'"
         },
         "property_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to real_estate/Property (when asset_type = PROPERTY)"
+          "description": "UUID reference to a real_estate/Property entity. Populate only when asset_type = PROPERTY. Example: 'pr112233-4455-6677-8899-aabbccdde001'"
         },
         "lp_interest_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to secondaries/LPInterest (when asset_type = LP_INTEREST)"
+          "description": "UUID reference to a secondaries/LPInterest entity. Populate only when asset_type = LP_INTEREST. Example: 'lp112233-4455-6677-8899-aabbccdde001'"
         },
         "notional_amount": {
-          "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Notional or face value of this asset within the deal"
+          "allOf": [
+            { "$ref": "../core/money.schema.json#/$defs/Money" }
+          ],
+          "description": "Notional, face, or par value of this asset component within the deal. For credit facilities, this is the commitment amount. For equity, this is the invested amount. For properties, this is the acquisition price. Example: {\"amount\": \"500000000\", \"currency\": \"USD\"}"
         }
       },
-      "required": ["asset_type", "label"]
+      "required": ["asset_type", "asset_class", "label"]
     }
   }
 }
