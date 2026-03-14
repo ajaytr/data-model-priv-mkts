@@ -35,14 +35,7 @@
           "type": "string"
         },
         "status": {
-          "type": "string",
-          "enum": [
-            "SUBMITTED",
-            "ACCEPTED",
-            "REJECTED",
-            "EXPIRED",
-            "WITHDRAWN"
-          ]
+          "$ref": "enums.schema.json#/$defs/BidStatus"
         }
       },
       "required": [
@@ -79,13 +72,7 @@
           "type": "boolean"
         },
         "status": {
-          "type": "string",
-          "enum": [
-            "ACTIVE",
-            "ACCEPTED",
-            "EXPIRED",
-            "WITHDRAWN"
-          ]
+          "$ref": "enums.schema.json#/$defs/OfferStatus"
         }
       },
       "required": [

@@ -33,6 +33,27 @@
         "SETTLED",
         "CANCELLED"
       ]
+    },
+    "BidStatus": {
+      "type": "string",
+      "enum": [
+        "SUBMITTED",
+        "ACCEPTED",
+        "REJECTED",
+        "EXPIRED",
+        "WITHDRAWN"
+      ],
+      "description": "Status of a bid in a secondary market trade. SUBMITTED: bid has been formally submitted and is awaiting review. ACCEPTED: bid has been accepted by the seller. REJECTED: bid has been declined by the seller. EXPIRED: bid validity period has elapsed without acceptance. WITHDRAWN: bid has been voluntarily retracted by the bidder."
+    },
+    "OfferStatus": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "ACCEPTED",
+        "EXPIRED",
+        "WITHDRAWN"
+      ],
+      "description": "Status of an offer in a secondary market trade. ACTIVE: offer is currently listed and open for bids. ACCEPTED: offer has been accepted by a buyer. EXPIRED: offer listing period has elapsed without acceptance. WITHDRAWN: offer has been voluntarily removed by the seller."
     }
   }
 }

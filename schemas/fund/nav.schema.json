@@ -111,8 +111,7 @@
           "description": "Unrealized gain or loss (fair_value - cost_basis)"
         },
         "valuation_method": {
-          "type": "string",
-          "enum": ["MARKET_COMPARABLE", "DCF", "RECENT_TRANSACTION", "THIRD_PARTY_APPRAISAL", "COST"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/ValuationMethod" }],
           "description": "Methodology used for valuation"
         }
       },

@@ -25,8 +25,7 @@
           "description": "Price per square foot"
         },
         "valuation_method": {
-          "type": "string",
-          "enum": ["APPRAISAL", "COMPARABLE_SALES", "DCF", "REPLACEMENT_COST"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/ValuationMethod" }],
           "description": "Methodology used for the valuation"
         },
         "appraiser": {

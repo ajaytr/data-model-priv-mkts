@@ -4,19 +4,6 @@
   "title": "Trade",
   "description": "Trade entity and state transitions for the trade lifecycle",
   "$defs": {
-    "TradeStatus": {
-      "type": "string",
-      "enum": [
-        "INDICATIVE",
-        "NEGOTIATING",
-        "AGREED",
-        "PENDING_DOCUMENTATION",
-        "PENDING_SETTLEMENT",
-        "SETTLED",
-        "CANCELLED",
-        "FAILED"
-      ]
-    },
     "Trade": {
       "allOf": [
         {
@@ -62,7 +49,7 @@
               "$ref": "../core/money.schema.json#/$defs/Money"
             },
             "status": {
-              "$ref": "#/$defs/TradeStatus"
+              "$ref": "enums.schema.json#/$defs/TradeStatus"
             },
             "transitions": {
               "type": "array",
@@ -93,10 +80,10 @@
       "type": "object",
       "properties": {
         "from_status": {
-          "$ref": "#/$defs/TradeStatus"
+          "$ref": "enums.schema.json#/$defs/TradeStatus"
         },
         "to_status": {
-          "$ref": "#/$defs/TradeStatus"
+          "$ref": "enums.schema.json#/$defs/TradeStatus"
         },
         "transition_date": {
           "allOf": [

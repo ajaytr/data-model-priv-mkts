@@ -34,14 +34,7 @@
               "description": "Reference to Party"
             },
             "payment_method": {
-              "type": "string",
-              "enum": [
-                "WIRE",
-                "ACH",
-                "CHECK",
-                "DTC",
-                "IN_KIND"
-              ]
+              "$ref": "enums.schema.json#/$defs/PaymentMethod"
             },
             "bank_name": {
               "type": "string"
@@ -59,15 +52,7 @@
               "type": "string"
             },
             "status": {
-              "type": "string",
-              "enum": [
-                "PENDING",
-                "INSTRUCTED",
-                "CONFIRMED",
-                "SETTLED",
-                "FAILED",
-                "CANCELLED"
-              ]
+              "$ref": "enums.schema.json#/$defs/SettlementStatus"
             },
             "settled_at": {
               "allOf": [

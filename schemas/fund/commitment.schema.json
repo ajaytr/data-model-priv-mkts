@@ -38,8 +38,7 @@
           "description": "Negotiated side letter terms, if any"
         },
         "status": {
-          "type": "string",
-          "enum": ["PENDING", "ACTIVE", "TRANSFERRED", "DEFAULTED"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/CommitmentStatus" }],
           "description": "Current status of the commitment"
         }
       },

@@ -56,6 +56,51 @@
         "MONITORING_FEE"
       ],
       "description": "Type of fee charged by the fund"
+    },
+    "CommitmentStatus": {
+      "type": "string",
+      "enum": ["PENDING", "ACTIVE", "TRANSFERRED", "DEFAULTED"],
+      "description": "Current lifecycle status of an LP commitment. PENDING: commitment has been agreed but capital has not yet been accepted or the closing has not occurred. ACTIVE: commitment is in force and subject to capital calls. TRANSFERRED: the LP has transferred its interest to another party via a secondary transaction. DEFAULTED: the LP has failed to meet a capital call obligation, triggering default provisions in the LPA."
+    },
+    "CapitalCallPurpose": {
+      "type": "string",
+      "enum": ["INVESTMENT", "FEES", "EXPENSES", "FOLLOW_ON", "BRIDGE"],
+      "description": "The intended use of capital being called from investors. INVESTMENT: capital drawn to fund a new portfolio investment. FEES: capital called to cover management fees or carried interest obligations. EXPENSES: capital called to pay fund-level operating expenses such as legal, audit, or administrative costs. FOLLOW_ON: capital drawn to make an additional investment in an existing portfolio company. BRIDGE: short-term capital call to bridge financing until a larger funding event closes."
+    },
+    "DistributionType": {
+      "type": "string",
+      "enum": ["RETURN_OF_CAPITAL", "REALIZED_GAIN", "DIVIDEND", "INTEREST", "RECALLABLE"],
+      "description": "Classification of a distribution from the fund to its investors. RETURN_OF_CAPITAL: return of the investor's original contributed capital, not representing profit. REALIZED_GAIN: distribution of profit from the sale or exit of a portfolio investment. DIVIDEND: pass-through of dividend income received from a portfolio company. INTEREST: pass-through of interest income earned on debt instruments or cash balances. RECALLABLE: a distribution that the GP retains the right to call back for future investments or expenses per the LPA terms."
+    },
+    "InstrumentType": {
+      "type": "string",
+      "enum": ["EQUITY", "PREFERRED_EQUITY", "CONVERTIBLE_NOTE", "WARRANT", "MEZZANINE"],
+      "description": "Type of financial instrument used in a portfolio investment. EQUITY: common equity ownership stake in the portfolio company. PREFERRED_EQUITY: equity with preferential rights over common stock, typically including liquidation preference and sometimes participation rights. CONVERTIBLE_NOTE: a debt instrument that converts into equity upon a qualifying event such as a future financing round. WARRANT: a derivative giving the holder the right to purchase equity at a specified price within a defined time period. MEZZANINE: subordinated debt that sits between senior debt and equity in the capital structure, often with equity participation features."
+    },
+    "InvestmentStatus": {
+      "type": "string",
+      "enum": ["ACTIVE", "PARTIALLY_REALIZED", "FULLY_REALIZED", "WRITTEN_OFF"],
+      "description": "Current status of a fund's investment in a portfolio company. ACTIVE: the investment is held and has not been exited; the position remains in the portfolio at fair value. PARTIALLY_REALIZED: a portion of the investment has been exited or distributed while the remaining position is still held. FULLY_REALIZED: the entire investment has been exited through sale, IPO, or other realization event. WRITTEN_OFF: the investment has been reduced to zero value due to impairment, bankruptcy, or total loss of the position."
+    },
+    "RealizationType": {
+      "type": "string",
+      "enum": ["IPO", "TRADE_SALE", "SECONDARY", "RECAPITALIZATION", "WRITE_OFF", "DIVIDEND_RECAP"],
+      "description": "The method by which an investment is realized or exited. IPO: exit via an initial public offering where the portfolio company lists on a public stock exchange. TRADE_SALE: sale of the portfolio company to a strategic or financial buyer. SECONDARY: sale of the fund's interest to another investor in a secondary market transaction. RECAPITALIZATION: restructuring of the company's capital structure, often involving new debt to fund a partial return of equity. WRITE_OFF: recognition that the investment value is zero due to impairment or company failure. DIVIDEND_RECAP: a recapitalization in which the portfolio company takes on debt specifically to pay a dividend to equity holders, providing a partial return without selling the company."
+    },
+    "ValuationMethod": {
+      "type": "string",
+      "enum": ["MARKET_COMPARABLE", "DCF", "RECENT_TRANSACTION", "THIRD_PARTY_APPRAISAL", "COST"],
+      "description": "Methodology used to determine the fair value of a portfolio investment. MARKET_COMPARABLE: valuation derived from revenue, earnings, or other multiples of comparable publicly traded companies or recent M&A transactions. DCF: discounted cash flow analysis projecting future free cash flows and discounting them to present value. RECENT_TRANSACTION: fair value based on the price established in a recent arm's-length transaction involving the company's securities. THIRD_PARTY_APPRAISAL: valuation performed by an independent external appraiser or valuation firm. COST: the investment is carried at its original acquisition cost, typically used for recent investments where insufficient time has passed to establish a different fair value."
+    },
+    "WaterfallThresholdType": {
+      "type": "string",
+      "enum": ["PREFERRED_RETURN", "CATCH_UP", "CARRIED_INTEREST", "RETURN_OF_CAPITAL"],
+      "description": "Type of threshold that governs a tier in the distribution waterfall. RETURN_OF_CAPITAL: the tier in which LPs receive back their contributed capital before any profit split occurs. PREFERRED_RETURN: the tier in which LPs receive a minimum compounded annual return (hurdle rate) on their contributed capital before the GP participates in profits. CATCH_UP: the tier in which the GP receives a disproportionate share of distributions to 'catch up' to its target carried interest percentage after the preferred return has been met. CARRIED_INTEREST: the tier in which remaining profits are split between the GP and LPs according to the agreed carry percentage (commonly 80/20)."
+    },
+    "WaterfallModel": {
+      "type": "string",
+      "enum": ["EUROPEAN", "AMERICAN", "HYBRID"],
+      "description": "The overarching waterfall distribution model for the fund. EUROPEAN: (whole-fund or aggregate) waterfall where carried interest is calculated on the entire fund's performance; the GP does not receive carry until all contributed capital and the preferred return have been returned to LPs across the full portfolio. AMERICAN: (deal-by-deal) waterfall where carried interest is calculated on each individual investment; the GP may receive carry on profitable exits even if the overall fund has not yet returned all capital. HYBRID: a blended model combining elements of both European and American waterfalls, often applying deal-by-deal carry with a fund-level true-up or clawback mechanism to protect LP interests."
     }
   }
 }

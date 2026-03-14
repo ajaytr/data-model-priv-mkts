@@ -82,9 +82,8 @@
               "items": { "$ref": "#/$defs/Tranche" }
             },
             "status": {
-              "type": "string",
-              "enum": ["ACTIVE", "DRAWN", "FULLY_REPAID", "DEFAULTED", "RESTRUCTURED"],
-              "description": "Current status of the facility"
+              "allOf": [{ "$ref": "enums.schema.json#/$defs/FacilityStatus" }],
+              "description": "Current status of the facility. Example: 'ACTIVE'"
             },
             "external_ids": {
               "type": "array",

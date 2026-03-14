@@ -4,22 +4,6 @@
   "title": "Covenants",
   "description": "Financial and operational covenants attached to credit facilities",
   "$defs": {
-    "CovenantType": {
-      "type": "string",
-      "enum": [
-        "LEVERAGE_RATIO",
-        "INTEREST_COVERAGE",
-        "FIXED_CHARGE_COVERAGE",
-        "DEBT_TO_EBITDA",
-        "MINIMUM_LIQUIDITY",
-        "MINIMUM_REVENUE",
-        "CAPEX_LIMIT",
-        "INCURRENCE",
-        "SPRINGING",
-        "OTHER"
-      ],
-      "description": "Category of financial or operational covenant"
-    },
     "Covenant": {
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" },
@@ -33,7 +17,7 @@
               "description": "Reference to the parent facility"
             },
             "covenant_type": {
-              "$ref": "#/$defs/CovenantType"
+              "$ref": "enums.schema.json#/$defs/CovenantType"
             },
             "description": {
               "type": "string",
@@ -44,14 +28,12 @@
               "description": "Numeric threshold for compliance testing"
             },
             "threshold_operator": {
-              "type": "string",
-              "enum": ["LTE", "GTE", "LT", "GT", "EQ"],
-              "description": "Comparison operator applied to actual vs threshold"
+              "allOf": [{ "$ref": "enums.schema.json#/$defs/ThresholdOperator" }],
+              "description": "Comparison operator applied to actual vs threshold. Example: 'GTE'"
             },
             "testing_frequency": {
-              "type": "string",
-              "enum": ["MONTHLY", "QUARTERLY", "SEMI_ANNUAL", "ANNUAL"],
-              "description": "How often the covenant is tested"
+              "allOf": [{ "$ref": "enums.schema.json#/$defs/TestingFrequency" }],
+              "description": "How often the covenant is tested. Example: 'QUARTERLY'"
             },
             "cure_period_days": {
               "type": "integer",

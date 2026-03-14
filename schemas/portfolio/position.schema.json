@@ -4,14 +4,6 @@
   "title": "Position",
   "description": "Portfolio positions across asset types, using discriminated union",
   "$defs": {
-    "PositionType": {
-      "type": "string",
-      "enum": [
-        "FUND",
-        "CREDIT",
-        "REAL_ESTATE"
-      ]
-    },
     "FundPosition": {
       "allOf": [
         {

@@ -34,8 +34,7 @@
           "description": "Total amount called"
         },
         "purpose": {
-          "type": "string",
-          "enum": ["INVESTMENT", "FEES", "EXPENSES", "FOLLOW_ON", "BRIDGE"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/CapitalCallPurpose" }],
           "description": "Purpose of the capital call"
         },
         "allocations": {
@@ -102,8 +101,7 @@
           "description": "Total amount distributed"
         },
         "distribution_type": {
-          "type": "string",
-          "enum": ["RETURN_OF_CAPITAL", "REALIZED_GAIN", "DIVIDEND", "INTEREST", "RECALLABLE"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/DistributionType" }],
           "description": "Type of distribution"
         },
         "allocations": {

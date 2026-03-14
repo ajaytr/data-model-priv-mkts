@@ -4,21 +4,6 @@
   "title": "Cash Flow",
   "description": "Unified cash flow representation across asset types",
   "$defs": {
-    "CashFlowType": {
-      "type": "string",
-      "enum": [
-        "CAPITAL_CALL",
-        "DISTRIBUTION",
-        "INTEREST_PAYMENT",
-        "PRINCIPAL_PAYMENT",
-        "FEE",
-        "DIVIDEND",
-        "RENT",
-        "PURCHASE",
-        "SALE",
-        "OTHER"
-      ]
-    },
     "CashFlow": {
       "allOf": [
         {
@@ -37,14 +22,10 @@
               "description": "Reference to the Position that generated this cash flow"
             },
             "cash_flow_type": {
-              "$ref": "#/$defs/CashFlowType"
+              "$ref": "enums.schema.json#/$defs/CashFlowType"
             },
             "direction": {
-              "type": "string",
-              "enum": [
-                "INFLOW",
-                "OUTFLOW"
-              ]
+              "$ref": "enums.schema.json#/$defs/CashFlowDirection"
             },
             "amount": {
               "$ref": "../core/money.schema.json#/$defs/Money"

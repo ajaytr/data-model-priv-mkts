@@ -17,8 +17,7 @@
           "description": "Reference to the fund"
         },
         "model": {
-          "type": "string",
-          "enum": ["EUROPEAN", "AMERICAN", "HYBRID"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/WaterfallModel" }],
           "description": "Waterfall model type"
         },
         "tiers": {
@@ -48,8 +47,7 @@
           "description": "Order of this tier in the waterfall (1 = first)"
         },
         "threshold_type": {
-          "type": "string",
-          "enum": ["PREFERRED_RETURN", "CATCH_UP", "CARRIED_INTEREST", "RETURN_OF_CAPITAL"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/WaterfallThresholdType" }],
           "description": "Type of threshold for this tier"
         },
         "threshold_rate": {

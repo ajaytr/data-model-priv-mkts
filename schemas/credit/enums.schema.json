@@ -19,6 +19,74 @@
       ],
       "description": "Type of credit facility"
     },
+    "FacilityStatus": {
+      "type": "string",
+      "enum": [
+        "ACTIVE",
+        "DRAWN",
+        "FULLY_REPAID",
+        "DEFAULTED",
+        "RESTRUCTURED"
+      ],
+      "description": "Current lifecycle status of a credit facility. ACTIVE — facility is open and available for drawdowns. DRAWN — commitment has been fully or partially funded. FULLY_REPAID — all outstanding principal and interest have been repaid. DEFAULTED — borrower has failed to meet payment or covenant obligations. RESTRUCTURED — facility terms have been modified due to financial distress."
+    },
+    "PaymentStatus": {
+      "type": "string",
+      "enum": [
+        "SCHEDULED",
+        "PAID",
+        "OVERDUE",
+        "WAIVED"
+      ],
+      "description": "Status of a scheduled payment in an amortization schedule. SCHEDULED — payment is expected but not yet due or paid. PAID — payment has been received in full. OVERDUE — payment date has passed without receipt of funds. WAIVED — payment obligation has been forgiven or deferred by the lender."
+    },
+    "ScheduleType": {
+      "type": "string",
+      "enum": [
+        "BULLET",
+        "AMORTIZING",
+        "CUSTOM",
+        "INTEREST_ONLY"
+      ],
+      "description": "Repayment structure type for an amortization schedule. BULLET — entire principal repaid at maturity with no interim principal payments. AMORTIZING — principal repaid in regular installments over the life of the facility. CUSTOM — bespoke repayment schedule that does not follow a standard pattern. INTEREST_ONLY — only interest is paid during the term; principal is repaid at maturity."
+    },
+    "CovenantType": {
+      "type": "string",
+      "enum": [
+        "LEVERAGE_RATIO",
+        "INTEREST_COVERAGE",
+        "FIXED_CHARGE_COVERAGE",
+        "DEBT_TO_EBITDA",
+        "MINIMUM_LIQUIDITY",
+        "MINIMUM_REVENUE",
+        "CAPEX_LIMIT",
+        "INCURRENCE",
+        "SPRINGING",
+        "OTHER"
+      ],
+      "description": "Category of financial or operational covenant. LEVERAGE_RATIO — limits total debt relative to equity or EBITDA. INTEREST_COVERAGE — requires minimum ratio of earnings to interest expense. FIXED_CHARGE_COVERAGE — requires minimum ratio of cash flow to fixed charges. DEBT_TO_EBITDA — caps total debt as a multiple of EBITDA. MINIMUM_LIQUIDITY — requires the borrower to maintain a minimum cash or liquid asset balance. MINIMUM_REVENUE — sets a floor on periodic revenue. CAPEX_LIMIT — restricts capital expenditure to a maximum amount. INCURRENCE — tested only when a specific action is taken (e.g., incurring new debt). SPRINGING — dormant until a trigger condition is met, then actively tested. OTHER — any covenant type not captured by the standard categories."
+    },
+    "ThresholdOperator": {
+      "type": "string",
+      "enum": [
+        "LTE",
+        "GTE",
+        "LT",
+        "GT",
+        "EQ"
+      ],
+      "description": "Comparison operator applied when testing an actual value against a covenant threshold. LTE — actual value must be less than or equal to the threshold. GTE — actual value must be greater than or equal to the threshold. LT — actual value must be strictly less than the threshold. GT — actual value must be strictly greater than the threshold. EQ — actual value must equal the threshold exactly."
+    },
+    "TestingFrequency": {
+      "type": "string",
+      "enum": [
+        "MONTHLY",
+        "QUARTERLY",
+        "SEMI_ANNUAL",
+        "ANNUAL"
+      ],
+      "description": "How often a covenant is tested for compliance. MONTHLY — tested once per calendar month. QUARTERLY — tested once per fiscal quarter. SEMI_ANNUAL — tested twice per fiscal year. ANNUAL — tested once per fiscal year."
+    },
     "RateType": {
       "type": "string",
       "enum": [

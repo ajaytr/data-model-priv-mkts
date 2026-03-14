@@ -16,26 +16,11 @@
           "description": "Name of the investment vehicle"
         },
         "vehicle_type": {
-          "type": "string",
-          "enum": [
-            "OPEN_END_FUND",
-            "CLOSED_END_FUND",
-            "REIT",
-            "JOINT_VENTURE",
-            "SEPARATE_ACCOUNT",
-            "CLUB_DEAL"
-          ],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/VehicleType" }],
           "description": "Type of investment vehicle structure"
         },
         "strategy": {
-          "type": "string",
-          "enum": [
-            "CORE",
-            "CORE_PLUS",
-            "VALUE_ADD",
-            "OPPORTUNISTIC",
-            "DEVELOPMENT"
-          ],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/VehicleStrategy" }],
           "description": "Investment strategy of the vehicle"
         },
         "target_size": {
@@ -66,14 +51,7 @@
           "description": "Year the vehicle was launched or first capital deployed"
         },
         "status": {
-          "type": "string",
-          "enum": [
-            "FUNDRAISING",
-            "INVESTING",
-            "STABILIZED",
-            "HARVESTING",
-            "LIQUIDATED"
-          ],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/VehicleStatus" }],
           "description": "Current lifecycle status of the vehicle"
         }
       },

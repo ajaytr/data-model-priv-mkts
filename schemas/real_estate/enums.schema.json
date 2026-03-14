@@ -46,6 +46,71 @@
         "PERCENTAGE"
       ],
       "description": "Classification of the lease structure"
+    },
+    "ValuationMethod": {
+      "type": "string",
+      "enum": [
+        "APPRAISAL",
+        "COMPARABLE_SALES",
+        "DCF",
+        "REPLACEMENT_COST"
+      ],
+      "description": "Methodology used for a property valuation. APPRAISAL: value determined by a certified appraiser's professional opinion. COMPARABLE_SALES: value derived from recent sales of similar properties in the market. DCF: discounted cash flow analysis projecting future income streams to present value. REPLACEMENT_COST: value based on the cost to reconstruct the property with equivalent utility."
+    },
+    "LeaseOptionType": {
+      "type": "string",
+      "enum": [
+        "RENEWAL",
+        "EXPANSION",
+        "TERMINATION",
+        "RIGHT_OF_FIRST_REFUSAL",
+        "PURCHASE"
+      ],
+      "description": "Type of option embedded within a lease agreement. RENEWAL: tenant's right to extend the lease for an additional term. EXPANSION: tenant's right to lease additional space within the property. TERMINATION: tenant's right to end the lease before its scheduled expiration. RIGHT_OF_FIRST_REFUSAL: tenant's right to match any third-party offer on the space or property. PURCHASE: tenant's right to buy the leased property at predetermined or market terms."
+    },
+    "VehicleType": {
+      "type": "string",
+      "enum": [
+        "OPEN_END_FUND",
+        "CLOSED_END_FUND",
+        "REIT",
+        "JOINT_VENTURE",
+        "SEPARATE_ACCOUNT",
+        "CLUB_DEAL"
+      ],
+      "description": "Type of real estate investment vehicle structure. OPEN_END_FUND: a perpetual-life fund that accepts new subscriptions and redemptions on a periodic basis. CLOSED_END_FUND: a fixed-life fund with a defined fundraising period and no ongoing subscriptions. REIT: a real estate investment trust, typically publicly traded, that owns and operates income-producing properties. JOINT_VENTURE: a co-investment structure between two or more parties for a specific property or portfolio. SEPARATE_ACCOUNT: a dedicated investment account managed on behalf of a single investor. CLUB_DEAL: a small group of investors pooling capital for a specific investment opportunity."
+    },
+    "VehicleStrategy": {
+      "type": "string",
+      "enum": [
+        "CORE",
+        "CORE_PLUS",
+        "VALUE_ADD",
+        "OPPORTUNISTIC",
+        "DEVELOPMENT"
+      ],
+      "description": "Investment strategy of the real estate vehicle. CORE: low-risk, stabilized assets with predictable income and minimal leverage. CORE_PLUS: primarily stabilized assets with modest value enhancement opportunities and moderate leverage. VALUE_ADD: assets requiring operational improvements, repositioning, or lease-up to increase value. OPPORTUNISTIC: high-risk, high-return strategies including development, distressed assets, or complex transactions. DEVELOPMENT: ground-up construction or major redevelopment of real estate assets."
+    },
+    "VehicleStatus": {
+      "type": "string",
+      "enum": [
+        "FUNDRAISING",
+        "INVESTING",
+        "STABILIZED",
+        "HARVESTING",
+        "LIQUIDATED"
+      ],
+      "description": "Current lifecycle status of the investment vehicle. FUNDRAISING: actively raising capital from investors. INVESTING: deploying committed capital into property acquisitions. STABILIZED: portfolio is fully invested and generating steady returns. HARVESTING: disposing of assets and returning capital to investors. LIQUIDATED: all assets sold and capital returned; vehicle is wound down."
+    },
+    "AppraisalApproach": {
+      "type": "string",
+      "enum": [
+        "INCOME",
+        "SALES_COMPARISON",
+        "COST",
+        "COMBINED"
+      ],
+      "description": "Appraisal methodology employed for a formal property appraisal. INCOME: value derived from capitalizing the property's net operating income stream. SALES_COMPARISON: value determined by analyzing recent sales of comparable properties. COST: value based on land value plus the depreciated cost of improvements. COMBINED: a blended approach using two or more of the above methodologies to reconcile a final value."
     }
   }
 }

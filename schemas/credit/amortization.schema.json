@@ -22,9 +22,8 @@
           "$ref": "../core/money.schema.json#/$defs/Money"
         },
         "status": {
-          "type": "string",
-          "enum": ["SCHEDULED", "PAID", "OVERDUE", "WAIVED"],
-          "description": "Current status of this payment"
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/PaymentStatus" }],
+          "description": "Current status of this payment. Example: 'SCHEDULED'"
         }
       },
       "required": [
@@ -46,9 +45,8 @@
               "description": "Reference to the parent facility"
             },
             "schedule_type": {
-              "type": "string",
-              "enum": ["BULLET", "AMORTIZING", "CUSTOM", "INTEREST_ONLY"],
-              "description": "Repayment structure type"
+              "allOf": [{ "$ref": "enums.schema.json#/$defs/ScheduleType" }],
+              "description": "Repayment structure type. Example: 'AMORTIZING'"
             },
             "payments": {
               "type": "array",

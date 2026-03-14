@@ -82,8 +82,7 @@
               "description": "Net operating income figure used in valuation"
             },
             "approach": {
-              "type": "string",
-              "enum": ["INCOME", "SALES_COMPARISON", "COST", "COMBINED"],
+              "allOf": [{ "$ref": "enums.schema.json#/$defs/AppraisalApproach" }],
               "description": "Appraisal methodology employed"
             },
             "appraiser_firm": {

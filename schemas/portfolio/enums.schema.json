@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enums.schema.json",
+  "title": "Portfolio enumerations",
+  "description": "Enumerations for portfolio positions, cash flows, and performance",
+  "$defs": {
+    "PositionType": {
+      "type": "string",
+      "enum": [
+        "FUND",
+        "CREDIT",
+        "REAL_ESTATE"
+      ],
+      "description": "Discriminator for the type of portfolio position. Determines which position-specific fields are populated. FUND: An LP commitment or investment in a PE/VC fund — tracks commitment, NAV, distributions, and fund-level IRR. CREDIT: A position in a credit facility or tranche — tracks par value, market value, accrued interest, and yield. REAL_ESTATE: A direct or indirect real estate holding — tracks property value, vehicle exposure, and income yield. Example: 'FUND'"
+    },
+    "CashFlowType": {
+      "type": "string",
+      "enum": [
+        "CAPITAL_CALL",
+        "DISTRIBUTION",
+        "INTEREST_PAYMENT",
+        "PRINCIPAL_PAYMENT",
+        "FEE",
+        "DIVIDEND",
+        "RENT",
+        "PURCHASE",
+        "SALE",
+        "OTHER"
+      ],
+      "description": "Classification of a cash flow event. Used for unified cash flow reporting across asset types. CAPITAL_CALL: LP capital called by a fund (outflow). DISTRIBUTION: Proceeds returned to an LP from a fund (inflow). INTEREST_PAYMENT: Interest received or paid on a credit position. PRINCIPAL_PAYMENT: Repayment of loan principal. FEE: Management fees, admin fees, or other charges. DIVIDEND: Dividend payment from an equity holding. RENT: Rental income from a real estate position. PURCHASE: Cash outflow for acquiring a position or asset. SALE: Cash inflow from selling or exiting a position. OTHER: Any cash flow not covered above. Example: 'CAPITAL_CALL'"
+    },
+    "CashFlowDirection": {
+      "type": "string",
+      "enum": [
+        "INFLOW",
+        "OUTFLOW"
+      ],
+      "description": "Direction of the cash flow from the portfolio's perspective. INFLOW: Cash received — distributions, interest payments, rent, sale proceeds, principal repayments. OUTFLOW: Cash paid — capital calls, purchases, fees. The direction combined with CashFlowType allows unambiguous sign convention: amount is always positive, direction indicates the sign. Example: 'OUTFLOW'"
+    }
+  }
+}

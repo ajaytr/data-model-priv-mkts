@@ -33,14 +33,7 @@
       "description": "An option embedded within a lease agreement",
       "properties": {
         "option_type": {
-          "type": "string",
-          "enum": [
-            "RENEWAL",
-            "EXPANSION",
-            "TERMINATION",
-            "RIGHT_OF_FIRST_REFUSAL",
-            "PURCHASE"
-          ],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/LeaseOptionType" }],
           "description": "Type of lease option"
         },
         "exercise_date": {

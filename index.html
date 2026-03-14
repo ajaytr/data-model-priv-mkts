@@ -292,8 +292,8 @@ const SCHEMA_FILES = {
   real_estate: ["enums.schema.json","property.schema.json","vehicle.schema.json","lease.schema.json","metrics.schema.json"],
   deal: ["enums.schema.json","deal.schema.json","deal_asset.schema.json","issuer.schema.json"],
   secondaries: ["enums.schema.json","lp_interest.schema.json","trade.schema.json","transaction.schema.json","transfer.schema.json"],
-  portfolio: ["position.schema.json","portfolio.schema.json","cash_flow.schema.json","performance.schema.json"],
-  trade_lifecycle: ["trade.schema.json","settlement.schema.json","documentation.schema.json"],
+  portfolio: ["enums.schema.json","position.schema.json","portfolio.schema.json","cash_flow.schema.json","performance.schema.json"],
+  trade_lifecycle: ["enums.schema.json","trade.schema.json","settlement.schema.json","documentation.schema.json"],
 };
 
 const DOMAIN_COLORS = {
@@ -662,6 +662,12 @@ function buildTypesTree() {
         { name: "PropertyType", entity: "PropertyType", children: [] },
         { name: "PropertyStatus", entity: "PropertyStatus", children: [] },
         { name: "LeaseType", entity: "LeaseType", children: [] },
+        { name: "ValuationMethod", entity: "ValuationMethod", children: [] },
+        { name: "LeaseOptionType", entity: "LeaseOptionType", children: [] },
+        { name: "VehicleType", entity: "VehicleType", children: [] },
+        { name: "VehicleStrategy", entity: "VehicleStrategy", children: [] },
+        { name: "VehicleStatus", entity: "VehicleStatus", children: [] },
+        { name: "AppraisalApproach", entity: "AppraisalApproach", children: [] },
       ]},
       { name: "Enums — Deal", entity: null, children: [
         { name: "DealStage", entity: "DealStage", children: [] },
@@ -674,12 +680,18 @@ function buildTypesTree() {
         { name: "TradeDirection", entity: "TradeDirection", children: [] },
         { name: "SecondaryTradeType", entity: "SecondaryTradeType", children: [] },
         { name: "TransactionStage", entity: "TransactionStage", children: [] },
+        { name: "BidStatus", entity: "BidStatus", children: [] },
+        { name: "OfferStatus", entity: "OfferStatus", children: [] },
       ]},
       { name: "Enums — Portfolio", entity: null, children: [
+        { name: "PositionType", entity: "PositionType", children: [] },
         { name: "CashFlowType", entity: "CashFlowType", children: [] },
+        { name: "CashFlowDirection", entity: "CashFlowDirection", children: [] },
       ]},
       { name: "Enums — Trade Lifecycle", entity: null, children: [
         { name: "TradeStatus", entity: "TradeStatus", children: [] },
+        { name: "PaymentMethod", entity: "PaymentMethod", children: [] },
+        { name: "SettlementStatus", entity: "SettlementStatus", children: [] },
       ]},
     ]
   };

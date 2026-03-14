@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "enums.schema.json",
+  "title": "Trade lifecycle enumerations",
+  "description": "Enumerations for the trade lifecycle domain",
+  "$defs": {
+    "TradeStatus": {
+      "type": "string",
+      "enum": [
+        "INDICATIVE",
+        "NEGOTIATING",
+        "AGREED",
+        "PENDING_DOCUMENTATION",
+        "PENDING_SETTLEMENT",
+        "SETTLED",
+        "CANCELLED",
+        "FAILED"
+      ],
+      "description": "Status of a trade in its lifecycle. INDICATIVE: initial interest expressed; terms are non-binding. NEGOTIATING: parties are actively negotiating trade terms. AGREED: trade terms have been agreed upon by all parties. PENDING_DOCUMENTATION: awaiting execution of legal documentation. PENDING_SETTLEMENT: documentation complete; awaiting settlement of funds and asset transfer. SETTLED: trade has been fully settled with funds and assets exchanged. CANCELLED: trade was voluntarily cancelled by one or more parties before settlement. FAILED: trade could not be completed due to an error, breach, or failed settlement."
+    },
+    "PaymentMethod": {
+      "type": "string",
+      "enum": [
+        "WIRE",
+        "ACH",
+        "CHECK",
+        "DTC",
+        "IN_KIND"
+      ],
+      "description": "Method of payment for trade settlement. WIRE: bank wire transfer for same-day or next-day settlement. ACH: Automated Clearing House electronic transfer, typically settling in 1-2 business days. CHECK: physical check payment. DTC: Depository Trust Company book-entry transfer for securities. IN_KIND: settlement via transfer of assets rather than cash."
+    },
+    "SettlementStatus": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "INSTRUCTED",
+        "CONFIRMED",
+        "SETTLED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "description": "Status of a settlement instruction. PENDING: settlement instruction has been created but not yet sent. INSTRUCTED: payment instructions have been sent to the relevant parties or banks. CONFIRMED: counterparty has confirmed receipt of settlement instructions. SETTLED: funds and/or assets have been successfully exchanged. FAILED: settlement could not be completed due to insufficient funds, incorrect details, or other errors. CANCELLED: settlement instruction was cancelled before execution."
+    }
+  }
+}

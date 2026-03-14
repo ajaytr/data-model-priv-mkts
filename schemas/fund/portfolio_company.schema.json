@@ -79,8 +79,7 @@
           "description": "Date of the investment"
         },
         "instrument_type": {
-          "type": "string",
-          "enum": ["EQUITY", "PREFERRED_EQUITY", "CONVERTIBLE_NOTE", "WARRANT", "MEZZANINE"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/InstrumentType" }],
           "description": "Type of investment instrument"
         },
         "cost_basis": {
@@ -100,8 +99,7 @@
           "description": "Whether the fund holds a board seat"
         },
         "status": {
-          "type": "string",
-          "enum": ["ACTIVE", "PARTIALLY_REALIZED", "FULLY_REALIZED", "WRITTEN_OFF"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/InvestmentStatus" }],
           "description": "Current status of the investment"
         }
       },
@@ -131,8 +129,7 @@
           "description": "Total proceeds from the realization"
         },
         "realization_type": {
-          "type": "string",
-          "enum": ["IPO", "TRADE_SALE", "SECONDARY", "RECAPITALIZATION", "WRITE_OFF", "DIVIDEND_RECAP"],
+          "allOf": [{ "$ref": "enums.schema.json#/$defs/RealizationType" }],
           "description": "Type of exit or realization"
         }
       },
