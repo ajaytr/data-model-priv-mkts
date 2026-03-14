@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Private Markets Data Model</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --bg2: #161b22;
+  --bg3: #1c2128;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --accent: #58a6ff;
+  --core: #8b949e;
+  --fund: #58a6ff;
+  --credit: #d29922;
+  --real_estate: #3fb950;
+  --deal: #bc8cff;
+  --secondaries: #39d2c0;
+  --portfolio: #6e7681;
+  --trade_lifecycle: #f47067;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+#sidebar {
+  width: 340px;
+  min-width: 280px;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+#sidebar-header h1 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+#search {
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+#search:focus { border-color: var(--accent); }
+#search::placeholder { color: var(--text2); }
+#tree-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+#detail {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px;
+}
+#breadcrumb {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--text2);
+  flex-wrap: wrap;
+}
+#breadcrumb span { cursor: pointer; color: var(--accent); }
+#breadcrumb span:hover { text-decoration: underline; }
+#breadcrumb .sep { color: var(--text2); cursor: default; }
+#detail-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+#detail-meta {
+  font-size: 13px;
+  color: var(--text2);
+  margin-bottom: 16px;
+}
+.badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-right: 6px;
+  border: 1px solid;
+}
+.detail-section { margin-bottom: 20px; }
+.detail-section h3 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text2);
+  margin-bottom: 8px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 2px solid var(--border);
+  color: var(--text2);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+td {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:hover td { background: var(--bg3); }
+.prop-name { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; color: var(--accent); }
+.prop-type { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; color: var(--text2); }
+.prop-req { color: var(--text2); font-size: 11px; }
+.ref-link {
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--accent);
+}
+.ref-link:hover { border-bottom-style: solid; }
+.enum-vals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.enum-val {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-family: 'SF Mono', Consolas, monospace;
+}
+
+/* Tree styles */
+.tree-root { padding: 0 8px; }
+.tree-root-label {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 6px;
+  user-select: none;
+}
+.tree-root-label:hover { background: var(--bg3); }
+.tree-root-label .arrow {
+  width: 16px;
+  font-size: 10px;
+  color: var(--text2);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+.tree-root-label .arrow.open { transform: rotate(90deg); }
+.tree-children {
+  display: none;
+  padding-left: 12px;
+}
+.tree-children.open { display: block; }
+.tree-node {
+  position: relative;
+}
+.tree-node::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+.tree-item {
+  display: flex;
+  align-items: center;
+  padding: 3px 8px 3px 20px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 13px;
+  position: relative;
+  user-select: none;
+}
+.tree-item::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 10px;
+  height: 1px;
+  background: var(--border);
+}
+.tree-item:hover { background: var(--bg3); }
+.tree-item.selected { background: rgba(88,166,255,0.15); }
+.tree-item .arrow {
+  width: 14px;
+  font-size: 9px;
+  color: var(--text2);
+  transition: transform 0.15s;
+  flex-shrink: 0;
+}
+.tree-item .arrow.open { transform: rotate(90deg); }
+.tree-item .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+.tree-item-children {
+  display: none;
+  padding-left: 16px;
+}
+.tree-item-children.open { display: block; }
+.tree-item .entity-name { flex: 1; }
+.tree-item .array-badge {
+  font-size: 10px;
+  color: var(--text2);
+  margin-left: 4px;
+}
+.hidden { display: none !important; }
+
+/* Welcome */
+#welcome { color: var(--text2); }
+#welcome h2 { color: var(--text); margin-bottom: 12px; font-size: 18px; }
+#welcome p { margin-bottom: 8px; font-size: 14px; line-height: 1.6; }
+#welcome ul { margin: 8px 0 8px 20px; font-size: 14px; line-height: 1.8; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  body { flex-direction: column; }
+  #sidebar { width: 100%; height: 45vh; min-width: unset; border-right: none; border-bottom: 1px solid var(--border); }
+  #detail { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div id="sidebar-header">
+    <h1>Private Markets Data Model</h1>
+    <input type="text" id="search" placeholder="Search entities...">
+  </div>
+  <div id="tree-container"></div>
+</div>
+
+<div id="detail">
+  <div id="breadcrumb"></div>
+  <div id="detail-content">
+    <div id="welcome">
+      <h2>Schema Explorer</h2>
+      <p>Navigate the private markets data model using the tree on the left. Two entry points:</p>
+      <ul>
+        <li><strong>Deal</strong> — cross-asset deal structuring with participants and linked assets</li>
+        <li><strong>Fund</strong> — PE/VC fund lifecycle from commitments through realizations</li>
+      </ul>
+      <p>Click any entity to see its properties. Click linked entity names to navigate between schemas.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Entity Data ──────────────────────────────────────────────
+const ENTITIES = {
+// ─── CORE ───
+Auditable: { domain:"core", file:"base.schema.json", auditable:false, properties:[
+  {n:"id",t:"string",f:"uuid",r:true,d:"Unique identifier"},
+  {n:"created_at",t:"string",f:"date-time",r:true,d:"Timestamp when the record was created"},
+  {n:"updated_at",t:"string",f:"date-time",r:false,d:"Timestamp when the record was last updated"},
+]},
+Money: { domain:"core", file:"money.schema.json", auditable:false, properties:[
+  {n:"amount",t:"string",r:true,d:"Decimal amount as string to preserve precision"},
+  {n:"currency",t:"Currency",r:true,ref:"Currency",d:"ISO 4217 currency code"},
+]},
+Percentage: { domain:"core", file:"percentage.schema.json", auditable:false, scalar:true, scalarType:"number", scalarDesc:"Decimal percentage (0.08 = 8%). Min 0, soft max 1.", properties:[]},
+BasisPoints: { domain:"core", file:"percentage.schema.json", auditable:false, scalar:true, scalarType:"integer", scalarDesc:"Rate in basis points (100 = 1%). Min 0.", properties:[]},
+ExternalId: { domain:"core", file:"identifiers.schema.json", auditable:false, properties:[
+  {n:"system",t:"string",r:true,d:"Name of the external system (e.g., LEI, CUSIP, Bloomberg)"},
+  {n:"value",t:"string",r:true,d:"The identifier value in the external system"},
+]},
+Address: { domain:"core", file:"party.schema.json", auditable:false, properties:[
+  {n:"line1",t:"string",r:true},{n:"line2",t:"string",r:false},{n:"city",t:"string",r:true},
+  {n:"state_province",t:"string",r:false},{n:"postal_code",t:"string",r:false},
+  {n:"country",t:"Country",r:true,ref:"Country",d:"ISO 3166-1 alpha-2"},
+]},
+ContactInfo: { domain:"core", file:"party.schema.json", auditable:false, properties:[
+  {n:"name",t:"string",r:true},{n:"email",t:"string",f:"email",r:true},
+  {n:"phone",t:"string",r:false},{n:"title",t:"string",r:false,d:"Job title"},
+]},
+Party: { domain:"core", file:"party.schema.json", auditable:true, properties:[
+  {n:"name",t:"string",r:true,d:"Legal name of the party"},
+  {n:"short_name",t:"string",r:false,d:"Short or common name"},
+  {n:"party_type",t:"PartyType",r:true,ref:"PartyType"},
+  {n:"external_ids",t:"ExternalId[]",r:false,ref:"ExternalId",arr:true},
+  {n:"address",t:"Address",r:false,ref:"Address"},
+  {n:"contacts",t:"ContactInfo[]",r:false,ref:"ContactInfo",arr:true},
+]},
+Quarter: { domain:"core", file:"dates.schema.json", auditable:false, properties:[
+  {n:"year",t:"integer",r:true,d:"1900–2100"},{n:"quarter",t:"integer",r:true,d:"1–4"},
+]},
+ReportingPeriod: { domain:"core", file:"dates.schema.json", auditable:false, properties:[
+  {n:"start_date",t:"string",f:"date",r:true},{n:"end_date",t:"string",f:"date",r:true},
+  {n:"quarter",t:"Quarter",r:false,ref:"Quarter"},
+]},
+DateRange: { domain:"core", file:"dates.schema.json", auditable:false, properties:[
+  {n:"start_date",t:"string",f:"date",r:true},{n:"end_date",t:"string",f:"date",r:true},
+]},
+// Core enums
+Currency: { domain:"core", file:"enums.schema.json", auditable:false, isEnum:true, values:["USD","EUR","GBP","CHF","JPY","CAD","AUD","SGD","HKD","CNY","KRW","SEK","NOK","DKK","NZD","BRL","INR"], properties:[]},
+Region: { domain:"core", file:"enums.schema.json", auditable:false, isEnum:true, values:["NORTH_AMERICA","EUROPE","ASIA_PACIFIC","LATIN_AMERICA","MIDDLE_EAST","AFRICA","GLOBAL"], properties:[]},
+Country: { domain:"core", file:"enums.schema.json", auditable:false, isEnum:true, scalarDesc:"ISO 3166-1 alpha-2 country code (pattern: ^[A-Z]{2}$)", values:[], properties:[]},
+DayCount: { domain:"core", file:"enums.schema.json", auditable:false, isEnum:true, values:["ACT_360","ACT_365","ACT_ACT","30_360","30E_360"], properties:[]},
+DocumentType: { domain:"core", file:"enums.schema.json", auditable:false, isEnum:true, values:["LPA","SIDE_LETTER","SUBSCRIPTION_AGREEMENT","CAPITAL_CALL_NOTICE","DISTRIBUTION_NOTICE","FINANCIAL_STATEMENT","VALUATION_REPORT","TAX_DOCUMENT","CREDIT_AGREEMENT","AMENDMENT","WAIVER","TRANSFER_AGREEMENT","PURCHASE_AGREEMENT","OTHER"], properties:[]},
+PartyType: { domain:"core", file:"party.schema.json", auditable:false, isEnum:true, values:["GP","LP","FUND_ADMIN","CUSTODIAN","PLACEMENT_AGENT","LEGAL_COUNSEL","AUDITOR","BORROWER","LENDER","BROKER","OTHER"], properties:[]},
+
+// ─── FUND ───
+FundStrategy: { domain:"fund", file:"enums.schema.json", auditable:false, isEnum:true, values:["BUYOUT","GROWTH_EQUITY","VENTURE_CAPITAL","DISTRESSED","MEZZANINE","INFRASTRUCTURE","REAL_ASSETS","FUND_OF_FUNDS","SECONDARIES","CO_INVESTMENT","SPECIAL_SITUATIONS"], properties:[]},
+FundStatus: { domain:"fund", file:"enums.schema.json", auditable:false, isEnum:true, values:["FUNDRAISING","FIRST_CLOSE","FINAL_CLOSE","INVESTING","HARVESTING","FULLY_REALIZED","LIQUIDATED"], properties:[]},
+FundStructure: { domain:"fund", file:"enums.schema.json", auditable:false, isEnum:true, values:["LIMITED_PARTNERSHIP","LLC","OFFSHORE_FEEDER","PARALLEL_FUND","CO_INVESTMENT_VEHICLE","SMA"], properties:[]},
+FeeType: { domain:"fund", file:"enums.schema.json", auditable:false, isEnum:true, values:["MANAGEMENT_FEE","CARRIED_INTEREST","ORGANIZATIONAL_EXPENSE","TRANSACTION_FEE","MONITORING_FEE"], properties:[]},
+
+Fund: { domain:"fund", file:"fund.schema.json", auditable:true, properties:[
+  {n:"name",t:"string",r:true,d:"Full legal name of the fund"},
+  {n:"short_name",t:"string",r:false,d:"Abbreviated or marketing name"},
+  {n:"strategy",t:"FundStrategy",r:true,ref:"FundStrategy"},
+  {n:"status",t:"FundStatus",r:true,ref:"FundStatus"},
+  {n:"structure",t:"FundStructure",r:true,ref:"FundStructure"},
+  {n:"vintage_year",t:"integer",r:true,d:"Year of first capital call or fund inception"},
+  {n:"target_size",t:"Money",r:false,ref:"Money",d:"Target fundraising size"},
+  {n:"final_close_size",t:"Money",r:false,ref:"Money",d:"Total commitments at final close"},
+  {n:"gp_id",t:"string",f:"uuid",r:true,ref:"Party",d:"Reference to the general partner"},
+  {n:"fund_admin_id",t:"string",f:"uuid",r:false,ref:"Party",d:"Reference to the fund administrator"},
+  {n:"terms",t:"FundTerms",r:false,ref:"FundTerms"},
+  {n:"domicile",t:"Country",r:false,ref:"Country"},
+  {n:"region",t:"Region",r:false,ref:"Region"},
+  {n:"inception_date",t:"string",f:"date",r:false,d:"Date the fund was established"},
+  {n:"external_ids",t:"ExternalId[]",r:false,ref:"ExternalId",arr:true},
+]},
+FundTerms: { domain:"fund", file:"fund.schema.json", auditable:false, properties:[
+  {n:"fund_life_years",t:"integer",r:false,d:"Total fund life in years (typically 10–12)"},
+  {n:"investment_period_years",t:"integer",r:false,d:"Investment period in years (typically 4–6)"},
+  {n:"management_fee_rate",t:"Percentage",r:false,ref:"Percentage",d:"Annual management fee rate"},
+  {n:"carried_interest_rate",t:"Percentage",r:false,ref:"Percentage",d:"Carried interest rate (typically 20%)"},
+  {n:"preferred_return",t:"Percentage",r:false,ref:"Percentage",d:"Preferred return (hurdle) rate"},
+  {n:"gp_commitment_rate",t:"Percentage",r:false,ref:"Percentage",d:"GP commitment as % of fund size"},
+  {n:"hurdle_rate",t:"Percentage",r:false,ref:"Percentage",d:"Hurdle rate for carried interest"},
+  {n:"clawback",t:"boolean",r:false,d:"Whether a GP clawback provision exists"},
+  {n:"key_person_clause",t:"boolean",r:false,d:"Whether a key person clause exists"},
+]},
+Commitment: { domain:"fund", file:"commitment.schema.json", auditable:true, properties:[
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund",d:"Reference to the fund"},
+  {n:"investor_id",t:"string",f:"uuid",r:true,ref:"Party",d:"Reference to the investor"},
+  {n:"commitment_amount",t:"Money",r:true,ref:"Money",d:"Total committed capital"},
+  {n:"unfunded_amount",t:"Money",r:true,ref:"Money",d:"Remaining unfunded commitment"},
+  {n:"commitment_date",t:"string",f:"date",r:true,d:"Date the commitment was made"},
+  {n:"side_letter",t:"SideLetterTerms",r:false,ref:"SideLetterTerms",d:"Negotiated side letter terms"},
+  {n:"status",t:"enum",r:true,d:"Current status",ev:["PENDING","ACTIVE","TRANSFERRED","DEFAULTED"]},
+]},
+SideLetterTerms: { domain:"fund", file:"commitment.schema.json", auditable:false, properties:[
+  {n:"fee_discount",t:"Percentage",r:false,ref:"Percentage",d:"Discount on management fee rate"},
+  {n:"co_investment_rights",t:"boolean",r:false,d:"Whether the investor has co-investment rights"},
+  {n:"most_favored_nation",t:"boolean",r:false,d:"Whether MFN rights apply"},
+  {n:"excuse_rights",t:"string[]",r:false,arr:true,d:"Sectors or investment types the investor may opt out of"},
+  {n:"reporting_requirements",t:"string[]",r:false,arr:true,d:"Additional reporting obligations"},
+]},
+CapitalCall: { domain:"fund", file:"capital_activity.schema.json", auditable:true, properties:[
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund"},
+  {n:"call_number",t:"integer",r:true,d:"Sequential capital call number"},
+  {n:"call_date",t:"string",f:"date",r:true},
+  {n:"due_date",t:"string",f:"date",r:true,d:"Date payment is due"},
+  {n:"total_amount",t:"Money",r:true,ref:"Money",d:"Total amount called"},
+  {n:"purpose",t:"enum",r:true,d:"Purpose of the capital call",ev:["INVESTMENT","FEES","EXPENSES","FOLLOW_ON","BRIDGE"]},
+  {n:"allocations",t:"CallAllocation[]",r:false,ref:"CallAllocation",arr:true,d:"Per-investor call allocations"},
+]},
+CallAllocation: { domain:"fund", file:"capital_activity.schema.json", auditable:false, properties:[
+  {n:"commitment_id",t:"string",f:"uuid",r:true,ref:"Commitment"},
+  {n:"investor_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"called_amount",t:"Money",r:true,ref:"Money"},
+  {n:"ownership_percentage",t:"Percentage",r:true,ref:"Percentage"},
+]},
+Distribution: { domain:"fund", file:"capital_activity.schema.json", auditable:true, properties:[
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund"},
+  {n:"distribution_number",t:"integer",r:true,d:"Sequential distribution number"},
+  {n:"distribution_date",t:"string",f:"date",r:true},
+  {n:"total_amount",t:"Money",r:true,ref:"Money",d:"Total amount distributed"},
+  {n:"distribution_type",t:"enum",r:true,ev:["RETURN_OF_CAPITAL","REALIZED_GAIN","DIVIDEND","INTEREST","RECALLABLE"]},
+  {n:"allocations",t:"DistributionAllocation[]",r:false,ref:"DistributionAllocation",arr:true},
+]},
+DistributionAllocation: { domain:"fund", file:"capital_activity.schema.json", auditable:false, properties:[
+  {n:"commitment_id",t:"string",f:"uuid",r:true,ref:"Commitment"},
+  {n:"investor_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"amount",t:"Money",r:true,ref:"Money"},
+  {n:"withholding_tax",t:"Money",r:false,ref:"Money",d:"Tax withheld from this distribution"},
+]},
+NAVStatement: { domain:"fund", file:"nav.schema.json", auditable:true, properties:[
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund"},
+  {n:"reporting_period",t:"ReportingPeriod",r:true,ref:"ReportingPeriod"},
+  {n:"total_nav",t:"Money",r:true,ref:"Money",d:"Total fund NAV"},
+  {n:"total_contributions",t:"Money",r:true,ref:"Money"},
+  {n:"total_distributions",t:"Money",r:true,ref:"Money"},
+  {n:"investment_valuations",t:"InvestmentValuation[]",r:false,ref:"InvestmentValuation",arr:true},
+  {n:"investor_navs",t:"InvestorNAV[]",r:false,ref:"InvestorNAV",arr:true},
+]},
+InvestorNAV: { domain:"fund", file:"nav.schema.json", auditable:false, properties:[
+  {n:"commitment_id",t:"string",f:"uuid",r:true,ref:"Commitment"},
+  {n:"investor_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"nav",t:"Money",r:true,ref:"Money"},{n:"ownership_percentage",t:"Percentage",r:true,ref:"Percentage"},
+  {n:"total_contributed",t:"Money",r:true,ref:"Money"},{n:"total_distributed",t:"Money",r:true,ref:"Money"},
+]},
+InvestmentValuation: { domain:"fund", file:"nav.schema.json", auditable:false, properties:[
+  {n:"investment_id",t:"string",f:"uuid",r:true,ref:"Investment"},
+  {n:"company_name",t:"string",r:true},{n:"fair_value",t:"Money",r:true,ref:"Money"},
+  {n:"cost_basis",t:"Money",r:true,ref:"Money"},{n:"unrealized_gain_loss",t:"Money",r:true,ref:"Money"},
+  {n:"valuation_method",t:"enum",r:true,ev:["MARKET_COMPARABLE","DCF","RECENT_TRANSACTION","THIRD_PARTY_APPRAISAL","COST"]},
+]},
+WaterfallStructure: { domain:"fund", file:"waterfall.schema.json", auditable:true, properties:[
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund"},
+  {n:"model",t:"enum",r:true,ev:["EUROPEAN","AMERICAN","HYBRID"],d:"Waterfall model type"},
+  {n:"tiers",t:"WaterfallTier[]",r:true,ref:"WaterfallTier",arr:true},
+]},
+WaterfallTier: { domain:"fund", file:"waterfall.schema.json", auditable:false, properties:[
+  {n:"tier_name",t:"string",r:true},{n:"tier_order",t:"integer",r:true,d:"Order in waterfall (1 = first)"},
+  {n:"threshold_type",t:"enum",r:true,ev:["PREFERRED_RETURN","CATCH_UP","CARRIED_INTEREST","RETURN_OF_CAPITAL"]},
+  {n:"threshold_rate",t:"Percentage",r:false,ref:"Percentage"},
+  {n:"gp_split",t:"Percentage",r:true,ref:"Percentage"},{n:"lp_split",t:"Percentage",r:true,ref:"Percentage"},
+]},
+CarryAllocation: { domain:"fund", file:"waterfall.schema.json", auditable:false, properties:[
+  {n:"waterfall_id",t:"string",f:"uuid",r:true,ref:"WaterfallStructure"},
+  {n:"distribution_id",t:"string",f:"uuid",r:true,ref:"Distribution"},
+  {n:"period",t:"ReportingPeriod",r:true,ref:"ReportingPeriod"},
+  {n:"gross_proceeds",t:"Money",r:true,ref:"Money"},{n:"lp_share",t:"Money",r:true,ref:"Money"},
+  {n:"gp_carry",t:"Money",r:true,ref:"Money"},{n:"clawback_reserve",t:"Money",r:false,ref:"Money"},
+]},
+PortfolioCompany: { domain:"fund", file:"portfolio_company.schema.json", auditable:true, properties:[
+  {n:"name",t:"string",r:true,d:"Legal name of the portfolio company"},
+  {n:"sector",t:"string",r:true,d:"Primary industry sector"},
+  {n:"subsector",t:"string",r:false},{n:"region",t:"Region",r:false,ref:"Region"},
+  {n:"country",t:"Country",r:false,ref:"Country"},{n:"description",t:"string",r:false},
+  {n:"website",t:"string",f:"uri",r:false},{n:"founding_year",t:"integer",r:false},
+  {n:"external_ids",t:"ExternalId[]",r:false,ref:"ExternalId",arr:true},
+]},
+Investment: { domain:"fund", file:"portfolio_company.schema.json", auditable:true, properties:[
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund"},
+  {n:"portfolio_company_id",t:"string",f:"uuid",r:true,ref:"PortfolioCompany"},
+  {n:"investment_date",t:"string",f:"date",r:true},
+  {n:"instrument_type",t:"enum",r:true,ev:["EQUITY","PREFERRED_EQUITY","CONVERTIBLE_NOTE","WARRANT","MEZZANINE"]},
+  {n:"cost_basis",t:"Money",r:true,ref:"Money"},{n:"fair_value",t:"Money",r:true,ref:"Money"},
+  {n:"ownership_percentage",t:"Percentage",r:false,ref:"Percentage"},
+  {n:"board_seat",t:"boolean",r:false,d:"Whether the fund holds a board seat"},
+  {n:"status",t:"enum",r:true,ev:["ACTIVE","PARTIALLY_REALIZED","FULLY_REALIZED","WRITTEN_OFF"]},
+]},
+Realization: { domain:"fund", file:"portfolio_company.schema.json", auditable:true, properties:[
+  {n:"investment_id",t:"string",f:"uuid",r:true,ref:"Investment"},
+  {n:"realization_date",t:"string",f:"date",r:true},
+  {n:"proceeds",t:"Money",r:true,ref:"Money"},
+  {n:"realization_type",t:"enum",r:true,ev:["IPO","TRADE_SALE","SECONDARY","RECAPITALIZATION","WRITE_OFF","DIVIDEND_RECAP"]},
+]},
+
+// ─── CREDIT ───
+FacilityType: { domain:"credit", file:"enums.schema.json", auditable:false, isEnum:true, values:["TERM_LOAN","REVOLVING_CREDIT","DELAYED_DRAW","BRIDGE_LOAN","UNITRANCHE","FIRST_LIEN","SECOND_LIEN","MEZZANINE","PIK"], properties:[]},
+RateType: { domain:"credit", file:"enums.schema.json", auditable:false, isEnum:true, values:["FIXED","FLOATING","PIK","FIXED_PLUS_PIK","FLOATING_PLUS_PIK"], properties:[]},
+RateIndex: { domain:"credit", file:"enums.schema.json", auditable:false, isEnum:true, values:["SOFR","TERM_SOFR","EURIBOR","SONIA","PRIME","FED_FUNDS"], properties:[]},
+SeniorityLevel: { domain:"credit", file:"enums.schema.json", auditable:false, isEnum:true, values:["SUPER_SENIOR","SENIOR_SECURED","SENIOR_UNSECURED","SUBORDINATED","MEZZANINE","JUNIOR","EQUITY"], properties:[]},
+
+Facility: { domain:"credit", file:"facility.schema.json", auditable:true, properties:[
+  {n:"name",t:"string",r:true,d:"Facility name"},
+  {n:"borrower_id",t:"string",f:"uuid",r:true,ref:"Borrower",d:"Reference to the borrower"},
+  {n:"facility_type",t:"FacilityType",r:true,ref:"FacilityType"},
+  {n:"total_commitment",t:"Money",r:true,ref:"Money"},
+  {n:"funded_amount",t:"Money",r:false,ref:"Money"},{n:"unfunded_amount",t:"Money",r:false,ref:"Money"},
+  {n:"currency",t:"Currency",r:true,ref:"Currency"},
+  {n:"seniority",t:"SeniorityLevel",r:true,ref:"SeniorityLevel"},
+  {n:"closing_date",t:"string",f:"date",r:true},{n:"maturity_date",t:"string",f:"date",r:true},
+  {n:"tranches",t:"Tranche[]",r:false,ref:"Tranche",arr:true},
+  {n:"status",t:"enum",r:true,ev:["ACTIVE","DRAWN","FULLY_REPAID","DEFAULTED","RESTRUCTURED"]},
+  {n:"external_ids",t:"ExternalId[]",r:false,ref:"ExternalId",arr:true},
+]},
+Tranche: { domain:"credit", file:"facility.schema.json", auditable:false, properties:[
+  {n:"tranche_id",t:"string",f:"uuid",r:true},
+  {n:"tranche_name",t:"string",r:true,d:"Descriptive name (e.g., Term Loan A, Revolver)"},
+  {n:"commitment_amount",t:"Money",r:true,ref:"Money"},
+  {n:"funded_amount",t:"Money",r:false,ref:"Money"},
+  {n:"rate_definition",t:"RateDefinition",r:true,ref:"RateDefinition"},
+  {n:"seniority",t:"SeniorityLevel",r:true,ref:"SeniorityLevel"},
+]},
+RateDefinition: { domain:"credit", file:"interest.schema.json", auditable:false, properties:[
+  {n:"rate_type",t:"RateType",r:true,ref:"RateType"},
+  {n:"fixed_rate",t:"Percentage",r:false,ref:"Percentage"},
+  {n:"spread",t:"BasisPoints",r:false,ref:"BasisPoints",d:"Spread over reference index (bps)"},
+  {n:"index",t:"RateIndex",r:false,ref:"RateIndex"},
+  {n:"floor",t:"Percentage",r:false,ref:"Percentage",d:"Minimum rate floor"},
+  {n:"cap",t:"Percentage",r:false,ref:"Percentage",d:"Maximum rate cap"},
+  {n:"day_count",t:"DayCount",r:true,ref:"DayCount"},
+  {n:"pik_rate",t:"Percentage",r:false,ref:"Percentage",d:"Payment-in-kind interest rate"},
+]},
+InterestPeriod: { domain:"credit", file:"interest.schema.json", auditable:false, properties:[
+  {n:"facility_id",t:"string",f:"uuid",r:true,ref:"Facility"},
+  {n:"tranche_id",t:"string",f:"uuid",r:false,ref:"Tranche"},
+  {n:"period_start",t:"string",f:"date",r:true},{n:"period_end",t:"string",f:"date",r:true},
+  {n:"principal_balance",t:"Money",r:true,ref:"Money"},
+  {n:"applicable_rate",t:"Percentage",r:true,ref:"Percentage"},
+  {n:"interest_amount",t:"Money",r:true,ref:"Money"},
+  {n:"pik_amount",t:"Money",r:false,ref:"Money"},{n:"paid",t:"boolean",r:true},
+]},
+Covenant: { domain:"credit", file:"covenants.schema.json", auditable:false, properties:[
+  {n:"facility_id",t:"string",f:"uuid",r:true,ref:"Facility"},
+  {n:"covenant_type",t:"CovenantType",r:true,ref:"CovenantType"},
+  {n:"description",t:"string",r:true},
+  {n:"threshold_value",t:"number",r:true},{n:"threshold_operator",t:"enum",r:true,ev:["LTE","GTE","LT","GT","EQ"]},
+  {n:"testing_frequency",t:"enum",r:true,ev:["MONTHLY","QUARTERLY","SEMI_ANNUAL","ANNUAL"]},
+  {n:"cure_period_days",t:"integer",r:false},{n:"springing_trigger",t:"string",r:false},
+]},
+CovenantType: { domain:"credit", file:"covenants.schema.json", auditable:false, isEnum:true, values:["LEVERAGE_RATIO","INTEREST_COVERAGE","FIXED_CHARGE_COVERAGE","DEBT_TO_EBITDA","MINIMUM_LIQUIDITY","MINIMUM_REVENUE","CAPEX_LIMIT","INCURRENCE","SPRINGING","OTHER"], properties:[]},
+CovenantTest: { domain:"credit", file:"covenants.schema.json", auditable:false, properties:[
+  {n:"covenant_id",t:"string",f:"uuid",r:true,ref:"Covenant"},
+  {n:"test_date",t:"string",f:"date",r:true},
+  {n:"actual_value",t:"number",r:true},{n:"threshold_value",t:"number",r:true},
+  {n:"in_compliance",t:"boolean",r:true},{n:"notes",t:"string",r:false},
+]},
+AmortizationSchedule: { domain:"credit", file:"amortization.schema.json", auditable:true, properties:[
+  {n:"facility_id",t:"string",f:"uuid",r:true,ref:"Facility"},
+  {n:"schedule_type",t:"enum",r:true,ev:["BULLET","AMORTIZING","CUSTOM","INTEREST_ONLY"]},
+  {n:"payments",t:"ScheduledPayment[]",r:false,ref:"ScheduledPayment",arr:true},
+]},
+ScheduledPayment: { domain:"credit", file:"amortization.schema.json", auditable:false, properties:[
+  {n:"payment_date",t:"string",f:"date",r:true},
+  {n:"principal_amount",t:"Money",r:true,ref:"Money"},
+  {n:"interest_amount",t:"Money",r:false,ref:"Money"},
+  {n:"total_amount",t:"Money",r:true,ref:"Money"},
+  {n:"status",t:"enum",r:true,ev:["SCHEDULED","PAID","OVERDUE","WAIVED"]},
+]},
+Borrower: { domain:"credit", file:"borrower.schema.json", auditable:true, extendsParty:true, properties:[
+  {n:"industry",t:"string",r:false},{n:"revenue",t:"Money",r:false,ref:"Money"},
+  {n:"ebitda",t:"Money",r:false,ref:"Money"},{n:"total_debt",t:"Money",r:false,ref:"Money"},
+  {n:"credit_rating",t:"string",r:false},{n:"sponsor_id",t:"string",f:"uuid",r:false,ref:"Party",d:"Reference to PE sponsor"},
+]},
+
+// ─── REAL ESTATE ───
+PropertyType: { domain:"real_estate", file:"enums.schema.json", auditable:false, isEnum:true, values:["OFFICE","RETAIL","INDUSTRIAL","MULTIFAMILY","HOSPITALITY","MIXED_USE","DATA_CENTER","LIFE_SCIENCE","SELF_STORAGE","STUDENT_HOUSING","SENIOR_LIVING","HEALTHCARE"], properties:[]},
+PropertyStatus: { domain:"real_estate", file:"enums.schema.json", auditable:false, isEnum:true, values:["ACQUISITION","DEVELOPMENT","STABILIZED","VALUE_ADD","REPOSITIONING","DISPOSITION","SOLD"], properties:[]},
+LeaseType: { domain:"real_estate", file:"enums.schema.json", auditable:false, isEnum:true, values:["GROSS","NET","DOUBLE_NET","TRIPLE_NET","MODIFIED_GROSS","PERCENTAGE"], properties:[]},
+
+Property: { domain:"real_estate", file:"property.schema.json", auditable:true, properties:[
+  {n:"name",t:"string",r:true},{n:"property_type",t:"PropertyType",r:true,ref:"PropertyType"},
+  {n:"status",t:"PropertyStatus",r:true,ref:"PropertyStatus"},
+  {n:"address",t:"Address",r:true,ref:"Address"},
+  {n:"square_footage",t:"number",r:true},{n:"year_built",t:"integer",r:false},
+  {n:"year_renovated",t:"integer",r:false},{n:"num_units",t:"integer",r:false},
+  {n:"num_floors",t:"integer",r:false},
+  {n:"occupancy_rate",t:"Percentage",r:false,ref:"Percentage"},
+  {n:"acquisition_date",t:"string",f:"date",r:false},
+  {n:"acquisition_price",t:"Money",r:false,ref:"Money"},
+  {n:"current_valuation",t:"PropertyValuation",r:false,ref:"PropertyValuation"},
+  {n:"external_ids",t:"ExternalId[]",r:false,ref:"ExternalId",arr:true},
+]},
+PropertyValuation: { domain:"real_estate", file:"property.schema.json", auditable:false, properties:[
+  {n:"valuation_date",t:"string",f:"date",r:true},
+  {n:"appraised_value",t:"Money",r:true,ref:"Money"},
+  {n:"cap_rate",t:"Percentage",r:false,ref:"Percentage"},
+  {n:"price_per_sqft",t:"Money",r:false,ref:"Money"},
+  {n:"valuation_method",t:"enum",r:true,ev:["APPRAISAL","COMPARABLE_SALES","DCF","REPLACEMENT_COST"]},
+  {n:"appraiser",t:"string",r:false},
+]},
+REVehicle: { domain:"real_estate", file:"vehicle.schema.json", auditable:true, properties:[
+  {n:"name",t:"string",r:true},
+  {n:"vehicle_type",t:"enum",r:true,ev:["OPEN_END_FUND","CLOSED_END_FUND","REIT","JOINT_VENTURE","SEPARATE_ACCOUNT","CLUB_DEAL"]},
+  {n:"strategy",t:"enum",r:true,ev:["CORE","CORE_PLUS","VALUE_ADD","OPPORTUNISTIC","DEVELOPMENT"]},
+  {n:"target_size",t:"Money",r:false,ref:"Money"},
+  {n:"gp_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"properties",t:"uuid[]",r:false,arr:true,d:"References to Property entities"},
+  {n:"region",t:"Region",r:false,ref:"Region"},
+  {n:"vintage_year",t:"integer",r:false},
+  {n:"status",t:"enum",r:false,ev:["FUNDRAISING","INVESTING","STABILIZED","HARVESTING","LIQUIDATED"]},
+]},
+Lease: { domain:"real_estate", file:"lease.schema.json", auditable:true, properties:[
+  {n:"property_id",t:"string",f:"uuid",r:true,ref:"Property"},
+  {n:"tenant",t:"Tenant",r:true,ref:"Tenant"},
+  {n:"suite_unit",t:"string",r:false},{n:"leased_sqft",t:"number",r:true},
+  {n:"lease_type",t:"LeaseType",r:true,ref:"LeaseType"},
+  {n:"start_date",t:"string",f:"date",r:true},{n:"end_date",t:"string",f:"date",r:true},
+  {n:"base_rent_monthly",t:"Money",r:true,ref:"Money"},
+  {n:"annual_escalation",t:"Percentage",r:false,ref:"Percentage"},
+  {n:"free_rent_months",t:"integer",r:false},
+  {n:"tenant_improvement_allowance",t:"Money",r:false,ref:"Money"},
+  {n:"options",t:"LeaseOption[]",r:false,ref:"LeaseOption",arr:true},
+]},
+Tenant: { domain:"real_estate", file:"lease.schema.json", auditable:false, properties:[
+  {n:"tenant_id",t:"string",f:"uuid",r:true},{n:"name",t:"string",r:true},
+  {n:"industry",t:"string",r:false},{n:"credit_rating",t:"string",r:false},
+]},
+LeaseOption: { domain:"real_estate", file:"lease.schema.json", auditable:false, properties:[
+  {n:"option_type",t:"enum",r:true,ev:["RENEWAL","EXPANSION","TERMINATION","RIGHT_OF_FIRST_REFUSAL","PURCHASE"]},
+  {n:"exercise_date",t:"string",f:"date",r:true},{n:"terms",t:"string",r:false},
+]},
+RentRoll: { domain:"real_estate", file:"lease.schema.json", auditable:false, properties:[
+  {n:"property_id",t:"string",f:"uuid",r:true,ref:"Property"},
+  {n:"as_of_date",t:"string",f:"date",r:true},
+  {n:"leases",t:"uuid[]",r:true,arr:true,d:"References to active Lease entities"},
+  {n:"total_monthly_rent",t:"Money",r:true,ref:"Money"},
+  {n:"occupied_sqft",t:"number",r:true},{n:"total_sqft",t:"number",r:true},
+  {n:"occupancy_rate",t:"Percentage",r:true,ref:"Percentage"},
+]},
+NOIStatement: { domain:"real_estate", file:"metrics.schema.json", auditable:false, properties:[
+  {n:"property_id",t:"string",f:"uuid",r:true,ref:"Property"},
+  {n:"period",t:"ReportingPeriod",r:true,ref:"ReportingPeriod"},
+  {n:"gross_revenue",t:"Money",r:true,ref:"Money"},{n:"vacancy_loss",t:"Money",r:true,ref:"Money"},
+  {n:"effective_gross_income",t:"Money",r:true,ref:"Money"},
+  {n:"operating_expenses",t:"Money",r:true,ref:"Money"},
+  {n:"net_operating_income",t:"Money",r:true,ref:"Money"},
+  {n:"capital_expenditures",t:"Money",r:false,ref:"Money"},
+]},
+Appraisal: { domain:"real_estate", file:"metrics.schema.json", auditable:true, properties:[
+  {n:"property_id",t:"string",f:"uuid",r:true,ref:"Property"},
+  {n:"appraisal_date",t:"string",f:"date",r:true},
+  {n:"appraised_value",t:"Money",r:true,ref:"Money"},
+  {n:"cap_rate",t:"Percentage",r:true,ref:"Percentage"},
+  {n:"noi_used",t:"Money",r:true,ref:"Money"},
+  {n:"approach",t:"enum",r:true,ev:["INCOME","SALES_COMPARISON","COST","COMBINED"]},
+  {n:"appraiser_firm",t:"string",r:true},{n:"appraiser_name",t:"string",r:false},
+]},
+
+// ─── DEAL ───
+DealStage: { domain:"deal", file:"enums.schema.json", auditable:false, isEnum:true, values:["SOURCING","SCREENING","DUE_DILIGENCE","IC_REVIEW","TERM_SHEET","DOCUMENTATION","CLOSING","ACTIVE","MONITORING","EXIT","CLOSED","PASSED"], properties:[]},
+DealRole: { domain:"deal", file:"enums.schema.json", auditable:false, isEnum:true, values:["LEAD","CO_LEAD","CO_INVESTOR","SYNDICATE_MEMBER","ADVISOR","ARRANGER","AGENT"], properties:[]},
+AssetClass: { domain:"deal", file:"enums.schema.json", auditable:false, isEnum:true, values:["PRIVATE_EQUITY","VENTURE_CAPITAL","PRIVATE_CREDIT","REAL_ESTATE","INFRASTRUCTURE","NATURAL_RESOURCES","SECONDARIES"], properties:[]},
+DealAssetType: { domain:"deal", file:"enums.schema.json", auditable:false, isEnum:true, values:["FACILITY","INVESTMENT","PROPERTY","LP_INTEREST"], properties:[]},
+
+Deal: { domain:"deal", file:"deal.schema.json", auditable:true, properties:[
+  {n:"name",t:"string",r:true,d:"Deal name (e.g., 'Acme Corp LBO')"},
+  {n:"description",t:"string",r:false},
+  {n:"asset_class",t:"AssetClass",r:true,ref:"AssetClass"},
+  {n:"stage",t:"DealStage",r:true,ref:"DealStage"},
+  {n:"deal_size",t:"Money",r:false,ref:"Money",d:"Total deal size"},
+  {n:"target_company",t:"string",r:false,d:"Name of the target company or asset"},
+  {n:"sector",t:"string",r:false},{n:"region",t:"Region",r:false,ref:"Region"},
+  {n:"country",t:"Country",r:false,ref:"Country"},
+  {n:"sourced_date",t:"string",f:"date",r:false},{n:"expected_close_date",t:"string",f:"date",r:false},
+  {n:"actual_close_date",t:"string",f:"date",r:false},
+  {n:"participants",t:"DealParticipant[]",r:false,ref:"DealParticipant",arr:true},
+  {n:"assets",t:"DealAsset[]",r:false,ref:"DealAsset",arr:true},
+  {n:"milestones",t:"DealMilestone[]",r:false,ref:"DealMilestone",arr:true},
+  {n:"documents",t:"uuid[]",r:false,arr:true,d:"References to Document entities"},
+]},
+DealParticipant: { domain:"deal", file:"deal.schema.json", auditable:false, properties:[
+  {n:"party_id",t:"string",f:"uuid",r:true,ref:"Party",d:"Reference to Party"},
+  {n:"role",t:"DealRole",r:true,ref:"DealRole"},
+  {n:"fund_id",t:"string",f:"uuid",r:false,ref:"Fund",d:"Fund through which this party is investing"},
+  {n:"commitment_amount",t:"Money",r:false,ref:"Money"},
+  {n:"ownership_percentage",t:"Percentage",r:false,ref:"Percentage"},
+]},
+DealMilestone: { domain:"deal", file:"deal.schema.json", auditable:false, properties:[
+  {n:"stage",t:"DealStage",r:true,ref:"DealStage"},
+  {n:"date",t:"string",f:"date",r:true},{n:"completed",t:"boolean",r:false,d:"Default: false"},
+  {n:"notes",t:"string",r:false},
+]},
+DealAsset: { domain:"deal", file:"deal_asset.schema.json", auditable:false, properties:[
+  {n:"asset_type",t:"DealAssetType",r:true,ref:"DealAssetType",d:"Discriminator for the referenced asset"},
+  {n:"label",t:"string",r:true,d:"Human-readable label (e.g., 'Senior Term Loan')"},
+  {n:"facility_id",t:"string",f:"uuid",r:false,ref:"Facility",d:"When asset_type = FACILITY"},
+  {n:"investment_id",t:"string",f:"uuid",r:false,ref:"Investment",d:"When asset_type = INVESTMENT"},
+  {n:"property_id",t:"string",f:"uuid",r:false,ref:"Property",d:"When asset_type = PROPERTY"},
+  {n:"lp_interest_id",t:"string",f:"uuid",r:false,ref:"LPInterest",d:"When asset_type = LP_INTEREST"},
+  {n:"notional_amount",t:"Money",r:false,ref:"Money",d:"Notional or face value"},
+]},
+
+// ─── SECONDARIES ───
+TradeDirection: { domain:"secondaries", file:"enums.schema.json", auditable:false, isEnum:true, values:["BUY","SELL"], properties:[]},
+SecondaryTradeType: { domain:"secondaries", file:"enums.schema.json", auditable:false, isEnum:true, values:["LP_INTEREST_TRANSFER","DIRECT_SECONDARY","GP_LED_SECONDARY","TENDER_OFFER","STRIP_SALE","STAPLED_SECONDARY","PREFERRED_EQUITY"], properties:[]},
+TransactionStage: { domain:"secondaries", file:"enums.schema.json", auditable:false, isEnum:true, values:["MARKETING","BIDDING","EXCLUSIVITY","DUE_DILIGENCE","DOCUMENTATION","GP_CONSENT","CLOSING","SETTLED","CANCELLED"], properties:[]},
+
+LPInterest: { domain:"secondaries", file:"lp_interest.schema.json", auditable:true, properties:[
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund"},{n:"fund_name",t:"string",r:false},
+  {n:"seller_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"commitment_id",t:"string",f:"uuid",r:false,ref:"Commitment"},
+  {n:"total_commitment",t:"Money",r:true,ref:"Money"},
+  {n:"funded_amount",t:"Money",r:false,ref:"Money"},{n:"unfunded_amount",t:"Money",r:false,ref:"Money"},
+  {n:"nav",t:"Money",r:true,ref:"Money",d:"Most recent NAV"},
+  {n:"nav_date",t:"string",f:"date",r:false},
+  {n:"distributions_received",t:"Money",r:false,ref:"Money"},
+  {n:"vintage_year",t:"integer",r:false},{n:"fund_strategy",t:"string",r:false},
+  {n:"remaining_fund_life_years",t:"number",r:false},
+]},
+SecondaryTrade: { domain:"secondaries", file:"trade.schema.json", auditable:true, properties:[
+  {n:"trade_type",t:"SecondaryTradeType",r:true,ref:"SecondaryTradeType"},
+  {n:"lp_interest_id",t:"string",f:"uuid",r:true,ref:"LPInterest"},
+  {n:"direction",t:"TradeDirection",r:true,ref:"TradeDirection"},
+  {n:"buyer_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"seller_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"broker_id",t:"string",f:"uuid",r:false,ref:"Party"},
+  {n:"agreed_price_pct_nav",t:"Percentage",r:false,ref:"Percentage"},
+  {n:"agreed_amount",t:"Money",r:false,ref:"Money"},
+  {n:"unfunded_assumed",t:"Money",r:false,ref:"Money"},
+  {n:"trade_date",t:"string",f:"date",r:true},
+  {n:"expected_close_date",t:"string",f:"date",r:false},
+  {n:"bids",t:"Bid[]",r:false,ref:"Bid",arr:true},
+  {n:"offers",t:"Offer[]",r:false,ref:"Offer",arr:true},
+]},
+Bid: { domain:"secondaries", file:"trade.schema.json", auditable:false, properties:[
+  {n:"bid_id",t:"string",f:"uuid",r:true},{n:"bidder_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"bid_date",t:"string",f:"date",r:true},
+  {n:"bid_price_pct_nav",t:"Percentage",r:true,ref:"Percentage",d:"Bid as % of NAV"},
+  {n:"bid_amount",t:"Money",r:false,ref:"Money"},{n:"assumes_unfunded",t:"boolean",r:false},
+  {n:"conditions",t:"string",r:false},
+  {n:"status",t:"enum",r:true,ev:["SUBMITTED","ACCEPTED","REJECTED","EXPIRED","WITHDRAWN"]},
+]},
+Offer: { domain:"secondaries", file:"trade.schema.json", auditable:false, properties:[
+  {n:"offer_id",t:"string",f:"uuid",r:true},{n:"seller_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"offer_date",t:"string",f:"date",r:true},
+  {n:"asking_price_pct_nav",t:"Percentage",r:true,ref:"Percentage"},
+  {n:"asking_amount",t:"Money",r:false,ref:"Money"},{n:"includes_unfunded",t:"boolean",r:false},
+  {n:"status",t:"enum",r:true,ev:["ACTIVE","ACCEPTED","EXPIRED","WITHDRAWN"]},
+]},
+Transaction: { domain:"secondaries", file:"transaction.schema.json", auditable:true, properties:[
+  {n:"trade_id",t:"string",f:"uuid",r:true,ref:"SecondaryTrade"},
+  {n:"stage",t:"TransactionStage",r:true,ref:"TransactionStage"},
+  {n:"milestones",t:"TransactionMilestone[]",r:false,ref:"TransactionMilestone",arr:true},
+  {n:"gp_consent_required",t:"boolean",r:false,d:"Default: true"},
+  {n:"gp_consent_received",t:"boolean",r:false},{n:"gp_consent_date",t:"string",f:"date",r:false},
+  {n:"transfer_agent",t:"string",f:"uuid",r:false,ref:"Party"},
+  {n:"legal_counsel_buyer",t:"string",f:"uuid",r:false,ref:"Party"},
+  {n:"legal_counsel_seller",t:"string",f:"uuid",r:false,ref:"Party"},
+  {n:"documents",t:"uuid[]",r:false,arr:true,d:"References to Document entities"},
+  {n:"closing_date",t:"string",f:"date",r:false},{n:"effective_date",t:"string",f:"date",r:false},
+]},
+TransactionMilestone: { domain:"secondaries", file:"transaction.schema.json", auditable:false, properties:[
+  {n:"stage",t:"TransactionStage",r:true,ref:"TransactionStage"},
+  {n:"date",t:"string",f:"date",r:true},{n:"completed",t:"boolean",r:false},{n:"notes",t:"string",r:false},
+]},
+TransferRecord: { domain:"secondaries", file:"transfer.schema.json", auditable:true, properties:[
+  {n:"transaction_id",t:"string",f:"uuid",r:true,ref:"Transaction"},
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund"},
+  {n:"from_investor_id",t:"string",f:"uuid",r:true,ref:"Party",d:"Selling LP"},
+  {n:"to_investor_id",t:"string",f:"uuid",r:true,ref:"Party",d:"Buying LP"},
+  {n:"old_commitment_id",t:"string",f:"uuid",r:false,ref:"Commitment"},
+  {n:"new_commitment_id",t:"string",f:"uuid",r:false,ref:"Commitment"},
+  {n:"transferred_commitment",t:"Money",r:true,ref:"Money"},
+  {n:"transferred_unfunded",t:"Money",r:false,ref:"Money"},
+  {n:"purchase_price",t:"Money",r:true,ref:"Money"},
+  {n:"effective_date",t:"string",f:"date",r:true},
+  {n:"settlement_date",t:"string",f:"date",r:false},
+  {n:"transfer_fee",t:"Money",r:false,ref:"Money",d:"Fee charged by GP"},
+]},
+
+// ─── PORTFOLIO ───
+CashFlowType: { domain:"portfolio", file:"cash_flow.schema.json", auditable:false, isEnum:true, values:["CAPITAL_CALL","DISTRIBUTION","INTEREST_PAYMENT","PRINCIPAL_PAYMENT","FEE","DIVIDEND","RENT","PURCHASE","SALE","OTHER"], properties:[]},
+
+Portfolio: { domain:"portfolio", file:"portfolio.schema.json", auditable:true, properties:[
+  {n:"name",t:"string",r:true},{n:"owner_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"as_of_date",t:"string",f:"date",r:true},
+  {n:"positions",t:"Position[]",r:false,ref:"Position",arr:true},
+  {n:"total_nav",t:"Money",r:false,ref:"Money"},
+  {n:"total_commitments",t:"Money",r:false,ref:"Money"},
+  {n:"total_unfunded",t:"Money",r:false,ref:"Money"},
+]},
+Position: { domain:"portfolio", file:"position.schema.json", auditable:false, isDiscriminated:true,
+  discriminator:"position_type", variants:["FundPosition","CreditPosition","RealEstatePosition"], properties:[]},
+FundPosition: { domain:"portfolio", file:"position.schema.json", auditable:true, properties:[
+  {n:"position_type",t:"const",r:true,d:'"FUND"'},
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund"},
+  {n:"commitment_id",t:"string",f:"uuid",r:false,ref:"Commitment"},
+  {n:"commitment_amount",t:"Money",r:true,ref:"Money"},
+  {n:"funded_amount",t:"Money",r:false,ref:"Money"},{n:"unfunded_amount",t:"Money",r:false,ref:"Money"},
+  {n:"distributions_received",t:"Money",r:false,ref:"Money"},
+  {n:"current_nav",t:"Money",r:true,ref:"Money"},{n:"nav_date",t:"string",f:"date",r:false},
+  {n:"dpi",t:"number",r:false,d:"Distributions to Paid-In"},
+  {n:"tvpi",t:"number",r:false,d:"Total Value to Paid-In"},
+  {n:"irr",t:"Percentage",r:false,ref:"Percentage",d:"Net IRR"},
+]},
+CreditPosition: { domain:"portfolio", file:"position.schema.json", auditable:true, properties:[
+  {n:"position_type",t:"const",r:true,d:'"CREDIT"'},
+  {n:"facility_id",t:"string",f:"uuid",r:true,ref:"Facility"},
+  {n:"tranche_id",t:"string",f:"uuid",r:false,ref:"Tranche"},
+  {n:"par_amount",t:"Money",r:true,ref:"Money"},{n:"market_value",t:"Money",r:true,ref:"Money"},
+  {n:"accrued_interest",t:"Money",r:false,ref:"Money"},
+  {n:"current_rate",t:"Percentage",r:false,ref:"Percentage"},
+  {n:"maturity_date",t:"string",f:"date",r:false},
+  {n:"price",t:"number",r:false,d:"Current price as % of par (e.g., 98.5)"},
+]},
+RealEstatePosition: { domain:"portfolio", file:"position.schema.json", auditable:true, properties:[
+  {n:"position_type",t:"const",r:true,d:'"REAL_ESTATE"'},
+  {n:"property_id",t:"string",f:"uuid",r:true,ref:"Property"},
+  {n:"vehicle_id",t:"string",f:"uuid",r:false,ref:"REVehicle"},
+  {n:"ownership_percentage",t:"Percentage",r:false,ref:"Percentage"},
+  {n:"cost_basis",t:"Money",r:true,ref:"Money"},{n:"current_valuation",t:"Money",r:true,ref:"Money"},
+  {n:"valuation_date",t:"string",f:"date",r:false},
+  {n:"noi_annual",t:"Money",r:false,ref:"Money"},{n:"cap_rate",t:"Percentage",r:false,ref:"Percentage"},
+]},
+CashFlow: { domain:"portfolio", file:"cash_flow.schema.json", auditable:true, properties:[
+  {n:"portfolio_id",t:"string",f:"uuid",r:false,ref:"Portfolio"},
+  {n:"position_id",t:"string",f:"uuid",r:false,ref:"Position"},
+  {n:"cash_flow_type",t:"CashFlowType",r:true,ref:"CashFlowType"},
+  {n:"direction",t:"enum",r:true,ev:["INFLOW","OUTFLOW"]},
+  {n:"amount",t:"Money",r:true,ref:"Money"},{n:"cash_flow_date",t:"string",f:"date",r:true},
+  {n:"description",t:"string",r:false},
+  {n:"source_entity_id",t:"string",f:"uuid",r:false,d:"UUID of originating entity"},
+  {n:"source_entity_type",t:"string",r:false},
+]},
+PerformanceMetrics: { domain:"portfolio", file:"performance.schema.json", auditable:false, properties:[
+  {n:"as_of_date",t:"string",f:"date",r:true},
+  {n:"irr_net",t:"number",r:false,d:"Net IRR (0.15 = 15%)"},{n:"irr_gross",t:"number",r:false},
+  {n:"tvpi",t:"number",r:false,d:"Total Value to Paid-In"},
+  {n:"dpi",t:"number",r:false,d:"Distributions to Paid-In"},
+  {n:"rvpi",t:"number",r:false,d:"Residual Value to Paid-In"},
+  {n:"moic",t:"number",r:false,d:"Multiple on Invested Capital"},
+  {n:"pme",t:"number",r:false,d:"Public Market Equivalent (Kaplan-Schoar)"},
+]},
+FundPerformance: { domain:"portfolio", file:"performance.schema.json", auditable:true, properties:[
+  {n:"fund_id",t:"string",f:"uuid",r:true,ref:"Fund"},
+  {n:"reporting_period",t:"ReportingPeriod",r:true,ref:"ReportingPeriod"},
+  {n:"metrics",t:"PerformanceMetrics",r:true,ref:"PerformanceMetrics"},
+  {n:"total_committed",t:"Money",r:false,ref:"Money"},{n:"total_called",t:"Money",r:false,ref:"Money"},
+  {n:"total_distributed",t:"Money",r:false,ref:"Money"},{n:"total_nav",t:"Money",r:false,ref:"Money"},
+  {n:"num_investments",t:"integer",r:false},{n:"num_realized",t:"integer",r:false},
+  {n:"num_unrealized",t:"integer",r:false},
+]},
+
+// ─── TRADE LIFECYCLE ───
+TradeStatus: { domain:"trade_lifecycle", file:"trade.schema.json", auditable:false, isEnum:true, values:["INDICATIVE","NEGOTIATING","AGREED","PENDING_DOCUMENTATION","PENDING_SETTLEMENT","SETTLED","CANCELLED","FAILED"], properties:[]},
+
+Trade: { domain:"trade_lifecycle", file:"trade.schema.json", auditable:true, properties:[
+  {n:"trade_date",t:"string",f:"date",r:true},{n:"settlement_date",t:"string",f:"date",r:false},
+  {n:"buyer_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"seller_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"broker_id",t:"string",f:"uuid",r:false,ref:"Party"},
+  {n:"asset_description",t:"string",r:false},{n:"asset_reference_id",t:"string",f:"uuid",r:false},
+  {n:"price",t:"Money",r:true,ref:"Money"},{n:"notional_amount",t:"Money",r:false,ref:"Money"},
+  {n:"status",t:"TradeStatus",r:true,ref:"TradeStatus"},
+  {n:"transitions",t:"TradeStateTransition[]",r:false,ref:"TradeStateTransition",arr:true},
+  {n:"documents",t:"uuid[]",r:false,arr:true,d:"References to Document entities"},
+]},
+TradeStateTransition: { domain:"trade_lifecycle", file:"trade.schema.json", auditable:false, properties:[
+  {n:"from_status",t:"TradeStatus",r:true,ref:"TradeStatus"},
+  {n:"to_status",t:"TradeStatus",r:true,ref:"TradeStatus"},
+  {n:"transition_date",t:"string",f:"date-time",r:true},
+  {n:"transitioned_by",t:"string",r:false},{n:"notes",t:"string",r:false},
+]},
+SettlementInstruction: { domain:"trade_lifecycle", file:"settlement.schema.json", auditable:true, properties:[
+  {n:"trade_id",t:"string",f:"uuid",r:true,ref:"Trade"},
+  {n:"payment_amount",t:"Money",r:true,ref:"Money"},
+  {n:"settlement_date",t:"string",f:"date",r:true},
+  {n:"payer_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"payee_id",t:"string",f:"uuid",r:true,ref:"Party"},
+  {n:"payment_method",t:"enum",r:false,ev:["WIRE","ACH","CHECK","DTC","IN_KIND"]},
+  {n:"bank_name",t:"string",r:false},{n:"account_number",t:"string",r:false},
+  {n:"routing_number",t:"string",r:false},{n:"swift_code",t:"string",r:false},
+  {n:"reference",t:"string",r:false},
+  {n:"status",t:"enum",r:true,ev:["PENDING","INSTRUCTED","CONFIRMED","SETTLED","FAILED","CANCELLED"]},
+  {n:"settled_at",t:"string",f:"date-time",r:false},
+]},
+Document: { domain:"trade_lifecycle", file:"documentation.schema.json", auditable:true, properties:[
+  {n:"document_type",t:"DocumentType",r:true,ref:"DocumentType"},
+  {n:"title",t:"string",r:true},{n:"description",t:"string",r:false},
+  {n:"file_name",t:"string",r:false},{n:"mime_type",t:"string",r:false},
+  {n:"file_size_bytes",t:"integer",r:false},{n:"storage_url",t:"string",f:"uri",r:false},
+  {n:"version",t:"integer",r:false,d:"Default: 1"},{n:"uploaded_by",t:"string",r:false},
+  {n:"entity_id",t:"string",f:"uuid",r:false,d:"UUID of the related entity"},
+  {n:"entity_type",t:"string",r:false},
+  {n:"execution_date",t:"string",f:"date",r:false,d:"Date executed/signed"},
+  {n:"expiry_date",t:"string",f:"date",r:false},
+]},
+DocumentRequirement: { domain:"trade_lifecycle", file:"documentation.schema.json", auditable:false, properties:[
+  {n:"document_type",t:"DocumentType",r:true,ref:"DocumentType"},
+  {n:"description",t:"string",r:false},{n:"required",t:"boolean",r:false,d:"Default: true"},
+  {n:"received",t:"boolean",r:false,d:"Default: false"},
+  {n:"document_id",t:"string",f:"uuid",r:false,ref:"Document"},
+  {n:"due_date",t:"string",f:"date",r:false},
+]},
+};
+
+// ── Tree Definitions ───────────────────────────────────────
+const DOMAIN_COLORS = {
+  core:"var(--core)",fund:"var(--fund)",credit:"var(--credit)",
+  real_estate:"var(--real_estate)",deal:"var(--deal)",secondaries:"var(--secondaries)",
+  portfolio:"var(--portfolio)",trade_lifecycle:"var(--trade_lifecycle)"
+};
+
+// Tree structure: {name, entity, children[], arr}
+const DEAL_TREE = {
+  name:"Deal", entity:"Deal", children:[
+    {name:"DealParticipant", entity:"DealParticipant", arr:true, children:[
+      {name:"Party", entity:"Party", children:[
+        {name:"Address", entity:"Address", children:[]},
+        {name:"ContactInfo", entity:"ContactInfo", arr:true, children:[]},
+      ]},
+      {name:"Fund", entity:"Fund", children:[]},
+    ]},
+    {name:"DealAsset", entity:"DealAsset", arr:true, children:[
+      {name:"Facility (FACILITY)", entity:"Facility", children:[
+        {name:"Tranche", entity:"Tranche", arr:true, children:[
+          {name:"RateDefinition", entity:"RateDefinition", children:[]},
+        ]},
+        {name:"Borrower", entity:"Borrower", children:[]},
+        {name:"Covenant", entity:"Covenant", children:[
+          {name:"CovenantTest", entity:"CovenantTest", children:[]},
+        ]},
+        {name:"AmortizationSchedule", entity:"AmortizationSchedule", children:[
+          {name:"ScheduledPayment", entity:"ScheduledPayment", arr:true, children:[]},
+        ]},
+        {name:"InterestPeriod", entity:"InterestPeriod", children:[]},
+      ]},
+      {name:"Investment (INVESTMENT)", entity:"Investment", children:[
+        {name:"PortfolioCompany", entity:"PortfolioCompany", children:[]},
+        {name:"Realization", entity:"Realization", children:[]},
+      ]},
+      {name:"Property (PROPERTY)", entity:"Property", children:[
+        {name:"PropertyValuation", entity:"PropertyValuation", children:[]},
+        {name:"Lease", entity:"Lease", children:[
+          {name:"Tenant", entity:"Tenant", children:[]},
+          {name:"LeaseOption", entity:"LeaseOption", arr:true, children:[]},
+        ]},
+        {name:"RentRoll", entity:"RentRoll", children:[]},
+        {name:"NOIStatement", entity:"NOIStatement", children:[]},
+        {name:"Appraisal", entity:"Appraisal", children:[]},
+      ]},
+      {name:"LPInterest (LP_INTEREST)", entity:"LPInterest", children:[
+        {name:"SecondaryTrade", entity:"SecondaryTrade", children:[
+          {name:"Bid", entity:"Bid", arr:true, children:[]},
+          {name:"Offer", entity:"Offer", arr:true, children:[]},
+        ]},
+        {name:"Transaction", entity:"Transaction", children:[
+          {name:"TransactionMilestone", entity:"TransactionMilestone", arr:true, children:[]},
+          {name:"TransferRecord", entity:"TransferRecord", children:[]},
+        ]},
+      ]},
+    ]},
+    {name:"DealMilestone", entity:"DealMilestone", arr:true, children:[]},
+    {name:"Document", entity:"Document", children:[]},
+  ]
+};
+
+const FUND_TREE = {
+  name:"Fund", entity:"Fund", children:[
+    {name:"FundTerms", entity:"FundTerms", children:[]},
+    {name:"Party (GP)", entity:"Party", children:[
+      {name:"Address", entity:"Address", children:[]},
+      {name:"ContactInfo", entity:"ContactInfo", arr:true, children:[]},
+    ]},
+    {name:"Commitment", entity:"Commitment", children:[
+      {name:"SideLetterTerms", entity:"SideLetterTerms", children:[]},
+    ]},
+    {name:"CapitalCall", entity:"CapitalCall", children:[
+      {name:"CallAllocation", entity:"CallAllocation", arr:true, children:[]},
+    ]},
+    {name:"Distribution", entity:"Distribution", children:[
+      {name:"DistributionAllocation", entity:"DistributionAllocation", arr:true, children:[]},
+    ]},
+    {name:"NAVStatement", entity:"NAVStatement", children:[
+      {name:"InvestorNAV", entity:"InvestorNAV", arr:true, children:[]},
+      {name:"InvestmentValuation", entity:"InvestmentValuation", arr:true, children:[]},
+    ]},
+    {name:"WaterfallStructure", entity:"WaterfallStructure", children:[
+      {name:"WaterfallTier", entity:"WaterfallTier", arr:true, children:[]},
+      {name:"CarryAllocation", entity:"CarryAllocation", children:[]},
+    ]},
+    {name:"Investment", entity:"Investment", children:[
+      {name:"PortfolioCompany", entity:"PortfolioCompany", children:[]},
+      {name:"Realization", entity:"Realization", children:[]},
+    ]},
+    {name:"Portfolio", entity:"Portfolio", children:[
+      {name:"Position", entity:"Position", children:[
+        {name:"FundPosition", entity:"FundPosition", children:[]},
+        {name:"CreditPosition", entity:"CreditPosition", children:[]},
+        {name:"RealEstatePosition", entity:"RealEstatePosition", children:[]},
+      ]},
+      {name:"CashFlow", entity:"CashFlow", children:[]},
+    ]},
+    {name:"FundPerformance", entity:"FundPerformance", children:[
+      {name:"PerformanceMetrics", entity:"PerformanceMetrics", children:[]},
+    ]},
+  ]
+};
+
+// ── State ───
+let breadcrumb = [];
+let selectedEl = null;
+
+// ── Render Tree ─────────────────────────────────────────────
+function renderTree(node, container, depth=0) {
+  const ent = ENTITIES[node.entity];
+  const color = ent ? DOMAIN_COLORS[ent.domain] : "var(--text2)";
+  const hasChildren = node.children && node.children.length > 0;
+
+  const wrapper = document.createElement("div");
+  wrapper.className = "tree-node";
+  wrapper.dataset.entity = node.entity;
+  wrapper.dataset.name = node.name.toLowerCase();
+
+  const item = document.createElement("div");
+  item.className = "tree-item";
+  item.innerHTML = `
+    ${hasChildren ? '<span class="arrow">▶</span>' : '<span style="width:14px;display:inline-block"></span>'}
+    <span class="dot" style="background:${color}"></span>
+    <span class="entity-name">${node.name}</span>
+    ${node.arr ? '<span class="array-badge">[]</span>' : ''}
+  `;
+
+  item.addEventListener("click", (e) => {
+    e.stopPropagation();
+    selectEntity(node.entity, node.name, item);
+    if (hasChildren) {
+      const ch = wrapper.querySelector(":scope > .tree-item-children");
+      const arrow = item.querySelector(".arrow");
+      if (ch) { ch.classList.toggle("open"); arrow && arrow.classList.toggle("open"); }
+    }
+  });
+
+  wrapper.appendChild(item);
+
+  if (hasChildren) {
+    const childContainer = document.createElement("div");
+    childContainer.className = "tree-item-children";
+    node.children.forEach(c => renderTree(c, childContainer, depth+1));
+    wrapper.appendChild(childContainer);
+  }
+
+  container.appendChild(wrapper);
+}
+
+function buildSidebar() {
+  const tc = document.getElementById("tree-container");
+  tc.innerHTML = "";
+
+  [{ label:"Deal", tree:DEAL_TREE, color:"var(--deal)" },
+   { label:"Fund", tree:FUND_TREE, color:"var(--fund)" }].forEach(root => {
+    const section = document.createElement("div");
+    section.className = "tree-root";
+
+    const label = document.createElement("div");
+    label.className = "tree-root-label";
+    label.innerHTML = `<span class="arrow open">▶</span><span class="dot" style="background:${root.color};width:10px;height:10px;border-radius:50%;margin:0 8px 0 4px;flex-shrink:0"></span>${root.label}`;
+
+    const children = document.createElement("div");
+    children.className = "tree-children open";
+
+    // Render root entity itself as clickable
+    const rootItem = document.createElement("div");
+    rootItem.className = "tree-item";
+    rootItem.style.paddingLeft = "20px";
+    rootItem.innerHTML = `<span style="width:14px;display:inline-block"></span><span class="dot" style="background:${root.color}"></span><span class="entity-name">${root.tree.name} (root)</span>`;
+    rootItem.addEventListener("click", (e) => {
+      e.stopPropagation();
+      selectEntity(root.tree.entity, root.tree.name, rootItem);
+    });
+    rootItem.dataset.entity = root.tree.entity;
+    rootItem.dataset.name = root.tree.name.toLowerCase();
+    children.appendChild(rootItem);
+
+    root.tree.children.forEach(c => renderTree(c, children));
+
+    label.addEventListener("click", () => {
+      children.classList.toggle("open");
+      label.querySelector(".arrow").classList.toggle("open");
+    });
+
+    section.appendChild(label);
+    section.appendChild(children);
+    tc.appendChild(section);
+  });
+}
+
+// ── Detail Panel ────────────────────────────────────────────
+function selectEntity(entityKey, displayName, treeEl) {
+  if (selectedEl) selectedEl.classList.remove("selected");
+  if (treeEl) { treeEl.classList.add("selected"); selectedEl = treeEl; }
+
+  // Update breadcrumb
+  const existingIdx = breadcrumb.findIndex(b => b.key === entityKey);
+  if (existingIdx >= 0) {
+    breadcrumb = breadcrumb.slice(0, existingIdx + 1);
+  } else {
+    breadcrumb.push({ key: entityKey, name: displayName || entityKey });
+  }
+  renderBreadcrumb();
+  renderDetail(entityKey);
+}
+
+function navigateToEntity(entityKey) {
+  // Find and expand in tree
+  const allItems = document.querySelectorAll(".tree-item");
+  let target = null;
+  allItems.forEach(el => {
+    const wrapper = el.parentElement;
+    if (wrapper && wrapper.dataset.entity === entityKey) {
+      target = el;
+    }
+  });
+
+  // Expand ancestors
+  if (target) {
+    let parent = target.parentElement;
+    while (parent) {
+      if (parent.classList.contains("tree-item-children") || parent.classList.contains("tree-children")) {
+        parent.classList.add("open");
+        const prev = parent.previousElementSibling;
+        if (prev) {
+          const arrow = prev.querySelector(".arrow");
+          if (arrow) arrow.classList.add("open");
+        }
+      }
+      parent = parent.parentElement;
+    }
+  }
+
+  selectEntity(entityKey, entityKey, target);
+}
+
+function renderBreadcrumb() {
+  const bc = document.getElementById("breadcrumb");
+  bc.innerHTML = "";
+  breadcrumb.forEach((b, i) => {
+    if (i > 0) {
+      const sep = document.createElement("span");
+      sep.className = "sep";
+      sep.textContent = "›";
+      bc.appendChild(sep);
+    }
+    const span = document.createElement("span");
+    span.textContent = b.name;
+    if (i < breadcrumb.length - 1) {
+      span.addEventListener("click", () => navigateToEntity(b.key));
+    } else {
+      span.style.color = "var(--text)";
+      span.style.cursor = "default";
+    }
+    bc.appendChild(span);
+  });
+}
+
+function renderDetail(entityKey) {
+  const ent = ENTITIES[entityKey];
+  if (!ent) return;
+  const dc = document.getElementById("detail-content");
+  const color = DOMAIN_COLORS[ent.domain];
+  let html = "";
+
+  // Title
+  html += `<div id="detail-title">${entityKey}</div>`;
+
+  // Meta badges
+  html += `<div id="detail-meta">`;
+  html += `<span class="badge" style="color:${color};border-color:${color}">${ent.domain.replace(/_/g,' ')}</span>`;
+  if (ent.auditable) html += `<span class="badge" style="color:var(--accent);border-color:var(--accent)">Auditable</span>`;
+  if (ent.isEnum) html += `<span class="badge" style="color:var(--text2);border-color:var(--text2)">Enum</span>`;
+  if (ent.isDiscriminated) html += `<span class="badge" style="color:#d29922;border-color:#d29922">Discriminated Union</span>`;
+  if (ent.extendsParty) html += `<span class="badge" style="color:var(--core);border-color:var(--core)">extends Party</span>`;
+  html += `<br><span style="font-family:monospace;font-size:12px;color:var(--text2)">schemas/${ent.domain}/${ent.file}</span>`;
+  html += `</div>`;
+
+  // Scalar type
+  if (ent.scalar) {
+    html += `<div class="detail-section"><h3>Type</h3><p style="font-size:14px">${ent.scalarType} — ${ent.scalarDesc}</p></div>`;
+  }
+
+  // Enum values
+  if (ent.isEnum && ent.values && ent.values.length > 0) {
+    html += `<div class="detail-section"><h3>Values</h3><div class="enum-vals">`;
+    ent.values.forEach(v => html += `<span class="enum-val">${v}</span>`);
+    html += `</div></div>`;
+  }
+  if (ent.isEnum && ent.scalarDesc) {
+    html += `<div class="detail-section"><p style="font-size:13px;color:var(--text2)">${ent.scalarDesc}</p></div>`;
+  }
+
+  // Discriminated union
+  if (ent.isDiscriminated) {
+    html += `<div class="detail-section"><h3>Discriminator: ${ent.discriminator}</h3>`;
+    html += `<div style="display:flex;gap:8px;flex-wrap:wrap">`;
+    ent.variants.forEach(v => {
+      html += `<span class="ref-link" onclick="navigateToEntity('${v}')">${v}</span>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Auditable inherited fields
+  if (ent.auditable) {
+    html += `<div class="detail-section"><h3>Inherited from Auditable</h3>`;
+    html += `<table><tr><th>Property</th><th>Type</th><th>Req</th><th>Description</th></tr>`;
+    html += `<tr><td class="prop-name">id</td><td class="prop-type">string (uuid)</td><td class="prop-req">Yes</td><td>Unique identifier</td></tr>`;
+    html += `<tr><td class="prop-name">created_at</td><td class="prop-type">string (date-time)</td><td class="prop-req">Yes</td><td>Created timestamp</td></tr>`;
+    html += `<tr><td class="prop-name">updated_at</td><td class="prop-type">string (date-time)</td><td class="prop-req">No</td><td>Last updated timestamp</td></tr>`;
+    html += `</table></div>`;
+  }
+
+  // Properties
+  if (ent.properties && ent.properties.length > 0) {
+    html += `<div class="detail-section"><h3>Properties</h3>`;
+    html += `<table><tr><th>Property</th><th>Type</th><th>Req</th><th>Description</th></tr>`;
+    ent.properties.forEach(p => {
+      let typeStr = "";
+      if (p.ref && ENTITIES[p.ref]) {
+        typeStr = `<span class="ref-link" onclick="navigateToEntity('${p.ref}')">${p.t}</span>`;
+      } else if (p.ev) {
+        typeStr = `<span class="prop-type">enum</span>`;
+      } else {
+        typeStr = `<span class="prop-type">${p.t}${p.f ? ' ('+p.f+')' : ''}</span>`;
+      }
+
+      let desc = p.d || "";
+      if (p.ev) {
+        desc += (desc ? "<br>" : "") + `<div class="enum-vals" style="margin-top:2px">`;
+        p.ev.forEach(v => desc += `<span class="enum-val">${v}</span>`);
+        desc += `</div>`;
+      }
+
+      html += `<tr>
+        <td class="prop-name">${p.n}</td>
+        <td>${typeStr}</td>
+        <td class="prop-req">${p.r ? 'Yes' : 'No'}</td>
+        <td style="font-size:12px">${desc}</td>
+      </tr>`;
+    });
+    html += `</table></div>`;
+  }
+
+  dc.innerHTML = html;
+}
+
+// ── Search ──────────────────────────────────────────────────
+document.getElementById("search").addEventListener("input", (e) => {
+  const q = e.target.value.toLowerCase().trim();
+  const allNodes = document.querySelectorAll(".tree-node");
+
+  if (!q) {
+    allNodes.forEach(n => n.classList.remove("hidden"));
+    return;
+  }
+
+  allNodes.forEach(node => {
+    const name = node.dataset.name || "";
+    const entity = node.dataset.entity || "";
+    const matches = name.includes(q) || entity.toLowerCase().includes(q);
+    node.classList.toggle("hidden", !matches);
+
+    // If matches, ensure ancestors are visible and expanded
+    if (matches) {
+      let parent = node.parentElement;
+      while (parent) {
+        if (parent.classList.contains("tree-node")) parent.classList.remove("hidden");
+        if (parent.classList.contains("tree-item-children") || parent.classList.contains("tree-children")) {
+          parent.classList.add("open");
+          const prev = parent.previousElementSibling;
+          if (prev) {
+            const arrow = prev.querySelector(".arrow");
+            if (arrow) arrow.classList.add("open");
+          }
+        }
+        parent = parent.parentElement;
+      }
+    }
+  });
+});
+
+// ── Init ────────────────────────────────────────────────────
+buildSidebar();
+</script>
+</body>
+</html>
