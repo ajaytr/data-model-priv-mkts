@@ -4,6 +4,32 @@
   "title": "Issuer",
   "description": "The entity on the other side of a deal — the company, government, SPV, or fund that is issuing securities, borrowing, or being acquired. Distinct from Party, which represents participants in the ecosystem (GPs, LPs, lenders). An Issuer may optionally link to a Party record if the issuer is also a counterparty in other contexts.",
   "$defs": {
+    "JVParticipant": {
+      "type": "object",
+      "description": "A participating entity in a joint venture issuer, with their ownership stake and role. Used only when the Issuer's issuer_type is JOINT_VENTURE. Example: {\"party_id\": \"...\", \"name\": \"Brookfield Asset Management\", \"ownership_percentage\": 0.50, \"role\": \"Managing Partner\"}",
+      "properties": {
+        "party_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID reference to the Party record for this JV participant. Allows linking to the participant's contacts, addresses, and external IDs. Example: 'p5555555-6666-7777-8888-999900001111'"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the JV participant entity. Provided for readability even when party_id is present, since the JV structure is often referenced without resolving the full Party record. Example: 'Brookfield Asset Management'"
+        },
+        "ownership_percentage": {
+          "allOf": [
+            { "$ref": "../core/percentage.schema.json#/$defs/Percentage" }
+          ],
+          "description": "This participant's ownership share in the joint venture, as a decimal (0.50 = 50%). All participants' percentages should sum to 1.0. Example: 0.50"
+        },
+        "role": {
+          "type": "string",
+          "description": "The participant's role or designation within the JV — e.g., managing partner, passive investor, operating partner, development partner. Free text; no enum, as JV governance structures vary widely. Example: 'Managing Partner'"
+        }
+      },
+      "required": ["name", "ownership_percentage"]
+    },
     "Issuer": {
       "allOf": [
         {
@@ -60,6 +86,11 @@
               "type": "array",
               "items": { "$ref": "../core/identifiers.schema.json#/$defs/ExternalId" },
               "description": "References to this issuer in external systems — LEI, DUNS, Bloomberg, PitchBook, rating agency identifiers, etc. Essential for matching across data providers and regulatory reporting. Example: [{\"system\": \"LEI\", \"value\": \"5493001KJTIIGC8Y1R12\"}, {\"system\": \"DUNS\", \"value\": \"06-118-7443\"}]"
+            },
+            "jv_participants": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/JVParticipant" },
+              "description": "Entities participating in a joint venture, when issuer_type = JOINT_VENTURE. Each entry identifies a party and their ownership stake in the JV. Omit for non-JV issuers. The participants' ownership_percentages should sum to 1.0 (100%)."
             }
           },
           "required": [
