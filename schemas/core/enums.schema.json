@@ -27,6 +27,7 @@
     "DocumentType": {
       "type": "string",
       "enum": [
+        "IC_MEMO",
         "LPA",
         "SIDE_LETTER",
         "SUBSCRIPTION_AGREEMENT",
@@ -42,7 +43,7 @@
         "PURCHASE_AGREEMENT",
         "OTHER"
       ],
-      "description": "Type of legal or operational document associated with a deal, fund, or trade. LPA: Limited Partnership Agreement (governing document of a fund). SIDE_LETTER: Supplemental terms negotiated by an individual LP. SUBSCRIPTION_AGREEMENT: LP's commitment to invest in a fund. CAPITAL_CALL_NOTICE: Notice to LPs to fund a portion of their commitment. DISTRIBUTION_NOTICE: Notice of proceeds returned to LPs. FINANCIAL_STATEMENT: Audited or unaudited financial statements. VALUATION_REPORT: Third-party or GP valuation of assets. TAX_DOCUMENT: K-1s, tax certificates, withholding forms. CREDIT_AGREEMENT: Loan or facility agreement. AMENDMENT: Modification to an existing agreement. WAIVER: Waiver of a covenant or contractual term. TRANSFER_AGREEMENT: Agreement to transfer an LP interest or asset. PURCHASE_AGREEMENT: Asset or equity purchase agreement. OTHER: Any document not covered above. Example: 'LPA'"
+      "description": "Type of legal or operational document associated with a deal, fund, or trade. IC_MEMO: Investment Committee Memo — the deal master document that captures all terms, structures, risk factors, and expected outcomes for IC approval. Typically the single authoritative reference for a deal's rationale and economics. LPA: Limited Partnership Agreement (governing document of a fund). SIDE_LETTER: Supplemental terms negotiated by an individual LP. SUBSCRIPTION_AGREEMENT: LP's commitment to invest in a fund. CAPITAL_CALL_NOTICE: Notice to LPs to fund a portion of their commitment. DISTRIBUTION_NOTICE: Notice of proceeds returned to LPs. FINANCIAL_STATEMENT: Audited or unaudited financial statements. VALUATION_REPORT: Third-party or GP valuation of assets. TAX_DOCUMENT: K-1s, tax certificates, withholding forms. CREDIT_AGREEMENT: Loan or facility agreement. AMENDMENT: Modification to an existing agreement. WAIVER: Waiver of a covenant or contractual term. TRANSFER_AGREEMENT: Agreement to transfer an LP interest or asset. PURCHASE_AGREEMENT: Asset or equity purchase agreement. OTHER: Any document not covered above. Example: 'IC_MEMO'"
     }
   }
 }
