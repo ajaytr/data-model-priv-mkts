@@ -438,6 +438,7 @@ function parseAllSchemas() {
           file,
           auditable: false,
           properties: [],
+          description: defSchema.description || "",
         };
 
         // Check if it's an enum type
@@ -454,11 +455,9 @@ function parseAllSchemas() {
         if (defSchema.type && defSchema.type !== "object" && !defSchema.allOf && !defSchema.properties && !defSchema.oneOf) {
           entity.scalar = true;
           entity.scalarType = defSchema.type;
-          let desc = defSchema.description || "";
-          if (defSchema.minimum !== undefined) desc += ` Min: ${defSchema.minimum}.`;
-          if (defSchema.maximum !== undefined) desc += ` Max: ${defSchema.maximum}.`;
-          if (defSchema.pattern) desc += ` Pattern: ${defSchema.pattern}`;
-          entity.scalarDesc = desc.trim();
+          if (defSchema.minimum !== undefined) entity.scalarMin = defSchema.minimum;
+          if (defSchema.maximum !== undefined) entity.scalarMax = defSchema.maximum;
+          if (defSchema.pattern) entity.scalarPattern = defSchema.pattern;
           ENTITIES[defName] = entity;
           continue;
         }
@@ -489,6 +488,7 @@ function parseAllSchemas() {
             }
             if (sub.properties) {
               propsSource = sub;
+              if (sub.description && !entity.description) entity.description = sub.description;
             }
           }
         }
@@ -865,8 +865,16 @@ function renderDetail(entityKey) {
   html += `<br><span style="font-family:monospace;font-size:12px;color:var(--text2)">schemas/${ent.domain}/${ent.file}</span>`;
   html += `</div>`;
 
+  if (ent.description) {
+    html += `<div class="detail-section"><p style="font-size:13px;line-height:1.6;color:var(--text)">${escHtml(ent.description)}</p></div>`;
+  }
+
   if (ent.scalar) {
-    html += `<div class="detail-section"><h3>Type</h3><p style="font-size:14px">${escHtml(ent.scalarType)} — ${escHtml(ent.scalarDesc || "")}</p></div>`;
+    let scalarExtra = escHtml(ent.scalarType);
+    if (ent.scalarMin !== undefined) scalarExtra += ` · min: ${ent.scalarMin}`;
+    if (ent.scalarMax !== undefined) scalarExtra += ` · max: ${ent.scalarMax}`;
+    if (ent.scalarPattern) scalarExtra += ` · pattern: ${escHtml(ent.scalarPattern)}`;
+    html += `<div class="detail-section"><h3>Type</h3><p style="font-size:14px">${scalarExtra}</p></div>`;
   }
 
   if (ent.isEnum && ent.values && ent.values.length > 0) {
@@ -874,9 +882,7 @@ function renderDetail(entityKey) {
     ent.values.forEach(v => html += `<span class="enum-val">${escHtml(String(v))}</span>`);
     html += `</div></div>`;
   }
-  if (ent.isEnum && ent.scalarDesc) {
-    html += `<div class="detail-section"><p style="font-size:13px;color:var(--text2)">${escHtml(ent.scalarDesc)}</p></div>`;
-  }
+  // enum description is now shown via ent.description above
 
   if (ent.isDiscriminated) {
     html += `<div class="detail-section"><h3>Discriminator: ${escHtml(ent.discriminator || "")}</h3>`;
