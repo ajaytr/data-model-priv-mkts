@@ -5,95 +5,101 @@
   "description": "NOI statements and appraisal definitions for real estate properties",
   "$defs": {
     "NOIStatement": {
-      "type": "object",
-      "description": "Net operating income statement for a property over a reporting period",
-      "properties": {
-        "property_id": {
-          "type": "string",
-          "format": "uuid",
-          "description": "Reference to the Property"
-        },
-        "period": {
-          "$ref": "../core/dates.schema.json#/$defs/ReportingPeriod",
-          "description": "Reporting period covered by this statement"
-        },
-        "gross_revenue": {
-          "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total gross rental and ancillary revenue"
-        },
-        "vacancy_loss": {
-          "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Revenue lost due to vacancy"
-        },
-        "effective_gross_income": {
-          "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Gross revenue minus vacancy loss"
-        },
-        "operating_expenses": {
-          "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total property operating expenses"
-        },
-        "net_operating_income": {
-          "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Effective gross income minus operating expenses"
-        },
-        "capital_expenditures": {
-          "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Capital expenditures during the period"
+      "allOf": [
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "description": "Net operating income statement for a property over a reporting period. A persistent, versioned record — multiple NOI statements may exist for the same property and period (e.g., revised or restated versions), distinguished by their id and created_at timestamp.",
+          "properties": {
+            "property_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to the Property"
+            },
+            "period": {
+              "$ref": "../core/dates.schema.json#/$defs/ReportingPeriod",
+              "description": "Reporting period covered by this statement"
+            },
+            "gross_revenue": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Total gross rental and ancillary revenue"
+            },
+            "vacancy_loss": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Revenue lost due to vacancy"
+            },
+            "effective_gross_income": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Gross revenue minus vacancy loss"
+            },
+            "operating_expenses": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Total property operating expenses"
+            },
+            "net_operating_income": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Effective gross income minus operating expenses"
+            },
+            "capital_expenditures": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Capital expenditures during the period"
+            }
+          },
+          "required": [
+            "property_id", "period",
+            "gross_revenue", "vacancy_loss", "effective_gross_income",
+            "operating_expenses", "net_operating_income"
+          ]
         }
-      },
-      "required": [
-        "property_id", "period",
-        "gross_revenue", "vacancy_loss", "effective_gross_income",
-        "operating_expenses", "net_operating_income"
       ]
     },
     "Appraisal": {
-      "type": "object",
       "description": "A formal property appraisal",
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" }
-      ],
-      "properties": {
-        "property_id": {
-          "type": "string",
-          "format": "uuid",
-          "description": "Reference to the Property being appraised"
-        },
-        "appraisal_date": {
-          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date of the appraisal"
-        },
-        "appraised_value": {
-          "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Appraised market value"
-        },
-        "cap_rate": {
-          "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Capitalization rate used in the appraisal"
-        },
-        "noi_used": {
-          "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Net operating income figure used in valuation"
-        },
-        "approach": {
-          "type": "string",
-          "enum": ["INCOME", "SALES_COMPARISON", "COST", "COMBINED"],
-          "description": "Appraisal methodology employed"
-        },
-        "appraiser_firm": {
-          "type": "string",
-          "description": "Name of the appraisal firm"
-        },
-        "appraiser_name": {
-          "type": "string",
-          "description": "Name of the individual appraiser"
+        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "type": "object",
+          "properties": {
+            "property_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "Reference to the Property being appraised"
+            },
+            "appraisal_date": {
+              "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+              "description": "Date of the appraisal"
+            },
+            "appraised_value": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Appraised market value"
+            },
+            "cap_rate": {
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+              "description": "Capitalization rate used in the appraisal"
+            },
+            "noi_used": {
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Net operating income figure used in valuation"
+            },
+            "approach": {
+              "type": "string",
+              "enum": ["INCOME", "SALES_COMPARISON", "COST", "COMBINED"],
+              "description": "Appraisal methodology employed"
+            },
+            "appraiser_firm": {
+              "type": "string",
+              "description": "Name of the appraisal firm"
+            },
+            "appraiser_name": {
+              "type": "string",
+              "description": "Name of the individual appraiser"
+            }
+          },
+          "required": [
+            "property_id", "appraisal_date", "appraised_value",
+            "cap_rate", "noi_used", "approach", "appraiser_firm"
+          ]
         }
-      },
-      "required": [
-        "id", "created_at",
-        "property_id", "appraisal_date", "appraised_value",
-        "cap_rate", "noi_used", "approach", "appraiser_firm"
       ]
     }
   }

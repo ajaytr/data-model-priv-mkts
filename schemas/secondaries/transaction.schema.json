@@ -59,16 +59,16 @@
             "gp_consent_date": {
               "$ref": "../core/dates.schema.json#/$defs/Date"
             },
-            "transfer_agent": {
+            "transfer_agent_id": {
               "type": "string",
               "format": "uuid",
               "description": "Reference to Party handling the transfer"
             },
-            "legal_counsel_buyer": {
+            "legal_counsel_buyer_id": {
               "type": "string",
               "format": "uuid"
             },
-            "legal_counsel_seller": {
+            "legal_counsel_seller_id": {
               "type": "string",
               "format": "uuid"
             },
