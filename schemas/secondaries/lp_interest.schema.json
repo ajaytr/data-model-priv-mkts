@@ -6,7 +6,9 @@
   "$defs": {
     "LPInterest": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -43,9 +45,7 @@
               "description": "Most recent NAV"
             },
             "nav_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "distributions_received": {
               "$ref": "../core/money.schema.json#/$defs/Money"
@@ -61,7 +61,12 @@
               "type": "number"
             }
           },
-          "required": ["fund_id", "seller_id", "total_commitment", "nav"]
+          "required": [
+            "fund_id",
+            "seller_id",
+            "total_commitment",
+            "nav"
+          ]
         }
       ]
     }

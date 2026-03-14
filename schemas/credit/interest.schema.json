@@ -55,14 +55,10 @@
           "description": "Reference to a specific tranche, if applicable"
         },
         "period_start": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "../core/dates.schema.json#/$defs/Date"
         },
         "period_end": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "../core/dates.schema.json#/$defs/Date"
         },
         "principal_balance": {
           "$ref": "../core/money.schema.json#/$defs/Money"

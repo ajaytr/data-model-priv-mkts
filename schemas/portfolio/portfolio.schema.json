@@ -6,7 +6,9 @@
   "$defs": {
     "Portfolio": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -19,13 +21,13 @@
               "description": "Reference to Party that owns this portfolio"
             },
             "as_of_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "positions": {
               "type": "array",
-              "items": { "$ref": "position.schema.json#/$defs/Position" }
+              "items": {
+                "$ref": "position.schema.json#/$defs/Position"
+              }
             },
             "total_nav": {
               "$ref": "../core/money.schema.json#/$defs/Money"
@@ -37,7 +39,11 @@
               "$ref": "../core/money.schema.json#/$defs/Money"
             }
           },
-          "required": ["name", "owner_id", "as_of_date"]
+          "required": [
+            "name",
+            "owner_id",
+            "as_of_date"
+          ]
         }
       ]
     }

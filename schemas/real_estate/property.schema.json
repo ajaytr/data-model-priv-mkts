@@ -9,9 +9,8 @@
       "description": "A point-in-time valuation of a property",
       "properties": {
         "valuation_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date of the valuation. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date of the valuation"
         },
         "appraised_value": {
           "$ref": "../core/money.schema.json#/$defs/Money",
@@ -92,9 +91,8 @@
           "description": "Current occupancy rate"
         },
         "acquisition_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date the property was acquired. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date the property was acquired"
         },
         "acquisition_price": {
           "$ref": "../core/money.schema.json#/$defs/Money",

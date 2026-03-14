@@ -17,9 +17,7 @@
           "description": "Reference to Party"
         },
         "bid_date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "../core/dates.schema.json#/$defs/Date"
         },
         "bid_price_pct_nav": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
@@ -38,10 +36,22 @@
         },
         "status": {
           "type": "string",
-          "enum": ["SUBMITTED", "ACCEPTED", "REJECTED", "EXPIRED", "WITHDRAWN"]
+          "enum": [
+            "SUBMITTED",
+            "ACCEPTED",
+            "REJECTED",
+            "EXPIRED",
+            "WITHDRAWN"
+          ]
         }
       },
-      "required": ["bid_id", "bidder_id", "bid_date", "bid_price_pct_nav", "status"]
+      "required": [
+        "bid_id",
+        "bidder_id",
+        "bid_date",
+        "bid_price_pct_nav",
+        "status"
+      ]
     },
     "Offer": {
       "type": "object",
@@ -56,9 +66,7 @@
           "description": "Reference to Party"
         },
         "offer_date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "../core/dates.schema.json#/$defs/Date"
         },
         "asking_price_pct_nav": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
@@ -72,14 +80,27 @@
         },
         "status": {
           "type": "string",
-          "enum": ["ACTIVE", "ACCEPTED", "EXPIRED", "WITHDRAWN"]
+          "enum": [
+            "ACTIVE",
+            "ACCEPTED",
+            "EXPIRED",
+            "WITHDRAWN"
+          ]
         }
       },
-      "required": ["offer_id", "seller_id", "offer_date", "asking_price_pct_nav", "status"]
+      "required": [
+        "offer_id",
+        "seller_id",
+        "offer_date",
+        "asking_price_pct_nav",
+        "status"
+      ]
     },
     "SecondaryTrade": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -120,25 +141,31 @@
               "description": "Amount of unfunded commitments assumed by buyer"
             },
             "trade_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "expected_close_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "bids": {
               "type": "array",
-              "items": { "$ref": "#/$defs/Bid" }
+              "items": {
+                "$ref": "#/$defs/Bid"
+              }
             },
             "offers": {
               "type": "array",
-              "items": { "$ref": "#/$defs/Offer" }
+              "items": {
+                "$ref": "#/$defs/Offer"
+              }
             }
           },
-          "required": ["trade_type", "lp_interest_id", "buyer_id", "seller_id", "trade_date"]
+          "required": [
+            "trade_type",
+            "lp_interest_id",
+            "buyer_id",
+            "seller_id",
+            "trade_date"
+          ]
         }
       ]
     }

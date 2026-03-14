@@ -6,17 +6,27 @@
   "$defs": {
     "Document": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
             "document_type": {
               "$ref": "../core/enums.schema.json#/$defs/DocumentType"
             },
-            "title": { "type": "string" },
-            "description": { "type": "string" },
-            "file_name": { "type": "string" },
-            "mime_type": { "type": "string" },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "file_name": {
+              "type": "string"
+            },
+            "mime_type": {
+              "type": "string"
+            },
             "file_size_bytes": {
               "type": "integer",
               "minimum": 0
@@ -31,7 +41,9 @@
               "minimum": 1,
               "default": 1
             },
-            "uploaded_by": { "type": "string" },
+            "uploaded_by": {
+              "type": "string"
+            },
             "entity_id": {
               "type": "string",
               "format": "uuid",
@@ -42,17 +54,21 @@
               "description": "Type of the related entity"
             },
             "execution_date": {
-              "type": "string",
-              "format": "date",
-              "description": "Date the document was executed/signed. ISO 8601 date, e.g. '2024-06-15'"
+              "allOf": [
+                {
+                  "$ref": "../core/dates.schema.json#/$defs/Date"
+                }
+              ],
+              "description": "Date the document was executed/signed"
             },
             "expiry_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             }
           },
-          "required": ["document_type", "title"]
+          "required": [
+            "document_type",
+            "title"
+          ]
         }
       ]
     },
@@ -63,7 +79,9 @@
         "document_type": {
           "$ref": "../core/enums.schema.json#/$defs/DocumentType"
         },
-        "description": { "type": "string" },
+        "description": {
+          "type": "string"
+        },
         "required": {
           "type": "boolean",
           "default": true
@@ -78,12 +96,12 @@
           "description": "Reference to the received Document, if any"
         },
         "due_date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "../core/dates.schema.json#/$defs/Date"
         }
       },
-      "required": ["document_type"]
+      "required": [
+        "document_type"
+      ]
     }
   }
 }

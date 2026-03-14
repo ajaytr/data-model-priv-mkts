@@ -9,9 +9,7 @@
       "description": "Common performance metrics for any private markets position",
       "properties": {
         "as_of_date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "../core/dates.schema.json#/$defs/Date"
         },
         "irr_net": {
           "type": "number",
@@ -42,11 +40,15 @@
           "description": "Public Market Equivalent (Kaplan-Schoar)"
         }
       },
-      "required": ["as_of_date"]
+      "required": [
+        "as_of_date"
+      ]
     },
     "FundPerformance": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -82,7 +84,11 @@
               "type": "integer"
             }
           },
-          "required": ["fund_id", "reporting_period", "metrics"]
+          "required": [
+            "fund_id",
+            "reporting_period",
+            "metrics"
+          ]
         }
       ]
     }

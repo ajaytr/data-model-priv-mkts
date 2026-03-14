@@ -6,7 +6,9 @@
   "$defs": {
     "SettlementInstruction": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -19,9 +21,7 @@
               "$ref": "../core/money.schema.json#/$defs/Money"
             },
             "settlement_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "payer_id": {
               "type": "string",
@@ -35,23 +35,57 @@
             },
             "payment_method": {
               "type": "string",
-              "enum": ["WIRE", "ACH", "CHECK", "DTC", "IN_KIND"]
+              "enum": [
+                "WIRE",
+                "ACH",
+                "CHECK",
+                "DTC",
+                "IN_KIND"
+              ]
             },
-            "bank_name": { "type": "string" },
-            "account_number": { "type": "string" },
-            "routing_number": { "type": "string" },
-            "swift_code": { "type": "string" },
-            "reference": { "type": "string" },
+            "bank_name": {
+              "type": "string"
+            },
+            "account_number": {
+              "type": "string"
+            },
+            "routing_number": {
+              "type": "string"
+            },
+            "swift_code": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            },
             "status": {
               "type": "string",
-              "enum": ["PENDING", "INSTRUCTED", "CONFIRMED", "SETTLED", "FAILED", "CANCELLED"]
+              "enum": [
+                "PENDING",
+                "INSTRUCTED",
+                "CONFIRMED",
+                "SETTLED",
+                "FAILED",
+                "CANCELLED"
+              ]
             },
             "settled_at": {
-              "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/UtcDateTime" }],
+              "allOf": [
+                {
+                  "$ref": "../core/dates.schema.json#/$defs/UtcDateTime"
+                }
+              ],
               "description": "UTC timestamp when settlement was completed. Example: '2024-06-15T14:30:00Z'"
             }
           },
-          "required": ["trade_id", "payment_amount", "settlement_date", "payer_id", "payee_id", "status"]
+          "required": [
+            "trade_id",
+            "payment_amount",
+            "settlement_date",
+            "payer_id",
+            "payee_id",
+            "status"
+          ]
         }
       ]
     }

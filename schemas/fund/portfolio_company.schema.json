@@ -75,9 +75,8 @@
           "description": "Reference to the portfolio company"
         },
         "investment_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date of the investment. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date of the investment"
         },
         "instrument_type": {
           "type": "string",
@@ -124,9 +123,8 @@
           "description": "Reference to the investment"
         },
         "realization_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date of the realization event. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date of the realization event"
         },
         "proceeds": {
           "$ref": "../core/money.schema.json#/$defs/Money",

@@ -4,6 +4,11 @@
   "title": "Date types",
   "description": "Quarter, reporting period, date range, and UTC date-time types",
   "$defs": {
+    "Date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 calendar date. Example: '2024-06-15'"
+    },
     "UtcDateTime": {
       "type": "string",
       "format": "date-time",
@@ -32,14 +37,10 @@
       "description": "A reporting period with start/end dates and optional quarter",
       "properties": {
         "start_date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "#/$defs/Date"
         },
         "end_date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "#/$defs/Date"
         },
         "quarter": {
           "$ref": "#/$defs/Quarter"
@@ -52,14 +53,10 @@
       "description": "An arbitrary date range",
       "properties": {
         "start_date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "#/$defs/Date"
         },
         "end_date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "#/$defs/Date"
         }
       },
       "required": ["start_date", "end_date"]

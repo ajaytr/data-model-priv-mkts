@@ -28,7 +28,10 @@
           "$ref": "../core/percentage.schema.json#/$defs/Percentage"
         }
       },
-      "required": ["party_id", "role"]
+      "required": [
+        "party_id",
+        "role"
+      ]
     },
     "DealMilestone": {
       "type": "object",
@@ -38,9 +41,7 @@
           "$ref": "enums.schema.json#/$defs/DealStage"
         },
         "date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "../core/dates.schema.json#/$defs/Date"
         },
         "completed": {
           "type": "boolean",
@@ -50,11 +51,16 @@
           "type": "string"
         }
       },
-      "required": ["stage", "date"]
+      "required": [
+        "stage",
+        "date"
+      ]
     },
     "Deal": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -89,31 +95,31 @@
               "$ref": "../core/enums.schema.json#/$defs/Country"
             },
             "sourced_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "expected_close_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "actual_close_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "participants": {
               "type": "array",
-              "items": { "$ref": "#/$defs/DealParticipant" }
+              "items": {
+                "$ref": "#/$defs/DealParticipant"
+              }
             },
             "assets": {
               "type": "array",
-              "items": { "$ref": "deal_asset.schema.json#/$defs/DealAsset" }
+              "items": {
+                "$ref": "deal_asset.schema.json#/$defs/DealAsset"
+              }
             },
             "milestones": {
               "type": "array",
-              "items": { "$ref": "#/$defs/DealMilestone" }
+              "items": {
+                "$ref": "#/$defs/DealMilestone"
+              }
             },
             "documents": {
               "type": "array",
@@ -124,7 +130,11 @@
               "description": "References to Document entities"
             }
           },
-          "required": ["name", "asset_class", "stage"]
+          "required": [
+            "name",
+            "asset_class",
+            "stage"
+          ]
         }
       ]
     }

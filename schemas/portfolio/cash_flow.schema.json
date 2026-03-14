@@ -21,7 +21,9 @@
     },
     "CashFlow": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -39,15 +41,16 @@
             },
             "direction": {
               "type": "string",
-              "enum": ["INFLOW", "OUTFLOW"]
+              "enum": [
+                "INFLOW",
+                "OUTFLOW"
+              ]
             },
             "amount": {
               "$ref": "../core/money.schema.json#/$defs/Money"
             },
             "cash_flow_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "description": {
               "type": "string"
@@ -61,7 +64,12 @@
               "type": "string"
             }
           },
-          "required": ["cash_flow_type", "direction", "amount", "cash_flow_date"]
+          "required": [
+            "cash_flow_type",
+            "direction",
+            "amount",
+            "cash_flow_date"
+          ]
         }
       ]
     }

@@ -6,11 +6,17 @@
   "$defs": {
     "PositionType": {
       "type": "string",
-      "enum": ["FUND", "CREDIT", "REAL_ESTATE"]
+      "enum": [
+        "FUND",
+        "CREDIT",
+        "REAL_ESTATE"
+      ]
     },
     "FundPosition": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -41,9 +47,7 @@
               "$ref": "../core/money.schema.json#/$defs/Money"
             },
             "nav_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "dpi": {
               "type": "number",
@@ -58,13 +62,20 @@
               "description": "Net IRR"
             }
           },
-          "required": ["position_type", "fund_id", "commitment_amount", "current_nav"]
+          "required": [
+            "position_type",
+            "fund_id",
+            "commitment_amount",
+            "current_nav"
+          ]
         }
       ]
     },
     "CreditPosition": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -92,22 +103,27 @@
               "$ref": "../core/percentage.schema.json#/$defs/Percentage"
             },
             "maturity_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "price": {
               "type": "number",
               "description": "Current price as percentage of par (e.g., 98.5)"
             }
           },
-          "required": ["position_type", "facility_id", "par_amount", "market_value"]
+          "required": [
+            "position_type",
+            "facility_id",
+            "par_amount",
+            "market_value"
+          ]
         }
       ]
     },
     "RealEstatePosition": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
@@ -133,9 +149,7 @@
               "$ref": "../core/money.schema.json#/$defs/Money"
             },
             "valuation_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "noi_annual": {
               "$ref": "../core/money.schema.json#/$defs/Money"
@@ -144,15 +158,26 @@
               "$ref": "../core/percentage.schema.json#/$defs/Percentage"
             }
           },
-          "required": ["position_type", "property_id", "cost_basis", "current_valuation"]
+          "required": [
+            "position_type",
+            "property_id",
+            "cost_basis",
+            "current_valuation"
+          ]
         }
       ]
     },
     "Position": {
       "oneOf": [
-        { "$ref": "#/$defs/FundPosition" },
-        { "$ref": "#/$defs/CreditPosition" },
-        { "$ref": "#/$defs/RealEstatePosition" }
+        {
+          "$ref": "#/$defs/FundPosition"
+        },
+        {
+          "$ref": "#/$defs/CreditPosition"
+        },
+        {
+          "$ref": "#/$defs/RealEstatePosition"
+        }
       ],
       "discriminator": {
         "propertyName": "position_type"

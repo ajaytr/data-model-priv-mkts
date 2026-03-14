@@ -9,9 +9,7 @@
       "description": "A single scheduled principal and/or interest payment",
       "properties": {
         "payment_date": {
-          "type": "string",
-          "format": "date",
-          "description": "ISO 8601 date, e.g. '2024-06-15'"
+          "$ref": "../core/dates.schema.json#/$defs/Date"
         },
         "principal_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money"

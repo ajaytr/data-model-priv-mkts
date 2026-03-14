@@ -61,9 +61,8 @@
           "description": "Reference to the Property being appraised"
         },
         "appraisal_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date of the appraisal. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date of the appraisal"
         },
         "appraised_value": {
           "$ref": "../core/money.schema.json#/$defs/Money",

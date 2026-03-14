@@ -19,19 +19,17 @@
     },
     "Trade": {
       "allOf": [
-        { "$ref": "../core/base.schema.json#/$defs/Auditable" },
+        {
+          "$ref": "../core/base.schema.json#/$defs/Auditable"
+        },
         {
           "type": "object",
           "properties": {
             "trade_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "settlement_date": {
-              "type": "string",
-              "format": "date",
-              "description": "ISO 8601 date, e.g. '2024-06-15'"
+              "$ref": "../core/dates.schema.json#/$defs/Date"
             },
             "buyer_id": {
               "type": "string",
@@ -68,7 +66,9 @@
             },
             "transitions": {
               "type": "array",
-              "items": { "$ref": "#/$defs/TradeStateTransition" }
+              "items": {
+                "$ref": "#/$defs/TradeStateTransition"
+              }
             },
             "documents": {
               "type": "array",
@@ -79,26 +79,46 @@
               "description": "References to Document entities"
             }
           },
-          "required": ["trade_date", "buyer_id", "seller_id", "price", "status"]
+          "required": [
+            "trade_date",
+            "buyer_id",
+            "seller_id",
+            "price",
+            "status"
+          ]
         }
       ]
     },
     "TradeStateTransition": {
       "type": "object",
       "properties": {
-        "from_status": { "$ref": "#/$defs/TradeStatus" },
-        "to_status": { "$ref": "#/$defs/TradeStatus" },
+        "from_status": {
+          "$ref": "#/$defs/TradeStatus"
+        },
+        "to_status": {
+          "$ref": "#/$defs/TradeStatus"
+        },
         "transition_date": {
-          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/UtcDateTime" }],
+          "allOf": [
+            {
+              "$ref": "../core/dates.schema.json#/$defs/UtcDateTime"
+            }
+          ],
           "description": "UTC timestamp of the state transition. Example: '2024-06-15T14:30:00Z'"
         },
         "transitioned_by": {
           "type": "string",
           "description": "User or system that triggered the transition"
         },
-        "notes": { "type": "string" }
+        "notes": {
+          "type": "string"
+        }
       },
-      "required": ["from_status", "to_status", "transition_date"]
+      "required": [
+        "from_status",
+        "to_status",
+        "transition_date"
+      ]
     }
   }
 }

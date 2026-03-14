@@ -44,9 +44,8 @@
           "description": "Type of lease option"
         },
         "exercise_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date by which the option must be exercised. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date by which the option must be exercised"
         },
         "terms": {
           "type": "string",
@@ -85,14 +84,12 @@
           "description": "Type of lease structure"
         },
         "start_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Lease commencement date. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Lease commencement date"
         },
         "end_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Lease expiration date. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Lease expiration date"
         },
         "base_rent_monthly": {
           "$ref": "../core/money.schema.json#/$defs/Money",
@@ -135,9 +132,8 @@
           "description": "Reference to the Property"
         },
         "as_of_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date of the rent roll snapshot. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date of the rent roll snapshot"
         },
         "leases": {
           "type": "array",

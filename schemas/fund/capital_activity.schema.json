@@ -22,14 +22,12 @@
           "description": "Sequential capital call number"
         },
         "call_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date the capital call was issued. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date the capital call was issued"
         },
         "due_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date payment is due. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date payment is due"
         },
         "total_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
@@ -96,9 +94,8 @@
           "description": "Sequential distribution number"
         },
         "distribution_date": {
-          "type": "string",
-          "format": "date",
-          "description": "Date of distribution. ISO 8601 date, e.g. '2024-06-15'"
+          "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
+          "description": "Date of distribution"
         },
         "total_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
