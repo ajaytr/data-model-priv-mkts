@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "settlement.schema.json",
   "title": "Settlement",
-  "description": "Settlement instructions for trade execution",
+  "description": "Settlement instructions for executing the payment leg of a private market trade. Captures the payment amount, method, banking details, counterparties, and status. Each SettlementInstruction corresponds to a single payment direction (buyer-to-seller or fee payments) and tracks its progression from creation through confirmation and final settlement.",
   "$defs": {
     "SettlementInstruction": {
+      "description": "A payment instruction for settling a trade. Extends Auditable for identity and audit trail. Contains the full banking details needed to execute the payment, the expected settlement date, and status tracking. Multiple SettlementInstructions may exist for a single trade (e.g., separate instructions for the purchase price and broker fees).",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -15,44 +16,53 @@
             "trade_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Trade"
+              "description": "UUID reference to the Trade entity this settlement instruction is for. Links the payment to the trade's commercial terms, counterparties, and lifecycle. Always populated. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "payment_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The monetary amount to be paid in this settlement instruction. Includes currency for cross-border transactions. For the primary settlement, this matches the trade's agreed price. For fee settlements, this is the fee amount. Always populated. Example: {amount: 7626000, currency: 'USD'}"
             },
             "settlement_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The expected or actual date for this payment to settle. For wire transfers, this is the value date. Should align with the trade's settlement_date unless this is a separate fee or adjustment payment with different timing. Always populated. Example: '2024-10-15'"
             },
             "payer_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party"
+              "description": "UUID reference to the Party entity making the payment. For the primary purchase price, this is typically the buyer. For transfer fees, the payer depends on the fund's terms (buyer, seller, or split). Always populated. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
             },
             "payee_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party"
+              "description": "UUID reference to the Party entity receiving the payment. For the primary purchase price, this is typically the seller. For transfer fees, the payee is the GP or fund administrator. Always populated. Example: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'"
             },
             "payment_method": {
-              "$ref": "enums.schema.json#/$defs/PaymentMethod"
+              "$ref": "enums.schema.json#/$defs/PaymentMethod",
+              "description": "The method used to execute this payment (WIRE, ACH, CHECK, DTC, IN_KIND). Wire transfers are most common for large private market settlements. Determines the expected settlement timeline and required banking details."
             },
             "bank_name": {
-              "type": "string"
+              "type": "string",
+              "description": "Name of the receiving bank (payee's bank) where funds should be sent. Required for wire and ACH payments. Should match the bank's official registered name. Omit for non-bank payment methods (DTC, IN_KIND). Example: 'JPMorgan Chase Bank, N.A.'"
             },
             "account_number": {
-              "type": "string"
+              "type": "string",
+              "description": "The payee's bank account number for receiving the payment. For domestic US wires, this is the account number at the receiving bank. For international wires, this may be an IBAN. Treat as sensitive data — mask in logs and UI where appropriate. Omit for non-bank payment methods. Example: '123456789012'"
             },
             "routing_number": {
-              "type": "string"
+              "type": "string",
+              "description": "The ABA routing transit number for the receiving bank. Used for domestic US wire transfers and ACH payments. Nine digits. Omit for international payments (use swift_code instead) or non-bank methods. Example: '021000021'"
             },
             "swift_code": {
-              "type": "string"
+              "type": "string",
+              "description": "The SWIFT/BIC code for the receiving bank, used for international wire transfers. Eight or eleven characters. Required for cross-border payments; omit for domestic US payments that use routing_number. Example: 'CHASUS33'"
             },
             "reference": {
-              "type": "string"
+              "type": "string",
+              "description": "Payment reference or memo text to include with the wire or ACH transfer. Used by the payee to match incoming funds to the correct trade. Typically includes the trade ID, fund name, or other identifying information agreed between parties. Omit if no reference is needed. Example: 'Settlement - Acme Fund IV LP Transfer - Trade #2024-0815'"
             },
             "status": {
-              "$ref": "enums.schema.json#/$defs/SettlementStatus"
+              "$ref": "enums.schema.json#/$defs/SettlementStatus",
+              "description": "Current lifecycle status of this settlement instruction (PENDING, INSTRUCTED, CONFIRMED, SETTLED, FAILED, CANCELLED). Tracks the payment from creation through completion. Always populated."
             },
             "settled_at": {
               "allOf": [

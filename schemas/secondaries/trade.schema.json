@@ -2,40 +2,45 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "trade.schema.json",
   "title": "Secondary Trade",
-  "description": "Secondary market trade with bids and offers",
+  "description": "Represents a secondary market trade for an LP interest, encompassing the negotiation process (bids and offers), agreed terms, and counterparty information. A SecondaryTrade is created when a buyer and seller engage on a specific LP interest and captures the full history of price discovery through its bids and offers arrays.",
   "$defs": {
     "Bid": {
       "type": "object",
+      "description": "A buyer's formal price proposal for a secondary LP interest. Bids are typically expressed as a percentage of the most recent NAV. Multiple bids may be submitted against the same LP interest, and bids go through a status lifecycle from SUBMITTED through ACCEPTED, REJECTED, EXPIRED, or WITHDRAWN.",
       "properties": {
         "bid_id": {
           "type": "string",
-          "format": "uuid"
+          "format": "uuid",
+          "description": "Unique identifier for this bid. Assigned at creation and immutable. Used to reference this specific bid in negotiations, audit trails, and acceptance workflows. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "bidder_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to Party"
+          "description": "UUID reference to the Party entity representing the prospective buyer submitting this bid. Links to the bidder's organizational details, compliance records, and contact information. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
         },
         "bid_date": {
-          "$ref": "../core/dates.schema.json#/$defs/Date"
+          "$ref": "../core/dates.schema.json#/$defs/Date",
+          "description": "The date the bid was formally submitted. Used to determine bid validity periods, establish priority among competing bids, and track negotiation timelines. Example: '2024-07-15'"
         },
         "bid_price_pct_nav": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Bid as percentage of NAV (e.g., 0.92 = 92% of NAV)"
+          "description": "The bid price expressed as a percentage of the LP interest's most recent NAV. This is the standard pricing convention in the secondary market. A value of 0.92 means the buyer is offering 92% of NAV (an 8% discount). Values above 1.0 indicate a premium to NAV. Example: 0.92"
         },
         "bid_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Absolute bid amount"
+          "description": "The absolute monetary value of the bid, calculated as bid_price_pct_nav multiplied by the LP interest's NAV. Provides the dollar amount the buyer is offering to pay for the interest. Omit if only expressing the bid as a percentage of NAV; the system can derive it from bid_price_pct_nav and the LP interest's NAV. Example: {amount: 7544000, currency: 'USD'}"
         },
         "assumes_unfunded": {
           "type": "boolean",
-          "description": "Whether the buyer assumes unfunded commitments"
+          "description": "Indicates whether the buyer's bid assumes they will take on the remaining unfunded commitment obligations of the LP interest. When true, the buyer accepts responsibility for future capital calls. When false, the purchase price may be adjusted to account for the unfunded liability. Affects the total economic value of the bid. Example: true"
         },
         "conditions": {
-          "type": "string"
+          "type": "string",
+          "description": "Free-text field for any conditions, contingencies, or special terms attached to the bid. Examples include due diligence requirements, financing contingencies, GP consent conditions, or time-limited validity. Omit if the bid is unconditional. Example: 'Subject to completion of due diligence and GP consent within 60 days'"
         },
         "status": {
-          "$ref": "enums.schema.json#/$defs/BidStatus"
+          "$ref": "enums.schema.json#/$defs/BidStatus",
+          "description": "Current lifecycle status of this bid. Transitions: SUBMITTED -> ACCEPTED | REJECTED | EXPIRED | WITHDRAWN. Only one bid per trade should be in ACCEPTED status at a time."
         }
       },
       "required": [
@@ -48,31 +53,37 @@
     },
     "Offer": {
       "type": "object",
+      "description": "A seller's listing or asking price for a secondary LP interest. Offers define the seller's terms and pricing expectations. An offer may attract multiple bids, and its status tracks whether it is actively listed, has been accepted, or has expired or been withdrawn.",
       "properties": {
         "offer_id": {
           "type": "string",
-          "format": "uuid"
+          "format": "uuid",
+          "description": "Unique identifier for this offer. Assigned at creation and immutable. Used to reference this specific offer in market listings, bid responses, and audit trails. Example: '123e4567-e89b-12d3-a456-426614174000'"
         },
         "seller_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to Party"
+          "description": "UUID reference to the Party entity representing the LP who is selling their interest. Links to the seller's organizational details and compliance records. Must match the seller_id on the parent LPInterest. Example: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'"
         },
         "offer_date": {
-          "$ref": "../core/dates.schema.json#/$defs/Date"
+          "$ref": "../core/dates.schema.json#/$defs/Date",
+          "description": "The date the offer was formally listed or communicated to prospective buyers. Used for tracking marketing duration and offer validity. Example: '2024-07-01'"
         },
         "asking_price_pct_nav": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Asking price as percentage of NAV"
+          "description": "The seller's asking price expressed as a percentage of the LP interest's most recent NAV. A value of 0.95 means the seller is asking for 95% of NAV (a 5% discount). Establishes the starting point for negotiations — final agreed price may differ. Example: 0.95"
         },
         "asking_amount": {
-          "$ref": "../core/money.schema.json#/$defs/Money"
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "The absolute monetary value of the asking price, calculated as asking_price_pct_nav multiplied by the LP interest's NAV. Omit if only the percentage is specified; the system can derive it. Example: {amount: 7790000, currency: 'USD'}"
         },
         "includes_unfunded": {
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Indicates whether the offer includes the transfer of unfunded commitment obligations to the buyer. When true, the buyer is expected to assume all remaining capital call obligations. When false, the unfunded commitment remains with the seller or is otherwise handled. Affects pricing and buyer diligence requirements. Example: true"
         },
         "status": {
-          "$ref": "enums.schema.json#/$defs/OfferStatus"
+          "$ref": "enums.schema.json#/$defs/OfferStatus",
+          "description": "Current lifecycle status of this offer. Transitions: ACTIVE -> ACCEPTED | EXPIRED | WITHDRAWN. Only one offer per trade should be in ACCEPTED status."
         }
       },
       "required": [
@@ -84,6 +95,7 @@
       ]
     },
     "SecondaryTrade": {
+      "description": "A secondary market trade for an LP interest that captures the full negotiation and agreement between buyer and seller. Extends Auditable for identity and audit trail. Contains the agreed commercial terms, references to bids and offers, and links to the counterparties and broker involved.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -92,58 +104,66 @@
           "type": "object",
           "properties": {
             "trade_type": {
-              "$ref": "enums.schema.json#/$defs/SecondaryTradeType"
+              "$ref": "enums.schema.json#/$defs/SecondaryTradeType",
+              "description": "Classification of the secondary transaction structure (e.g., LP interest transfer, GP-led, tender offer). Determines the applicable workflow, documentation requirements, and regulatory considerations."
             },
             "lp_interest_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to LPInterest"
+              "description": "UUID reference to the LPInterest entity being traded. Links this trade to the specific fund position, its NAV, commitment details, and seller information. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "direction": {
-              "$ref": "enums.schema.json#/$defs/TradeDirection"
+              "$ref": "enums.schema.json#/$defs/TradeDirection",
+              "description": "Direction of the trade from the perspective of the reporting party (BUY or SELL). Determines which counterparty fields are treated as 'own side' versus 'other side' in reporting."
             },
             "buyer_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party"
+              "description": "UUID reference to the Party entity representing the buyer — the party acquiring the LP interest. This party will become the new LP in the fund upon settlement. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
             },
             "seller_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party"
+              "description": "UUID reference to the Party entity representing the seller — the current LP disposing of their interest. Must match the seller on the referenced LPInterest. Example: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'"
             },
             "broker_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party (intermediary)"
+              "description": "UUID reference to the Party entity representing the broker or intermediary facilitating the trade. Common in the secondary market where placement agents or advisory firms connect buyers and sellers. Omit for direct (non-brokered) trades. Example: '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed'"
             },
             "agreed_price_pct_nav": {
-              "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+              "description": "The final agreed transaction price expressed as a percentage of the LP interest's NAV at the time of agreement. Reflects the outcome of bid-offer negotiations. A value of 0.93 means the trade was struck at 93% of NAV. Populate once terms are agreed. Example: 0.93"
             },
             "agreed_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The absolute monetary value of the agreed transaction price, calculated as agreed_price_pct_nav multiplied by the reference NAV. This is the cash consideration the buyer pays the seller. Populate once terms are agreed. Example: {amount: 7626000, currency: 'USD'}"
             },
             "unfunded_assumed": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Amount of unfunded commitments assumed by buyer"
+              "description": "The dollar amount of unfunded commitment obligations that the buyer agrees to assume as part of the trade. The buyer becomes responsible for future capital calls up to this amount. If zero or omitted, the seller retains the unfunded obligation (uncommon). Example: {amount: 2500000, currency: 'USD'}"
             },
             "trade_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The date on which the buyer and seller formally agreed to the trade terms. This is the economic date of the trade and anchors timeline calculations for settlement, GP consent requests, and closing. Example: '2024-08-01'"
             },
             "expected_close_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The anticipated date for closing the transaction, including completion of GP consent, documentation, and settlement. Secondary trades typically close 30-90 days after trade date. Used for pipeline management and cash flow forecasting. Example: '2024-10-15'"
             },
             "bids": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Bid"
-              }
+              },
+              "description": "Ordered list of all bids submitted against this LP interest during the trade process. Provides a full audit trail of price discovery. Sorted chronologically by bid_date. May be empty if the trade was negotiated without a formal bidding process."
             },
             "offers": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/Offer"
-              }
+              },
+              "description": "Ordered list of all offers (asking prices) posted by the seller for this LP interest. Provides a full audit trail of the seller's pricing history. Sorted chronologically by offer_date. May be empty if the trade was initiated by the buyer."
             }
           },
           "required": [

@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "nav.schema.json",
   "title": "NAV reporting",
-  "description": "Net asset value statements, investor NAV, and investment valuations",
+  "description": "Net asset value statements, investor NAV, and investment valuations. NAV reporting captures the periodic fair-value snapshot of the fund — the total value of all assets minus liabilities — broken down by individual portfolio investments and by each investor's capital account. NAV statements are the primary output of fund accounting and the basis for performance metrics such as TVPI, DPI, and RVPI.",
   "$defs": {
     "NAVStatement": {
       "type": "object",
-      "description": "A fund-level net asset value statement for a reporting period",
+      "description": "A fund-level net asset value (NAV) statement for a reporting period. Represents a point-in-time snapshot of the fund's total value, cumulative capital flows, and detailed breakdowns by investment and by investor. Typically produced quarterly by the fund administrator. The NAV statement is the authoritative source for LP capital account balances and fund performance reporting. Inherits id, created_at, and updated_at from Auditable.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
@@ -14,37 +14,37 @@
         "fund_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the fund"
+          "description": "Foreign key referencing the fund this NAV statement belongs to. Links the statement to a specific Fund entity. Each fund produces one NAV statement per reporting period. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "reporting_period": {
           "$ref": "../core/dates.schema.json#/$defs/ReportingPeriod",
-          "description": "The period this NAV statement covers"
+          "description": "The reporting period this NAV statement covers, defining the start and end dates of the measurement window. Typically quarterly (e.g., Q4 2024 = 2024-10-01 to 2024-12-31) but may be monthly or annually depending on fund terms and investor requirements. All valuations and cumulative figures in this statement are as-of the period end date."
         },
         "total_nav": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total fund NAV"
+          "description": "Total net asset value of the fund as of the reporting period end date. Calculated as the sum of all portfolio investment fair values plus cash and other assets, minus liabilities (accrued fees, expenses, credit facility balances). This is the headline number in investor reporting and the denominator for RVPI. Example: {\"amount\": \"450000000.00\", \"currency\": \"USD\"}"
         },
         "total_contributions": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Cumulative contributions to date"
+          "description": "Cumulative total of all capital contributions (paid-in capital) from LPs from fund inception through the reporting period end date. Includes capital called for investments, fees, and expenses. This is the denominator for TVPI (Total Value to Paid-In) calculations. Example: {\"amount\": \"300000000.00\", \"currency\": \"USD\"}"
         },
         "total_distributions": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Cumulative distributions to date"
+          "description": "Cumulative total of all distributions paid to LPs from fund inception through the reporting period end date. Includes return of capital, realized gains, dividends, and interest. This is the numerator for DPI (Distributions to Paid-In) calculations. Example: {\"amount\": \"150000000.00\", \"currency\": \"USD\"}"
         },
         "investment_valuations": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/InvestmentValuation"
           },
-          "description": "Per-investment valuations"
+          "description": "Per-investment breakdown of the fund's portfolio fair values as of the reporting period end date. Each entry represents the current valuation of a single portfolio holding. The sum of all fair_value entries (plus cash and minus liabilities) should approximate total_nav. Omit or leave as an empty array if investment-level detail is not available for this reporting period."
         },
         "investor_navs": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/InvestorNAV"
           },
-          "description": "Per-investor NAV breakdown"
+          "description": "Per-investor breakdown of the fund's NAV, showing each LP's individual capital account balance and cumulative cash flows. Used for investor-specific reporting, capital account statements, and waterfall calculations. The sum of all investor nav values should equal total_nav. Omit or leave as an empty array if investor-level detail is not available for this reporting period."
         }
       },
       "required": [
@@ -54,65 +54,65 @@
     },
     "InvestorNAV": {
       "type": "object",
-      "description": "An individual investor's NAV within a fund",
+      "description": "An individual investor's capital account snapshot within a fund for a given reporting period. Shows the LP's proportional share of the fund's NAV along with their cumulative contributions and distributions. This data powers investor-specific capital account statements, performance reporting, and waterfall allocation calculations.",
       "properties": {
         "commitment_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the commitment"
+          "description": "Foreign key referencing the Commitment record for this investor in this fund. Links the NAV breakdown to the investor's specific capital commitment for accurate capital account tracking. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "investor_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the investor (Party)"
+          "description": "Foreign key referencing the investor (Party) whose NAV is being reported. Denormalized from the Commitment for easier querying and reporting. Must match the investor_id on the referenced Commitment. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
         },
         "nav": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Investor's NAV"
+          "description": "This investor's share of the fund's net asset value as of the reporting period end date. Represents the estimated liquidation value of the LP's interest in the fund. Used as the 'residual value' component in TVPI calculations (TVPI = (distributions + NAV) / contributions). Example: {\"amount\": \"45000000.00\", \"currency\": \"USD\"}"
         },
         "ownership_percentage": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Investor's ownership share"
+          "description": "The investor's proportional ownership share of the fund as of the reporting period end date, expressed as a decimal percentage. Used to allocate fund-level NAV to individual investors. May shift over time due to secondary transfers, defaults, or differential capital call schedules. Example: '10.00' for a 10% ownership stake."
         },
         "total_contributed": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total capital contributed by this investor"
+          "description": "Cumulative capital contributed by this investor from fund inception through the reporting period end date. Includes all capital calls paid (for investments, fees, and expenses). This is the investor-level paid-in capital figure used in LP-specific TVPI, DPI, and IRR calculations. Example: {\"amount\": \"20000000.00\", \"currency\": \"USD\"}"
         },
         "total_distributed": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total distributions received by this investor"
+          "description": "Cumulative distributions received by this investor from fund inception through the reporting period end date. Includes return of capital, realized gains, dividends, and interest payments. This is the investor-level distributed capital figure used in LP-specific DPI calculations (DPI = total_distributed / total_contributed). Example: {\"amount\": \"8000000.00\", \"currency\": \"USD\"}"
         }
       },
       "required": ["commitment_id", "investor_id", "nav", "ownership_percentage", "total_contributed", "total_distributed"]
     },
     "InvestmentValuation": {
       "type": "object",
-      "description": "Fair value of a single portfolio investment",
+      "description": "Fair value assessment of a single portfolio investment as of the NAV statement's reporting period end date. Captures the current estimated value, original cost, unrealized gain/loss, and the valuation methodology applied. Used to build the investment-level detail behind the fund's total NAV figure and to support auditor review of fair value determinations.",
       "properties": {
         "investment_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the investment"
+          "description": "Foreign key referencing the Investment record being valued. Links this valuation snapshot to the fund's specific investment in a portfolio company. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "company_name": {
           "type": "string",
-          "description": "Name of the portfolio company"
+          "description": "Name of the portfolio company being valued. Denormalized from the PortfolioCompany entity for convenience in reporting and statements, avoiding the need to join across entities for display purposes. Should match the name on the referenced PortfolioCompany record. Example: 'Acme Technologies Inc.'"
         },
         "fair_value": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Current fair value"
+          "description": "Current estimated fair value of the investment as of the reporting period end date, determined using the specified valuation_method. Fair value represents the price that would be received in an orderly transaction between market participants (ASC 820 / IFRS 13). This is the carrying value used in NAV calculations. Example: {\"amount\": \"35000000.00\", \"currency\": \"USD\"}"
         },
         "cost_basis": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Original cost basis"
+          "description": "Original acquisition cost of the investment, including any transaction fees capitalized into the cost basis. Remains constant unless additional capital is invested (follow-on) or a partial realization occurs, in which case the cost basis is proportionally reduced. Used as the baseline for unrealized gain/loss calculations. Example: {\"amount\": \"20000000.00\", \"currency\": \"USD\"}"
         },
         "unrealized_gain_loss": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Unrealized gain or loss (fair_value - cost_basis)"
+          "description": "The difference between fair_value and cost_basis (fair_value minus cost_basis), representing the unrealized appreciation or depreciation of the investment. Positive values indicate unrealized gains; negative values indicate unrealized losses. This value should be mathematically consistent with fair_value and cost_basis. Example: {\"amount\": \"15000000.00\", \"currency\": \"USD\"} for a gain, or {\"amount\": \"-5000000.00\", \"currency\": \"USD\"} for a loss."
         },
         "valuation_method": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/ValuationMethod" }],
-          "description": "Methodology used for valuation"
+          "description": "The methodology used to determine the fair value of this investment. The chosen method should comply with the fund's valuation policy and applicable accounting standards (ASC 820 / IFRS 13). Example: 'MARKET_COMPARABLE', 'DCF', 'RECENT_TRANSACTION'. See ValuationMethod enum for all valid values and their definitions."
         }
       },
       "required": ["investment_id", "company_name", "fair_value", "cost_basis", "unrealized_gain_loss", "valuation_method"]

@@ -2,35 +2,35 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "vehicle.schema.json",
   "title": "RE Vehicle",
-  "description": "Real estate investment vehicle definition",
+  "description": "Real estate investment vehicle definition. An REVehicle is the legal or economic structure through which capital is pooled and deployed into property assets — funds, REITs, joint ventures, or separate accounts. Tracks the vehicle's strategy, target size, property holdings, and lifecycle status.",
   "$defs": {
     "REVehicle": {
       "type": "object",
-      "description": "A real estate investment vehicle (fund, REIT, JV, etc.)",
+      "description": "A real estate investment vehicle (fund, REIT, JV, separate account, etc.) that pools capital and deploys it into property assets. The vehicle sits between investors (LPs) and the underlying properties, governing capital calls, distributions, and reporting. Each vehicle has a defined strategy, geographic focus, and lifecycle from fundraising through liquidation.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
       "properties": {
         "name": {
           "type": "string",
-          "description": "Name of the investment vehicle"
+          "description": "Official name of the investment vehicle as used in legal documents and investor communications. Should be the full fund name including any series or vintage designation. Always required. Examples: 'Blackstone Real Estate Partners X', 'Core Property Fund III', 'Oak Street JV - Logistics Portfolio', 'ACME Separate Account - Multifamily'."
         },
         "vehicle_type": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/VehicleType" }],
-          "description": "Type of investment vehicle structure"
+          "description": "Legal and structural classification of the investment vehicle, which determines governance, tax treatment, and regulatory requirements. Always required. Common values: OPEN_END_FUND (perpetual life, periodic redemptions), CLOSED_END_FUND (fixed term with defined investment and harvest periods), REIT (real estate investment trust), JOINT_VENTURE (two or more parties co-investing), SEPARATE_ACCOUNT (single-investor mandate). Example: 'CLOSED_END_FUND'."
         },
         "strategy": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/VehicleStrategy" }],
-          "description": "Investment strategy of the vehicle"
+          "description": "Investment strategy classification that defines the risk-return profile and the types of deals the vehicle pursues. Always required. Common values: CORE (stabilized, income-oriented, low leverage), CORE_PLUS (stable with modest value-add upside), VALUE_ADD (repositioning, lease-up, moderate leverage), OPPORTUNISTIC (development, distressed, high leverage, highest return targets). Example: 'VALUE_ADD'."
         },
         "target_size": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Target fundraising or capitalization size"
+          "description": "Target equity capitalization or fundraising goal for the vehicle, representing the total capital the GP aims to raise from investors. For closed-end funds, this is the target fund size at final close. For open-end funds, this may be a target AUM. Omit for separate accounts where commitment is defined at the mandate level. Example: {\"amount\": 500000000, \"currency\": \"USD\"} for a $500M target fund size."
         },
         "gp_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the general partner (Party)"
+          "description": "UUID foreign key referencing the general partner (GP) or investment manager Party entity responsible for managing the vehicle, making investment decisions, and overseeing property operations. Always required. The GP is typically the real estate investment management firm. Example: 'b2c3d4e5-f6a7-8901-bcde-f23456789012'."
         },
         "properties": {
           "type": "array",
@@ -38,21 +38,21 @@
             "type": "string",
             "format": "uuid"
           },
-          "description": "References to Property entities held by this vehicle"
+          "description": "Array of UUID foreign keys referencing Property entities currently held (or historically held) by this vehicle. Represents the vehicle's real estate portfolio. For active vehicles, this should include all properties from acquisition through disposition. Omit or leave empty for vehicles that have not yet acquired any properties (e.g., during fundraising). Example: ['a1b2c3d4-...', 'e5f6a7b8-...']."
         },
         "region": {
           "$ref": "../core/enums.schema.json#/$defs/Region",
-          "description": "Primary geographic focus"
+          "description": "Primary geographic focus of the vehicle's investment mandate, indicating where the vehicle targets property acquisitions. Always required. Used for geographic diversification analysis and benchmark selection. Common values may include NORTH_AMERICA, EUROPE, ASIA_PACIFIC, GLOBAL. For vehicles with a narrow focus (e.g., US Sunbelt), use the closest available region and provide detail in the vehicle name."
         },
         "vintage_year": {
           "type": "integer",
           "minimum": 1900,
           "maximum": 2100,
-          "description": "Year the vehicle was launched or first capital deployed"
+          "description": "Calendar year in which the vehicle held its first close (for closed-end funds) or first deployed capital (for open-end funds and JVs). Used for vintage-year benchmarking and peer comparison of returns. Omit for vehicles that have not yet had a first close. Example: 2023."
         },
         "status": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/VehicleStatus" }],
-          "description": "Current lifecycle status of the vehicle"
+          "description": "Current lifecycle stage of the investment vehicle. Always required. Common values: FUNDRAISING (pre-first-close, actively raising capital), INVESTING (deploying capital into properties), HARVESTING (disposition phase for closed-end funds), FULLY_INVESTED (capital deployed, holding assets), LIQUIDATING (winding down, selling remaining assets), TERMINATED (fully liquidated and dissolved). Example: 'INVESTING'."
         }
       },
       "required": [

@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "documentation.schema.json",
   "title": "Documentation",
-  "description": "Document tracking for trade lifecycle and deal management",
+  "description": "Document tracking for trade lifecycle and deal management. Provides two entity types: Document (a stored file with metadata) and DocumentRequirement (a checklist item tracking whether a required document has been received). Together they support document management workflows including upload tracking, version control, execution tracking, and closing checklist completion.",
   "$defs": {
     "Document": {
+      "description": "A document associated with a trade, deal, fund, or other entity. Extends Auditable for identity and audit trail. Stores metadata about the document (type, title, file details, storage location) along with its relationship to a parent entity and execution/expiry dates. The actual file content is stored externally at storage_url.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -13,45 +14,53 @@
           "type": "object",
           "properties": {
             "document_type": {
-              "$ref": "../core/enums.schema.json#/$defs/DocumentType"
+              "$ref": "../core/enums.schema.json#/$defs/DocumentType",
+              "description": "Classification of the document (e.g., purchase agreement, side letter, financial statement, legal opinion). Determines how the document is categorized in document management systems and closing checklists."
             },
             "title": {
-              "type": "string"
+              "type": "string",
+              "description": "Human-readable title of the document. Should be descriptive enough to identify the document without opening it. Include the parties, date, or version where helpful. Always populated. Example: 'Purchase and Sale Agreement - Acme Fund IV LP Transfer - v2 Final'"
             },
             "description": {
-              "type": "string"
+              "type": "string",
+              "description": "Free-text description providing additional context about the document beyond the title and type. Useful for notes about the document's purpose, key provisions, or relationship to other documents. Omit if the title is self-explanatory. Example: 'Final executed version incorporating all negotiated amendments. Supersedes draft v1 dated 2024-09-01.'"
             },
             "file_name": {
-              "type": "string"
+              "type": "string",
+              "description": "The original file name of the uploaded document, including extension. Preserved for download and display purposes. Should include a meaningful name and correct extension. Omit if the document is a placeholder or has not yet been uploaded. Example: 'Acme_Fund_IV_PSA_v2_Final_Executed.pdf'"
             },
             "mime_type": {
-              "type": "string"
+              "type": "string",
+              "description": "The MIME type of the document file, used for content-type handling and rendering. Common values: 'application/pdf' for PDF documents, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' for DOCX, 'image/png' for images. Omit if not yet uploaded or if the MIME type is unknown. Example: 'application/pdf'"
             },
             "file_size_bytes": {
               "type": "integer",
-              "minimum": 0
+              "minimum": 0,
+              "description": "Size of the document file in bytes. Used for storage tracking, upload validation, and display (converting to KB/MB for user display). Omit if the document has not yet been uploaded. Example: 2457600"
             },
             "storage_url": {
               "type": "string",
               "format": "uri",
-              "description": "URL or path to the stored document"
+              "description": "URL or path to the stored document in the file storage system (e.g., S3 bucket, Azure Blob, or local file system). This is the location used to retrieve the actual file content. Treat as an internal reference — may not be publicly accessible. Omit if the document has not yet been uploaded. Example: 's3://documents-bucket/trades/2024/acme-fund-iv-psa-v2.pdf'"
             },
             "version": {
               "type": "integer",
               "minimum": 1,
-              "default": 1
+              "default": 1,
+              "description": "Version number of this document, starting at 1 and incrementing with each revision. Used to track document evolution through drafts and amendments. Multiple Document records may exist for the same logical document, differentiated by version. The highest version is the current one. Example: 2"
             },
             "uploaded_by": {
-              "type": "string"
+              "type": "string",
+              "description": "Identifier of the user who uploaded this document. May be a username, email address, or system identifier. Used for audit trail and accountability. Omit if uploaded by an automated process or if the uploader is not tracked. Example: 'jsmith@acmecapital.com'"
             },
             "entity_id": {
               "type": "string",
               "format": "uuid",
-              "description": "UUID of the related entity (deal, trade, fund, etc.)"
+              "description": "UUID of the parent entity this document is associated with (e.g., a Trade, Transaction, Fund, or Deal). Combined with entity_type, this establishes the relationship between the document and its business context. Omit if the document is not linked to a specific entity. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "entity_type": {
               "type": "string",
-              "description": "Type of the related entity"
+              "description": "The type name of the parent entity referenced by entity_id. Used to determine which domain schema to query for the parent entity. Common values: 'Trade', 'Transaction', 'Fund', 'Deal', 'Party'. Omit if entity_id is not populated. Example: 'Trade'"
             },
             "execution_date": {
               "allOf": [
@@ -59,10 +68,11 @@
                   "$ref": "../core/dates.schema.json#/$defs/Date"
                 }
               ],
-              "description": "Date the document was executed/signed"
+              "description": "The date the document was formally executed (signed by all parties). Relevant for legal documents such as purchase agreements, side letters, and transfer instruments. Omit for documents that are not signed (e.g., financial statements, reports, data room files). Example: '2024-10-10'"
             },
             "expiry_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The date on which this document expires or is no longer valid. Relevant for time-limited documents such as legal opinions, comfort letters, insurance certificates, or bid validity windows. Omit for documents with no expiry (e.g., executed agreements, financial statements). Example: '2025-10-10'"
             }
           },
           "required": [
@@ -74,29 +84,34 @@
     },
     "DocumentRequirement": {
       "type": "object",
-      "description": "A required document for a deal or trade",
+      "description": "A checklist item representing a document that is required (or expected) as part of a deal, trade, or closing process. Tracks whether the document has been received and links to the actual Document record once uploaded. Used to build closing checklists and monitor document collection progress.",
       "properties": {
         "document_type": {
-          "$ref": "../core/enums.schema.json#/$defs/DocumentType"
+          "$ref": "../core/enums.schema.json#/$defs/DocumentType",
+          "description": "The type of document required (e.g., purchase agreement, legal opinion, financial statement). Determines what document should be collected or produced to satisfy this requirement."
         },
         "description": {
-          "type": "string"
+          "type": "string",
+          "description": "Free-text description of the specific document requirement, providing context beyond the document_type. Include details about what specifically is needed, any special formatting requirements, or parties responsible. Omit if the document_type is self-explanatory. Example: 'Audited financial statements for the three most recent fiscal years, prepared in accordance with US GAAP'"
         },
         "required": {
           "type": "boolean",
-          "default": true
+          "default": true,
+          "description": "Whether this document is mandatory for the process to proceed (true) or optional/nice-to-have (false). Mandatory documents block closing; optional documents do not. Defaults to true. Set to false for supplementary materials that are helpful but not required for closing. Example: true"
         },
         "received": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Whether the required document has been received and uploaded to the system. Set to true when the actual document has been provided and linked via document_id. Defaults to false. Used to track closing checklist completion percentage. Example: false"
         },
         "document_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the received Document, if any"
+          "description": "UUID reference to the Document entity that satisfies this requirement, if one has been received and uploaded. Populated when received is set to true. Links to the actual document's metadata and storage location. Omit until the document is received. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "due_date": {
-          "$ref": "../core/dates.schema.json#/$defs/Date"
+          "$ref": "../core/dates.schema.json#/$defs/Date",
+          "description": "The deadline by which this document should be received. Used for tracking overdue documents and sending reminders. Omit if there is no specific deadline (e.g., optional documents or documents needed 'at closing'). Example: '2024-10-01'"
         }
       },
       "required": [

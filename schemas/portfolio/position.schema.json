@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "position.schema.json",
   "title": "Position",
-  "description": "Portfolio positions across asset types, using discriminated union",
+  "description": "Portfolio positions across private market asset types (fund LP interests, credit facilities, and real estate holdings), modeled as a discriminated union on position_type. Each position variant captures the asset-specific fields needed for valuation, performance tracking, and reporting.",
   "$defs": {
     "FundPosition": {
+      "description": "An LP's position in a private equity, venture capital, or other closed-end fund. Tracks the commitment lifecycle (committed, funded, unfunded), current NAV, cumulative distributions, and point-in-time performance metrics (DPI, TVPI, IRR). Extends Auditable for identity and audit trail.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -13,45 +14,54 @@
           "type": "object",
           "properties": {
             "position_type": {
-              "const": "FUND"
+              "const": "FUND",
+              "description": "Discriminator value identifying this as a fund LP position. Always set to 'FUND'. Used by the Position union to select the correct schema variant."
             },
             "fund_id": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "UUID reference to the Fund entity this position is held in. Links to fund-level details such as strategy, vintage, geography, and GP. Always populated. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "commitment_id": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "UUID reference to the Commitment entity governing this position. Links to the legal commitment record including subscription amount, capital call schedule, and side letter terms. Omit if the commitment is tracked externally or not yet created. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
             },
             "commitment_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The LP's total capital commitment to the fund — the maximum amount the LP has agreed to invest over the fund's life. This is the contractual amount from the subscription agreement. Always populated. Example: {amount: 10000000, currency: 'USD'}"
             },
             "funded_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Cumulative capital that has been called and paid in by the LP to date. Represents the total drawn-down portion of the commitment. Used to compute paid-in capital for performance metrics. Omit if no capital has been called yet. Example: {amount: 7500000, currency: 'USD'}"
             },
             "unfunded_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Remaining uncalled portion of the LP's commitment. Represents future capital call obligations. unfunded_amount = commitment_amount - funded_amount. Important for liquidity planning and secondary market pricing. Omit if fully funded. Example: {amount: 2500000, currency: 'USD'}"
             },
             "distributions_received": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Total cumulative distributions received by the LP from the fund, including return of capital, realized gains, dividends, and interest payments. Used to compute DPI (Distributions to Paid-In). Omit if no distributions have been received yet. Example: {amount: 3000000, currency: 'USD'}"
             },
             "current_nav": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The LP's share of the fund's net asset value as of nav_date. Represents the mark-to-market value of the LP's remaining unrealized interest. Updated quarterly from GP/administrator reports. Always populated. Example: {amount: 8200000, currency: 'USD'}"
             },
             "nav_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The as-of date for the current_nav figure. Indicates how fresh the valuation is. Typically aligns with the fund's most recent quarterly reporting date. NAVs more than one quarter old should be flagged as stale. Example: '2024-06-30'"
             },
             "dpi": {
               "type": "number",
-              "description": "Distributions to Paid-In"
+              "description": "Distributions to Paid-In multiple — the ratio of cumulative distributions to cumulative paid-in capital (distributions_received / funded_amount). Measures how much capital has been returned to the LP. A DPI of 1.0 means the LP has received back their invested capital. Values above 1.0 indicate a positive cash-on-cash return. Example: 0.40"
             },
             "tvpi": {
               "type": "number",
-              "description": "Total Value to Paid-In"
+              "description": "Total Value to Paid-In multiple — the ratio of total value (current_nav + distributions_received) to cumulative paid-in capital. Measures the total return including both realized and unrealized value. TVPI = (current_nav + distributions_received) / funded_amount. A TVPI of 1.5x means the LP's position is worth 1.5 times what they paid in. Example: 1.49"
             },
             "irr": {
               "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-              "description": "Net IRR"
+              "description": "Net internal rate of return for this position, calculated using the time-weighted cash flow series (capital calls as outflows, distributions and current NAV as inflows). Net of management fees and carried interest. Expressed as a decimal (e.g., 0.15 = 15% IRR). Omit if insufficient cash flow history for a meaningful calculation. Example: 0.15"
             }
           },
           "required": [
@@ -64,6 +74,7 @@
       ]
     },
     "CreditPosition": {
+      "description": "A position in a private credit facility or loan tranche. Tracks par value, market value, accrued interest, current rate, maturity, and mark-to-market price. Extends Auditable for identity and audit trail.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -72,34 +83,42 @@
           "type": "object",
           "properties": {
             "position_type": {
-              "const": "CREDIT"
+              "const": "CREDIT",
+              "description": "Discriminator value identifying this as a credit position. Always set to 'CREDIT'. Used by the Position union to select the correct schema variant."
             },
             "facility_id": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "UUID reference to the credit Facility entity this position belongs to. Links to facility-level details such as borrower, total facility size, covenants, and structure. Always populated. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "tranche_id": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "UUID reference to the specific Tranche within the credit facility. A facility may have multiple tranches (e.g., Term Loan A, Term Loan B, Revolver) with different seniority, pricing, and maturity. Omit if the facility has a single tranche or the tranche is not separately tracked. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
             },
             "par_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The face value (par value) of the credit position — the principal amount owed to the lender. This is the nominal amount used for interest calculations and repayment schedules. Always populated. Example: {amount: 5000000, currency: 'USD'}"
             },
             "market_value": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The current mark-to-market value of the credit position, reflecting the market's assessment of credit quality, interest rate movements, and liquidity. Calculated as par_amount * (price / 100). Always populated. Example: {amount: 4925000, currency: 'USD'}"
             },
             "accrued_interest": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Interest that has accrued on the position since the last payment date but has not yet been paid. Relevant for trade settlement (buyer compensates seller for accrued interest). Omit if no interest has accrued or if interest is paid current. Example: {amount: 45000, currency: 'USD'}"
             },
             "current_rate": {
-              "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+              "description": "The current interest rate on the credit position, expressed as a decimal (e.g., 0.085 = 8.5%). For floating-rate loans, this reflects the current benchmark rate plus spread. Updated when the rate resets. Omit if the rate is not yet determined. Example: 0.085"
             },
             "maturity_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The contractual maturity date of the credit position — the date by which all principal must be repaid. Used for duration calculations, reinvestment planning, and portfolio analytics. Omit for revolving facilities with no fixed maturity. Example: '2028-12-15'"
             },
             "price": {
               "type": "number",
-              "description": "Current price as percentage of par (e.g., 98.5)"
+              "description": "Current market price of the credit position expressed as a percentage of par value. A price of 98.5 means the position is trading at 98.5% of its face value (a 1.5% discount to par). Prices above 100 indicate a premium. Used to derive market_value (par_amount * price / 100). Example: 98.5"
             }
           },
           "required": [
@@ -112,6 +131,7 @@
       ]
     },
     "RealEstatePosition": {
+      "description": "A direct or indirect position in a real estate asset, tracked through a real estate investment vehicle. Captures ownership percentage, cost basis, current valuation, and income metrics (NOI, cap rate). Extends Auditable for identity and audit trail.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -120,34 +140,42 @@
           "type": "object",
           "properties": {
             "position_type": {
-              "const": "REAL_ESTATE"
+              "const": "REAL_ESTATE",
+              "description": "Discriminator value identifying this as a real estate position. Always set to 'REAL_ESTATE'. Used by the Position union to select the correct schema variant."
             },
             "property_id": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "UUID reference to the Property entity representing the specific real estate asset. Links to property-level details such as address, property type (office, multifamily, industrial, retail), and physical characteristics. Always populated. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "vehicle_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to REVehicle"
+              "description": "UUID reference to the REVehicle (real estate vehicle) entity through which the position is held. This could be a REIT, a real estate fund, a joint venture, or a direct ownership entity. Omit for directly owned properties with no intermediate vehicle. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
             },
             "ownership_percentage": {
-              "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+              "description": "The investor's ownership stake in the property, expressed as a decimal (e.g., 0.25 = 25% ownership). Used to calculate the investor's pro-rata share of income, expenses, and value. A value of 1.0 indicates full ownership. Omit if ownership is tracked at the vehicle level rather than the property level. Example: 0.25"
             },
             "cost_basis": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The original acquisition cost of the position, including purchase price, closing costs, and capitalized improvements. Used for gain/loss calculations and return metrics. Represents the investor's pro-rata share based on ownership_percentage. Always populated. Example: {amount: 5000000, currency: 'USD'}"
             },
             "current_valuation": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The current appraised or estimated market value of the investor's share of the property. Updated periodically based on appraisals, comparable sales, or income-based valuations. Always populated. Example: {amount: 6200000, currency: 'USD'}"
             },
             "valuation_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The as-of date for the current_valuation figure. Indicates how current the appraisal is. Real estate valuations are typically updated annually or semi-annually. Omit if the valuation date is unknown. Example: '2024-06-30'"
             },
             "noi_annual": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Annualized net operating income (NOI) for the investor's share of the property. NOI = gross rental income minus operating expenses (excluding debt service, depreciation, and capital expenditures). Used to calculate cap rate and assess income yield. Omit if the property is not yet income-producing or if NOI is not available. Example: {amount: 450000, currency: 'USD'}"
             },
             "cap_rate": {
-              "$ref": "../core/percentage.schema.json#/$defs/Percentage"
+              "$ref": "../core/percentage.schema.json#/$defs/Percentage",
+              "description": "Capitalization rate — the ratio of NOI to current property value (noi_annual / current_valuation), expressed as a decimal. A cap rate of 0.065 means the property yields 6.5% of its value in net operating income annually. Lower cap rates generally indicate lower-risk, higher-value properties. Omit if NOI or valuation is not available. Example: 0.065"
             }
           },
           "required": [
@@ -160,6 +188,7 @@
       ]
     },
     "Position": {
+      "description": "A discriminated union of all supported position types (FUND, CREDIT, REAL_ESTATE). The position_type field determines which variant schema applies. Use this type when a field can hold any position type, and inspect position_type to determine the specific variant.",
       "oneOf": [
         {
           "$ref": "#/$defs/FundPosition"

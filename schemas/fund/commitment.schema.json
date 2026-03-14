@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "commitment.schema.json",
   "title": "Commitment",
-  "description": "LP commitments to a fund and associated side letter terms",
+  "description": "LP commitments to a fund and associated side letter terms. A commitment represents a limited partner's contractual obligation to contribute capital to a fund when called by the GP. Each commitment tracks the total pledged amount, the remaining unfunded balance, and any individually negotiated side letter terms that modify the standard LPA provisions for that investor.",
   "$defs": {
     "Commitment": {
       "type": "object",
-      "description": "An LP's capital commitment to a fund",
+      "description": "An LP's capital commitment to a fund — the contractual obligation to contribute a specified amount of capital when called by the GP over the life of the fund. Each commitment is tied to exactly one fund and one investor. The commitment serves as the basis for calculating the investor's pro-rata share of capital calls, distributions, and NAV. Inherits id, created_at, and updated_at from Auditable.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
@@ -14,32 +14,32 @@
         "fund_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the fund"
+          "description": "Foreign key referencing the fund to which this capital commitment is made. Links the commitment to a specific Fund entity. Every commitment must be associated with exactly one fund. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "investor_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the investor (Party)"
+          "description": "Foreign key referencing the investor (Party) making this commitment. The referenced Party record represents the limited partner — typically a pension fund, endowment, sovereign wealth fund, family office, or other institutional investor. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
         },
         "commitment_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total committed capital"
+          "description": "Total capital the LP has committed to contribute to the fund over its life. This is the maximum amount that can be called from this investor (subject to over-commitment provisions). Set at the time of commitment and generally immutable unless modified by a transfer or amendment. Example: {\"amount\": \"25000000.00\", \"currency\": \"USD\"}"
         },
         "unfunded_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Remaining unfunded commitment"
+          "description": "The remaining portion of the commitment that has not yet been called by the GP. Calculated as commitment_amount minus the sum of all capital calls allocated to this commitment. Decreases with each capital call and may increase if recallable distributions are returned. When this reaches zero, the commitment is fully drawn. Example: {\"amount\": \"15000000.00\", \"currency\": \"USD\"}"
         },
         "commitment_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date the commitment was made"
+          "description": "The date on which the LP's commitment was formally accepted, typically at a fund closing (first close, subsequent close, or final close). This date establishes the investor's entry point for management fee calculations and may affect equalization adjustments for investors entering at subsequent closes. Format: YYYY-MM-DD. Example: '2023-06-30'"
         },
         "side_letter": {
           "$ref": "#/$defs/SideLetterTerms",
-          "description": "Negotiated side letter terms, if any"
+          "description": "Negotiated side letter terms that modify the standard LPA provisions for this specific investor. Side letters are common for large institutional LPs who negotiate preferential economic terms, enhanced reporting, or co-investment rights. Omit if the investor has no side letter agreement and is subject to standard fund terms."
         },
         "status": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/CommitmentStatus" }],
-          "description": "Current status of the commitment"
+          "description": "Current lifecycle status of the commitment. Tracks whether the commitment is awaiting acceptance (PENDING), actively subject to capital calls (ACTIVE), has been transferred to another investor via a secondary transaction (TRANSFERRED), or has been declared in default due to failure to meet a capital call (DEFAULTED). Example: 'ACTIVE'"
         }
       },
       "required": [
@@ -49,29 +49,29 @@
     },
     "SideLetterTerms": {
       "type": "object",
-      "description": "Terms negotiated in a side letter agreement",
+      "description": "Terms individually negotiated in a side letter agreement between the GP and a specific LP, modifying the standard LPA provisions for that investor. Side letters are legally binding supplements to the LPA and are common for anchor investors, large institutional LPs, or investors with specific regulatory or policy constraints. All fields are optional — only include the terms that were actually negotiated.",
       "properties": {
         "fee_discount": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Discount on management fee rate"
+          "description": "Reduction applied to the standard management fee rate for this investor, expressed as an absolute percentage-point discount. For example, if the fund charges a 2.00% management fee and this investor negotiated a 0.25% discount, populate with '0.25' — the investor's effective rate would be 1.75%. Omit if the investor pays the standard fee. Example: '0.25'"
         },
         "co_investment_rights": {
           "type": "boolean",
-          "description": "Whether the investor has co-investment rights"
+          "description": "Indicates whether the investor has been granted the right to co-invest alongside the fund in specific deals, typically on a no-fee, no-carry basis. When true, the GP is obligated to offer co-investment opportunities to this LP before seeking outside capital. Co-investment rights are a common concession to large LPs to increase their exposure to attractive deals. Example: true"
         },
         "most_favored_nation": {
           "type": "boolean",
-          "description": "Whether MFN rights apply"
+          "description": "Indicates whether the investor holds Most Favored Nation (MFN) rights. When true, this LP is entitled to receive any more favorable terms granted to other investors of equal or smaller commitment size. At final close, MFN holders can typically elect to adopt any side letter concession given to other LPs (subject to certain exclusions). Example: true"
         },
         "excuse_rights": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Sectors or investment types the investor may opt out of"
+          "description": "List of investment sectors, geographies, or deal types from which this investor may opt out (be 'excused') without penalty. Used by LPs with policy restrictions (e.g., public pensions prohibited from investing in tobacco, firearms, or gambling) or regulatory constraints. Each entry is a free-text description of the excluded category. Omit or leave as an empty array if the investor has no excuse rights. Example: ['Tobacco', 'Firearms', 'Gambling']"
         },
         "reporting_requirements": {
           "type": "array",
           "items": { "type": "string" },
-          "description": "Additional reporting obligations"
+          "description": "Additional reporting obligations the GP has agreed to provide to this investor beyond the standard fund reporting package. Common additions include ESG/impact reports, look-through data for regulatory compliance, ILPA-format templates, or more frequent interim updates. Each entry is a free-text description of the reporting commitment. Omit or leave as an empty array if the investor accepts standard reporting. Example: ['Quarterly ESG report', 'Annual ILPA template', 'Monthly flash NAV']"
         }
       }
     }

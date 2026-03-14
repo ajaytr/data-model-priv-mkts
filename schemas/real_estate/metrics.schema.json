@@ -2,47 +2,47 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "metrics.schema.json",
   "title": "Real estate metrics",
-  "description": "NOI statements and appraisal definitions for real estate properties",
+  "description": "NOI statements and appraisal definitions for real estate properties. These entities capture the financial performance (income and expenses) and formal valuations of properties, providing the data foundation for return analysis, debt service coverage, and portfolio-level reporting.",
   "$defs": {
     "NOIStatement": {
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" },
         {
           "type": "object",
-          "description": "Net operating income statement for a property over a reporting period. A persistent, versioned record — multiple NOI statements may exist for the same property and period (e.g., revised or restated versions), distinguished by their id and created_at timestamp.",
+          "description": "Net operating income statement for a property over a reporting period. Captures the income waterfall from gross revenue through vacancy loss, effective gross income, operating expenses, and net operating income. A persistent, versioned record — multiple NOI statements may exist for the same property and period (e.g., revised or restated versions), distinguished by their id and created_at timestamp. NOI is the primary measure of property-level profitability and the basis for cap-rate-based valuations.",
           "properties": {
             "property_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to the Property"
+              "description": "UUID foreign key referencing the Property for which this NOI statement is prepared. Each NOI statement belongs to exactly one property. Always required. Example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'."
             },
             "period": {
               "$ref": "../core/dates.schema.json#/$defs/ReportingPeriod",
-              "description": "Reporting period covered by this statement"
+              "description": "Reporting period covered by this NOI statement, specifying the start date, end date, and period type (e.g., monthly, quarterly, annual). Always required. All financial figures in the statement represent activity during this period. Example: {\"start_date\": \"2024-01-01\", \"end_date\": \"2024-03-31\", \"period_type\": \"QUARTERLY\"}."
             },
             "gross_revenue": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Total gross rental and ancillary revenue"
+              "description": "Total gross potential revenue for the property during the reporting period, assuming full occupancy and no concessions. Includes base rental income, percentage rent, parking revenue, storage fees, laundry income, and all other ancillary revenue sources. Always required. This is the starting point of the NOI waterfall — actual collected income is lower after vacancy loss. Example: {\"amount\": 1500000, \"currency\": \"USD\"} for $1.5M gross revenue in a quarter."
             },
             "vacancy_loss": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Revenue lost due to vacancy"
+              "description": "Revenue lost during the reporting period due to vacant units or spaces, rent concessions (free rent periods), and uncollected rent (bad debt). Expressed as a positive amount representing the shortfall from gross_revenue. Always required. Calculated as gross_revenue minus actual collected rent, or as vacancy_rate * gross_revenue. Example: {\"amount\": 150000, \"currency\": \"USD\"} for $150K in vacancy and credit loss."
             },
             "effective_gross_income": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Gross revenue minus vacancy loss"
+              "description": "Actual revenue collected after subtracting vacancy loss from gross_revenue (effective_gross_income = gross_revenue - vacancy_loss). Represents the cash revenue the property generated during the period. Always required. May also include operating expense reimbursements from tenants (CAM charges, tax pass-throughs) depending on accounting convention. Example: {\"amount\": 1350000, \"currency\": \"USD\"}."
             },
             "operating_expenses": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Total property operating expenses"
+              "description": "Total property-level operating expenses incurred during the reporting period. Includes property management fees, insurance, property taxes, utilities, repairs and maintenance, landscaping, security, and other recurring costs necessary to operate the property. Excludes debt service (mortgage payments), capital expenditures, depreciation, and income taxes. Always required. Example: {\"amount\": 550000, \"currency\": \"USD\"} for $550K in operating expenses."
             },
             "net_operating_income": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Effective gross income minus operating expenses"
+              "description": "Net operating income for the period, calculated as effective_gross_income minus operating_expenses. NOI is the fundamental measure of a property's operating profitability and is used for cap-rate-based valuations (Value = NOI / Cap Rate), debt service coverage ratios (DSCR = NOI / Debt Service), and return analysis. Always required. Example: {\"amount\": 800000, \"currency\": \"USD\"} for $800K NOI in a quarter."
             },
             "capital_expenditures": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Capital expenditures during the period"
+              "description": "Capital expenditures (CapEx) incurred during the reporting period for improvements that extend the property's useful life or enhance its value — roof replacements, HVAC system upgrades, elevator modernization, parking lot resurfacing, etc. Distinct from operating expenses (which are recurring and maintain current condition). Omit if no CapEx occurred during the period. Used to calculate cash flow after CapEx (NOI - CapEx). Example: {\"amount\": 75000, \"currency\": \"USD\"} for $75K in capital improvements."
             }
           },
           "required": [
@@ -54,7 +54,7 @@
       ]
     },
     "Appraisal": {
-      "description": "A formal property appraisal",
+      "description": "A formal property appraisal performed by a qualified appraiser or appraisal firm, resulting in an opinion of the property's fair market value. Appraisals are typically required by lenders for loan origination, by investors for quarterly NAV reporting, and by regulatory bodies for compliance. Each Appraisal record captures the valuation methodology, key inputs (NOI, cap rate), and the responsible appraiser.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" },
         {
@@ -63,35 +63,35 @@
             "property_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to the Property being appraised"
+              "description": "UUID foreign key referencing the Property being appraised. Each appraisal pertains to exactly one property. A single property may have multiple appraisals over time (e.g., annual reappraisals). Always required. Example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'."
             },
             "appraisal_date": {
               "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-              "description": "Date of the appraisal"
+              "description": "Effective date of the appraisal — the 'as-of' date for the appraised value opinion. This is the date stated in the appraisal report as the date of value, not the date the report was delivered. Always required. Format: ISO 8601 date, e.g., '2024-06-30'."
             },
             "appraised_value": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Appraised market value"
+              "description": "The appraiser's opinion of the property's fair market value as of the appraisal_date. This is the headline figure used for LTV calculations, portfolio NAV, and investor reporting. Always required. Example: {\"amount\": 28500000, \"currency\": \"USD\"} for a property appraised at $28.5M."
             },
             "cap_rate": {
               "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-              "description": "Capitalization rate used in the appraisal"
+              "description": "Capitalization rate applied in the income approach to derive the appraised value, expressed as a decimal percentage. Represents the relationship between net operating income and property value (cap_rate = noi_used / appraised_value * 100). Reflects market conditions, property quality, and risk. Always required for income-approach appraisals. Example: 5.50 for a 5.50% cap rate."
             },
             "noi_used": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Net operating income figure used in valuation"
+              "description": "Net operating income figure the appraiser used as the basis for the income-approach valuation. May be trailing actual NOI, forward projected (stabilized) NOI, or a blended figure. Should be annualized even if derived from a partial period. Always required. Cross-reference with NOIStatement records to verify consistency. Example: {\"amount\": 1567500, \"currency\": \"USD\"} for $1.5675M annualized NOI."
             },
             "approach": {
               "allOf": [{ "$ref": "enums.schema.json#/$defs/AppraisalApproach" }],
-              "description": "Appraisal methodology employed"
+              "description": "Primary appraisal methodology used to determine the appraised_value. Always required. Common values: INCOME (direct capitalization or DCF of projected cash flows), SALES_COMPARISON (analysis of comparable property transactions), COST (replacement cost less depreciation), HYBRID (weighted blend of multiple approaches). Most commercial property appraisals rely primarily on the INCOME approach. Example: 'INCOME'."
             },
             "appraiser_firm": {
               "type": "string",
-              "description": "Name of the appraisal firm"
+              "description": "Name of the appraisal firm that performed the valuation. For institutional-quality appraisals, this is typically a nationally recognized firm. Always required for third-party appraisals. Examples: 'CBRE Valuation & Advisory Services', 'Cushman & Wakefield', 'Newmark Valuation & Advisory', 'JLL Valuation Advisory'."
             },
             "appraiser_name": {
               "type": "string",
-              "description": "Name of the individual appraiser"
+              "description": "Full name of the individual licensed appraiser who signed the appraisal report. The signatory bears professional responsibility for the valuation opinion. Omit if the individual appraiser is unknown or if the report is attributed to the firm only. Examples: 'John A. Smith, MAI', 'Sarah K. Johnson, MAI, SRA'."
             }
           },
           "required": [

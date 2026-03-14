@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "portfolio.schema.json",
   "title": "Portfolio",
-  "description": "A portfolio containing positions across asset types",
+  "description": "A named collection of private market positions (fund LP interests, credit facilities, real estate holdings) owned by a single party. Provides aggregate-level metrics (total NAV, commitments, unfunded) alongside the constituent positions. Used as the top-level container for portfolio-level reporting, analytics, and exposure tracking.",
   "$defs": {
     "Portfolio": {
+      "description": "An investor's portfolio of private market positions as of a specific date. Extends Auditable for identity and audit trail. Contains an array of positions (which may span multiple asset types) and portfolio-level summary metrics.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -13,30 +14,36 @@
           "type": "object",
           "properties": {
             "name": {
-              "type": "string"
+              "type": "string",
+              "description": "Human-readable name for the portfolio. Used for display in dashboards, reports, and portfolio selection lists. Should be descriptive enough to distinguish from other portfolios owned by the same party. Example: 'Global PE Allocation', 'US Buyout Sleeve', 'Fund-of-Funds Portfolio 2024'"
             },
             "owner_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party that owns this portfolio"
+              "description": "UUID reference to the Party entity that owns this portfolio. Identifies the institutional investor, fund-of-funds, family office, or other entity whose positions are aggregated here. Always populated. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "as_of_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The reporting date for this portfolio snapshot. All position valuations, NAVs, and summary metrics are as of this date. Used for time-series tracking of portfolio evolution. Typically aligns with quarter-end dates. Always populated. Example: '2024-06-30'"
             },
             "positions": {
               "type": "array",
               "items": {
                 "$ref": "position.schema.json#/$defs/Position"
-              }
+              },
+              "description": "Array of all positions in this portfolio. Each position is one of the discriminated union variants (FundPosition, CreditPosition, RealEstatePosition). A portfolio may contain a mix of asset types. Positions are typically refreshed on the as_of_date. Omit or leave empty if this is a newly created portfolio with no positions yet."
             },
             "total_nav": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Aggregate net asset value across all positions in the portfolio as of as_of_date. Sum of current_nav (for fund positions), market_value (for credit positions), and current_valuation (for real estate positions). Omit if positions are not yet populated or if NAV aggregation is handled downstream. Example: {amount: 125000000, currency: 'USD'}"
             },
             "total_commitments": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Aggregate total commitments across all fund positions in the portfolio. Sum of commitment_amount for each FundPosition. Does not include credit or real estate positions (which have different capital structures). Omit if there are no fund positions or if aggregation is handled downstream. Example: {amount: 200000000, currency: 'USD'}"
             },
             "total_unfunded": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Aggregate uncalled commitments across all fund positions in the portfolio. Sum of unfunded_amount for each FundPosition. Represents total future capital call exposure and is critical for liquidity planning and over-commitment strategies. Omit if there are no fund positions or if aggregation is handled downstream. Example: {amount: 50000000, currency: 'USD'}"
             }
           },
           "required": [

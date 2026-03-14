@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "cash_flow.schema.json",
   "title": "Cash Flow",
-  "description": "Unified cash flow representation across asset types",
+  "description": "Unified cash flow representation across all private market asset types (funds, credit, real estate). Each CashFlow record captures a single cash movement — capital calls, distributions, interest payments, fees, purchases, sales, and other flows. Designed for unified reporting, performance calculation, and J-curve analysis across a multi-asset portfolio.",
   "$defs": {
     "CashFlow": {
+      "description": "A single cash flow event associated with a portfolio position. Extends Auditable for identity and audit trail. The combination of cash_flow_type and direction unambiguously defines the nature and sign of the flow. Amount is always a positive number; direction indicates whether it is an inflow or outflow.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -14,35 +15,42 @@
           "properties": {
             "portfolio_id": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "UUID reference to the Portfolio entity this cash flow belongs to. Links the cash flow to a specific portfolio for aggregation, filtering, and reporting. Omit if the cash flow is tracked at the position level only and not associated with a portfolio. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "position_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to the Position that generated this cash flow"
+              "description": "UUID reference to the Position entity (FundPosition, CreditPosition, or RealEstatePosition) that generated this cash flow. Links the cash flow to its source position for position-level analytics and reconciliation. Omit if the cash flow is portfolio-level (e.g., management fees charged at the portfolio level). Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
             },
             "cash_flow_type": {
-              "$ref": "enums.schema.json#/$defs/CashFlowType"
+              "$ref": "enums.schema.json#/$defs/CashFlowType",
+              "description": "Classification of the cash flow event (e.g., CAPITAL_CALL, DISTRIBUTION, INTEREST_PAYMENT, FEE). Combined with direction, this fully characterizes the cash flow for reporting and analytics."
             },
             "direction": {
-              "$ref": "enums.schema.json#/$defs/CashFlowDirection"
+              "$ref": "enums.schema.json#/$defs/CashFlowDirection",
+              "description": "Direction of the cash flow from the portfolio's perspective: INFLOW (cash received) or OUTFLOW (cash paid). Amount is always positive; direction determines the sign. For example, a CAPITAL_CALL is an OUTFLOW and a DISTRIBUTION is an INFLOW."
             },
             "amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The monetary value of the cash flow. Always a positive number — use direction to determine the sign. Includes currency for multi-currency portfolios. Always populated. Example: {amount: 500000, currency: 'USD'}"
             },
             "cash_flow_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The date on which the cash flow occurred or is expected to occur. For realized flows, this is the actual payment/receipt date. For projected flows, this is the expected date. Used as the date input for IRR and time-weighted return calculations. Always populated. Example: '2024-07-15'"
             },
             "description": {
-              "type": "string"
+              "type": "string",
+              "description": "Human-readable description of the cash flow providing additional context beyond the type and direction. Useful for audit trail and reconciliation. Examples: 'Q2 2024 capital call - Fund IV', 'Quarterly interest payment - Tranche B', 'Annual management fee'. Omit if the cash_flow_type is self-explanatory."
             },
             "source_entity_id": {
               "type": "string",
               "format": "uuid",
-              "description": "UUID of the originating entity (CapitalCall, Distribution, InterestPeriod, etc.)"
+              "description": "UUID of the originating domain entity that produced this cash flow. Links back to the specific business event — a CapitalCall, Distribution, InterestPeriod, or other source record. Enables drill-down from a cash flow line to its full details. Omit if there is no source entity or if the cash flow was manually entered. Example: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'"
             },
             "source_entity_type": {
-              "type": "string"
+              "type": "string",
+              "description": "The type name of the source entity referenced by source_entity_id. Used to determine which domain schema to query for the full source record. Common values: 'CapitalCall', 'Distribution', 'InterestPeriod', 'Fee', 'Trade'. Omit if source_entity_id is not populated. Example: 'CapitalCall'"
             }
           },
           "required": [

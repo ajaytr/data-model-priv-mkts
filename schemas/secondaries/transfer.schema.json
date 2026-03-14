@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "transfer.schema.json",
   "title": "Transfer Record",
-  "description": "Record of completed LP interest transfers",
+  "description": "Immutable record of a completed LP interest transfer on a fund's register. Created after a secondary transaction closes and the GP processes the transfer. Captures the financial details of what was transferred (commitment, unfunded, purchase price), the old and new commitment records, and settlement information. Serves as the definitive audit trail for post-close reconciliation.",
   "$defs": {
     "TransferRecord": {
+      "description": "A completed LP interest transfer that has been recorded on the fund's books. Extends Auditable for identity and audit trail. Created once the transaction reaches SETTLED status and the fund administrator has processed the change of LP on the register.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -15,50 +16,56 @@
             "transaction_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Transaction"
+              "description": "UUID reference to the Transaction entity that resulted in this transfer. Links back to the full transaction lifecycle, milestones, and GP consent records. Each TransferRecord corresponds to exactly one completed Transaction. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "fund_id": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "UUID reference to the Fund entity in which the LP interest was transferred. Identifies which fund's register was updated. Always populated. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
             },
             "from_investor_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Selling LP (Party)"
+              "description": "UUID reference to the Party entity representing the selling LP — the investor who transferred their interest. This party is removed (fully or partially) from the fund's LP register. Example: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'"
             },
             "to_investor_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Buying LP (Party)"
+              "description": "UUID reference to the Party entity representing the buying LP — the investor who received the transferred interest. This party is added to the fund's LP register as the new holder. Example: '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed'"
             },
             "old_commitment_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to original Commitment being transferred"
+              "description": "UUID reference to the original Commitment entity belonging to the seller that was transferred. This commitment record is typically closed, reduced, or marked as transferred after the transfer completes. In a partial transfer, only a portion of this commitment is affected. Example: '6ba7b810-9dad-11d1-80b4-00c04fd430c8'"
             },
             "new_commitment_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to newly created Commitment for the buyer"
+              "description": "UUID reference to the newly created Commitment entity for the buyer, established as a result of this transfer. The new commitment inherits the transferred portion of the original commitment's terms. Omit if the buyer already had an existing commitment to this fund that was simply increased. Example: '6ba7b811-9dad-11d1-80b4-00c04fd430c8'"
             },
             "transferred_commitment": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The total commitment amount that was transferred from the seller to the buyer. In a full transfer, this equals the seller's total_commitment. In a partial transfer, this is the portion being transferred. Always populated. Example: {amount: 10000000, currency: 'USD'}"
             },
             "transferred_unfunded": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The unfunded commitment amount assumed by the buyer as part of this transfer. Represents future capital call obligations that now belong to the buyer. May be zero if the fund is fully called. Omit if not applicable or if unfunded obligations are not being transferred. Example: {amount: 2500000, currency: 'USD'}"
             },
             "purchase_price": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The cash consideration paid by the buyer to the seller for the LP interest. This is the actual settlement amount after any adjustments for interim cash flows, prorations, or fees. Always populated. Example: {amount: 7626000, currency: 'USD'}"
             },
             "effective_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The date the transfer became effective on the fund's books. After this date, the buyer is the LP of record entitled to all rights, capital calls, and distributions. Determines the economic cut-off for cash flow allocation between buyer and seller. Always populated. Example: '2024-09-30'"
             },
             "settlement_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The date on which the purchase price was actually paid and cash settled between buyer and seller. May differ from effective_date — the transfer can be economically effective retroactively (e.g., as of quarter-end) while cash settles later. Omit if settlement has not yet occurred or if it coincides with effective_date and is not separately tracked. Example: '2024-10-18'"
             },
             "transfer_fee": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Fee charged by the GP for processing the transfer"
+              "description": "Fee charged by the GP or fund administrator for processing the LP interest transfer. Typically a fixed fee or a small percentage of the transferred commitment. Paid by the buyer, seller, or split between them depending on fund terms. Omit if no transfer fee was charged. Example: {amount: 25000, currency: 'USD'}"
             }
           },
           "required": [

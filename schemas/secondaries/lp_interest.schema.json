@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "lp_interest.schema.json",
   "title": "LP Interest",
-  "description": "LP interest positions available for secondary trading",
+  "description": "Represents a limited partner's interest in a private markets fund that is available for secondary trading. Captures the current state of an LP's commitment, funded and unfunded amounts, NAV, and fund characteristics needed to price and execute a secondary transaction. Each LPInterest record corresponds to a single LP's stake in a single fund.",
   "$defs": {
     "LPInterest": {
+      "description": "A snapshot of a limited partner's position in a fund, providing the data points required for secondary market pricing, marketing, and execution. Extends Auditable for identity and audit trail. Typically sourced from fund administrator reports or the GP's investor portal.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -15,50 +16,57 @@
             "fund_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Fund"
+              "description": "UUID reference to the Fund entity in which this LP interest is held. Links the LP interest to its parent fund for retrieval of fund-level details (strategy, vintage, geography, etc.). Always populated. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "fund_name": {
               "type": "string",
-              "description": "Denormalized fund name for convenience"
+              "description": "Human-readable name of the fund, denormalized from the Fund entity for display convenience. Avoids requiring a join to show the fund name in listings, reports, and data rooms. Should match the canonical Fund.name. Example: 'Acme Buyout Fund IV'"
             },
             "seller_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party (current LP)"
+              "description": "UUID reference to the Party entity representing the current LP (seller). This is the investor who holds the interest and is making it available for secondary sale. Always populated. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
             },
             "commitment_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Commitment"
+              "description": "UUID reference to the Commitment entity representing the LP's original capital commitment to the fund. Links to the legal commitment record that governs capital calls and distributions. Omit if the commitment record has not yet been created or is managed externally. Example: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'"
             },
             "total_commitment": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The LP's total capital commitment to the fund — the maximum amount the LP has agreed to invest. Includes both funded and unfunded portions. This is the contractual commitment from the subscription agreement. Example: {amount: 10000000, currency: 'USD'}"
             },
             "funded_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The cumulative amount of capital that has been called and paid in by the LP to date. Represents the total drawn-down portion of the commitment. funded_amount + unfunded_amount should equal total_commitment. Example: {amount: 7500000, currency: 'USD'}"
             },
             "unfunded_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The remaining uncalled portion of the LP's commitment. Represents future capital call obligations that the buyer would assume in a secondary transaction. Critical for pricing — buyers must account for future funding requirements. Example: {amount: 2500000, currency: 'USD'}"
             },
             "nav": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Most recent NAV"
+              "description": "The most recent net asset value of the LP's interest as reported by the fund administrator or GP. This is the baseline for secondary pricing — bids and offers are typically expressed as a percentage of NAV (e.g., 92% of NAV). Always populated; must be accompanied by nav_date. Example: {amount: 8200000, currency: 'USD'}"
             },
             "nav_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The as-of date of the NAV figure. Indicates how current the valuation is — stale NAVs (more than one quarter old) should be flagged for buyers. Typically aligns with the fund's most recent quarterly reporting date. Example: '2024-06-30'"
             },
             "distributions_received": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Total cumulative distributions received by the LP from the fund to date, including return of capital, realized gains, dividends, and interest. Used to compute DPI (Distributions to Paid-In) and assess how much capital has been returned. Omit if not tracked or not yet available. Example: {amount: 3000000, currency: 'USD'}"
             },
             "vintage_year": {
-              "type": "integer"
+              "type": "integer",
+              "description": "The vintage year of the fund, typically the year of the fund's first capital call or final close. Used for benchmarking performance against peer funds of the same vintage. Example: 2019"
             },
             "fund_strategy": {
               "type": "string",
-              "description": "Fund strategy (denormalized from Fund)"
+              "description": "The investment strategy of the fund, denormalized from the Fund entity for filtering and categorization in secondary market listings. Common values include 'Buyout', 'Venture Capital', 'Growth Equity', 'Real Estate', 'Infrastructure', 'Credit', 'Secondaries', 'Fund of Funds'. Example: 'Buyout'"
             },
             "remaining_fund_life_years": {
-              "type": "number"
+              "type": "number",
+              "description": "Estimated number of years remaining in the fund's life from the current date, based on the fund's contractual term and any approved extensions. Helps buyers assess the expected holding period and liquidity timeline. A value of 0 indicates the fund is at or past its expected termination. Fractional values are permitted. Example: 3.5"
             }
           },
           "required": [

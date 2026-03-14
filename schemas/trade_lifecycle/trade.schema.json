@@ -2,9 +2,10 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "trade.schema.json",
   "title": "Trade",
-  "description": "Trade entity and state transitions for the trade lifecycle",
+  "description": "Represents a trade of a private market asset (fund interest, credit position, or other alternative asset) and its progression through lifecycle states. Captures counterparties, pricing, documentation, and a full audit trail of state transitions from indicative interest through settlement or cancellation.",
   "$defs": {
     "Trade": {
+      "description": "A private market trade between a buyer and seller, with optional broker intermediation. Extends Auditable for identity and audit trail. Tracks the trade from initial agreement through documentation, settlement, and final status. Contains the full history of state transitions for audit and compliance purposes.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -13,49 +14,55 @@
           "type": "object",
           "properties": {
             "trade_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The date on which the trade was agreed between buyer and seller. This is the economic date of the trade and serves as the anchor for settlement timelines and regulatory reporting. Always populated. Example: '2024-08-01'"
             },
             "settlement_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The expected or actual date for settlement of the trade — when cash and asset transfer are completed. In private markets, settlement can take weeks or months after trade date due to documentation and consent requirements. Omit if not yet determined; populated once a settlement timeline is established. Example: '2024-10-15'"
             },
             "buyer_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party"
+              "description": "UUID reference to the Party entity representing the buyer — the party acquiring the asset. This party will become the holder of record upon settlement. Always populated. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "seller_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party"
+              "description": "UUID reference to the Party entity representing the seller — the party disposing of the asset. This party relinquishes ownership upon settlement. Always populated. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
             },
             "broker_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party (optional broker/intermediary)"
+              "description": "UUID reference to the Party entity representing the broker or intermediary facilitating the trade. Brokers connect buyers and sellers, manage price discovery, and may handle documentation. Omit for direct (non-brokered) trades where buyer and seller transact without an intermediary. Example: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d'"
             },
             "asset_description": {
               "type": "string",
-              "description": "Human-readable description of the traded asset"
+              "description": "Human-readable description of the traded asset providing context for display, reporting, and communication. Should include enough detail to identify the asset without looking up the reference. Examples: 'Acme Buyout Fund IV LP Interest', 'Term Loan B - XYZ Corp Credit Facility', '25% interest in 100 Main Street Office Building'. Omit only if asset_reference_id provides sufficient identification."
             },
             "asset_reference_id": {
               "type": "string",
               "format": "uuid",
-              "description": "UUID reference to the underlying asset (fund position, facility, etc.)"
+              "description": "UUID reference to the underlying asset entity being traded (e.g., a Position, LPInterest, or Facility). Enables programmatic linking from the trade to the specific asset for valuation, position updates, and portfolio impact analysis. Omit if the traded asset is not tracked as a separate entity in this system. Example: '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed'"
             },
             "price": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The agreed transaction price — the cash consideration the buyer pays the seller for the asset. For fund LP interests, this is typically derived from a percentage of NAV. For credit positions, it may be a percentage of par. Always populated. Example: {amount: 7626000, currency: 'USD'}"
             },
             "notional_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "The notional or face value of the traded asset, distinct from the transaction price. For fund LP interests, this is the NAV or commitment amount. For credit positions, this is the par amount. Used to calculate the price as a percentage of face value and for exposure reporting. Omit if not applicable or not separately tracked. Example: {amount: 8200000, currency: 'USD'}"
             },
             "status": {
-              "$ref": "enums.schema.json#/$defs/TradeStatus"
+              "$ref": "enums.schema.json#/$defs/TradeStatus",
+              "description": "The current lifecycle status of the trade (e.g., INDICATIVE, AGREED, PENDING_SETTLEMENT, SETTLED). Determines what actions are available and what the next expected transition is. Updated via TradeStateTransition records. Always populated."
             },
             "transitions": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/TradeStateTransition"
-              }
+              },
+              "description": "Ordered list of all state transitions this trade has undergone, providing a complete audit trail of status changes. Each transition records the from/to status, timestamp, who triggered it, and optional notes. Sorted chronologically by transition_date. Populated as the trade progresses; may be empty for newly created trades in INDICATIVE status."
             },
             "documents": {
               "type": "array",
@@ -63,7 +70,7 @@
                 "type": "string",
                 "format": "uuid"
               },
-              "description": "References to Document entities"
+              "description": "Array of UUID references to Document entities associated with this trade. Includes trade confirmations, purchase agreements, transfer instruments, legal opinions, and closing documents. Populated as documents are generated or uploaded during the trade lifecycle. May be empty for trades that have not yet reached the documentation stage."
             }
           },
           "required": [
@@ -78,12 +85,15 @@
     },
     "TradeStateTransition": {
       "type": "object",
+      "description": "An immutable record of a single state change in a trade's lifecycle. Captures the before and after status, when the transition occurred, who triggered it, and any explanatory notes. Provides a complete, tamper-evident audit trail for compliance and operational review.",
       "properties": {
         "from_status": {
-          "$ref": "enums.schema.json#/$defs/TradeStatus"
+          "$ref": "enums.schema.json#/$defs/TradeStatus",
+          "description": "The trade's status before this transition. Must match the to_status of the immediately preceding transition (or the initial status if this is the first transition). Example: 'AGREED'"
         },
         "to_status": {
-          "$ref": "enums.schema.json#/$defs/TradeStatus"
+          "$ref": "enums.schema.json#/$defs/TradeStatus",
+          "description": "The trade's status after this transition. Becomes the current status of the trade until the next transition. Must be a valid successor of from_status per the allowed state machine. Example: 'PENDING_DOCUMENTATION'"
         },
         "transition_date": {
           "allOf": [
@@ -95,10 +105,11 @@
         },
         "transitioned_by": {
           "type": "string",
-          "description": "User or system that triggered the transition"
+          "description": "Identifier of the user or system that triggered this transition. May be a username, email address, service account name, or system identifier. Used for audit trail and accountability. Omit if the transition was triggered by an automated system process and the actor is not tracked. Example: 'jsmith@acmecapital.com'"
         },
         "notes": {
-          "type": "string"
+          "type": "string",
+          "description": "Free-text notes providing context for this transition, such as reasons for cancellation, conditions that were met, or issues that caused a failure. Particularly important for terminal states (CANCELLED, FAILED) to document the rationale. Omit if no additional context is needed. Example: 'Trade cancelled at buyer request due to adverse diligence findings'"
         }
       },
       "required": [

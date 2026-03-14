@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "waterfall.schema.json",
   "title": "Waterfall",
-  "description": "Distribution waterfall structures and carried interest allocations",
+  "description": "Distribution waterfall structures and carried interest allocations. The waterfall defines the hierarchical rules governing how fund proceeds are split between the GP and LPs. It encodes the multi-tiered distribution priority — typically return of capital, preferred return, GP catch-up, and carried interest — and tracks the actual carry allocations computed for each distribution event.",
   "$defs": {
     "WaterfallStructure": {
       "type": "object",
-      "description": "The distribution waterfall model for a fund",
+      "description": "The distribution waterfall model for a fund, defining the ordered set of tiers that govern how realized proceeds are allocated between the GP and LPs. The waterfall is established in the LPA and determines the sequence: typically (1) return of capital to LPs, (2) preferred return to LPs, (3) GP catch-up, and (4) carried interest split. Each fund has exactly one waterfall structure. Inherits id, created_at, and updated_at from Auditable.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
@@ -14,18 +14,18 @@
         "fund_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the fund"
+          "description": "Foreign key referencing the fund this waterfall structure applies to. Each fund has exactly one waterfall structure that governs all of its distribution events. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "model": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/WaterfallModel" }],
-          "description": "Waterfall model type"
+          "description": "The overarching waterfall distribution model — determines whether carried interest is calculated on a whole-fund basis (EUROPEAN), deal-by-deal basis (AMERICAN), or a combination (HYBRID). This choice fundamentally affects the timing and magnitude of GP carry payments. Example: 'EUROPEAN'. See WaterfallModel enum for all valid values and their detailed definitions."
         },
         "tiers": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/WaterfallTier"
           },
-          "description": "Ordered tiers of the waterfall"
+          "description": "Ordered list of waterfall tiers that define the distribution priority and GP/LP split at each level. Tiers are processed sequentially by tier_order (lowest first). A typical four-tier waterfall includes: (1) Return of Capital at 0/100 GP/LP, (2) Preferred Return at 0/100, (3) GP Catch-Up at 100/0 or 80/20, and (4) Carried Interest at 20/80. Must contain at least one tier."
         }
       },
       "required": [
@@ -35,69 +35,69 @@
     },
     "WaterfallTier": {
       "type": "object",
-      "description": "A single tier in the distribution waterfall",
+      "description": "A single tier in the distribution waterfall, defining a threshold condition and the GP/LP split that applies to proceeds flowing through this tier. Tiers are processed in order — proceeds fill each tier until its threshold is met, then overflow to the next tier. The GP and LP split percentages within a tier must sum to 100%.",
       "properties": {
         "tier_name": {
           "type": "string",
-          "description": "Human-readable name of the tier"
+          "description": "Human-readable label for this tier, used in waterfall reports and investor communications. Should clearly identify the purpose of the tier. Example: 'Return of Capital', 'Preferred Return (8%)', 'GP Catch-Up', '80/20 Carried Interest Split'"
         },
         "tier_order": {
           "type": "integer",
           "minimum": 1,
-          "description": "Order of this tier in the waterfall (1 = first)"
+          "description": "Position of this tier in the waterfall sequence, where 1 is the first tier to receive proceeds. Proceeds flow through tiers in ascending order — a tier must be fully satisfied before proceeds overflow to the next tier. Must be unique within a waterfall structure. Example: 1 for return of capital, 2 for preferred return, 3 for catch-up, 4 for carried interest."
         },
         "threshold_type": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/WaterfallThresholdType" }],
-          "description": "Type of threshold for this tier"
+          "description": "The type of threshold condition that governs this tier — determines what must be achieved before proceeds overflow to the next tier. Example: 'RETURN_OF_CAPITAL', 'PREFERRED_RETURN', 'CATCH_UP', 'CARRIED_INTEREST'. See WaterfallThresholdType enum for detailed definitions of each threshold type."
         },
         "threshold_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Rate threshold, if applicable"
+          "description": "The rate associated with this tier's threshold, if applicable. For a PREFERRED_RETURN tier, this is the annualized hurdle rate (e.g., '8.00' for 8%). For a CATCH_UP tier, this is the target carry percentage the GP is catching up to. Omit for tiers where no rate applies (e.g., RETURN_OF_CAPITAL, which is satisfied when all contributed capital is returned regardless of rate). Example: '8.00'"
         },
         "gp_split": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "GP share of distributions in this tier"
+          "description": "The GP's percentage share of proceeds flowing through this tier. Combined with lp_split, must sum to 100%. For a return-of-capital tier, this is typically '0.00' (all proceeds go to LPs). For a catch-up tier, this is typically '100.00' (all proceeds go to GP). For the final carried-interest tier, this is typically '20.00'. Example: '20.00'"
         },
         "lp_split": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "LP share of distributions in this tier"
+          "description": "The LP's percentage share of proceeds flowing through this tier. Combined with gp_split, must sum to 100%. For a return-of-capital tier, this is typically '100.00' (all proceeds go to LPs). For the final carried-interest tier, this is typically '80.00'. Example: '80.00'"
         }
       },
       "required": ["tier_name", "tier_order", "threshold_type", "gp_split", "lp_split"]
     },
     "CarryAllocation": {
       "type": "object",
-      "description": "Carried interest allocation for a distribution period",
+      "description": "Carried interest allocation computed for a specific distribution event by running the fund's proceeds through the waterfall structure. Records the gross proceeds, the resulting LP and GP shares, and any clawback reserve. Produced each time a distribution is processed through the waterfall and serves as the auditable record of how carry was calculated.",
       "properties": {
         "waterfall_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the waterfall structure"
+          "description": "Foreign key referencing the WaterfallStructure used to compute this carry allocation. Links the allocation to the specific waterfall model and tier configuration that governed the calculation. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "distribution_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the distribution"
+          "description": "Foreign key referencing the Distribution event that triggered this carry calculation. Each distribution event produces one CarryAllocation record showing how its proceeds were split between GP and LPs. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
         },
         "period": {
           "$ref": "../core/dates.schema.json#/$defs/ReportingPeriod",
-          "description": "Reporting period for this allocation"
+          "description": "The reporting period during which this carry allocation was computed. Aligns with the fund's reporting calendar (typically quarterly). Used for time-series tracking of carry accruals and for reconciliation with NAV statements."
         },
         "gross_proceeds": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total gross proceeds being distributed"
+          "description": "Total gross proceeds being distributed through the waterfall for this event, before any GP/LP split. This is the input to the waterfall calculation — the full amount of realized proceeds available for distribution. Example: {\"amount\": \"50000000.00\", \"currency\": \"USD\"}"
         },
         "lp_share": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "LP share of the distribution"
+          "description": "The aggregate amount allocated to LPs after applying the waterfall tiers to the gross proceeds. Includes return of capital, preferred return, and the LP portion of any carried interest tier. The net amount LPs receive from this distribution event (before individual withholding taxes). Example: {\"amount\": \"42000000.00\", \"currency\": \"USD\"}"
         },
         "gp_carry": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "GP carried interest amount"
+          "description": "The carried interest amount allocated to the GP from this distribution event, calculated by running gross proceeds through the waterfall tiers. This is the GP's performance-based compensation — distinct from management fees. gp_carry plus lp_share should equal gross_proceeds (minus any clawback_reserve). Example: {\"amount\": \"8000000.00\", \"currency\": \"USD\"}"
         },
         "clawback_reserve": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Amount reserved for potential clawback"
+          "description": "The portion of GP carried interest set aside in an escrow or reserve account to cover potential clawback obligations at fund termination. Required when the fund uses an American (deal-by-deal) waterfall with a clawback provision. Omit or set to zero if the fund has no clawback provision or uses a European (whole-fund) waterfall where clawback risk is minimal. Example: {\"amount\": \"2000000.00\", \"currency\": \"USD\"}"
         }
       },
       "required": ["waterfall_id", "distribution_id", "period", "gross_proceeds", "lp_share", "gp_carry"]

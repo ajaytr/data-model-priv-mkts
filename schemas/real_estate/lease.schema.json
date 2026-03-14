@@ -2,53 +2,53 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "lease.schema.json",
   "title": "Lease",
-  "description": "Lease, tenant, lease options, and rent roll definitions",
+  "description": "Lease, tenant, lease options, and rent roll definitions for real estate properties. Covers the full lease lifecycle from execution through expiration, including tenant details, rent terms, escalation schedules, concessions, and embedded options (renewal, expansion, termination).",
   "$defs": {
     "Tenant": {
       "type": "object",
-      "description": "A tenant occupying leased space",
+      "description": "A tenant entity occupying leased space within a property. Captures the tenant's identity, industry classification, and creditworthiness. Tenant credit quality is a key driver of lease value and property risk assessment — investment-grade tenants (e.g., government agencies, large corporations) provide more secure income streams than unrated or sub-investment-grade tenants.",
       "properties": {
         "tenant_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Unique identifier for the tenant"
+          "description": "System-generated UUID that uniquely identifies this tenant across all properties and leases in the portfolio. Used as a foreign key when the same tenant occupies space in multiple properties. Always required. Example: 'f1e2d3c4-b5a6-7890-fedc-ba0987654321'."
         },
         "name": {
           "type": "string",
-          "description": "Legal name of the tenant"
+          "description": "Legal name of the tenant entity as it appears on the lease agreement. For individuals, use full legal name. For businesses, use the registered entity name including suffixes (Inc., LLC, Ltd.). Always required. Examples: 'Amazon.com Services LLC', 'WeWork Companies Inc.', 'Dr. Jane Smith, DDS', 'U.S. General Services Administration'."
         },
         "industry": {
           "type": "string",
-          "description": "Industry classification of the tenant"
+          "description": "Industry classification of the tenant's primary business, used for tenant concentration analysis and sector risk assessment. Populate with a standardized classification (e.g., GICS, NAICS) or a descriptive label. Omit for individual tenants (residential leases) where industry is not applicable. Examples: 'Technology', 'Legal Services', 'Healthcare', 'Government', 'Retail - Grocery'."
         },
         "credit_rating": {
           "type": "string",
-          "description": "Credit rating of the tenant (e.g., AAA, BB+)"
+          "description": "Credit rating of the tenant from a recognized rating agency (S&P, Moody's, Fitch) or an internal credit assessment. Investment-grade tenants (BBB-/Baa3 and above) significantly enhance the property's income security and valuation. Omit for unrated tenants or residential leases. Examples: 'AAA' (highest quality), 'BBB+' (lower investment grade), 'BB-' (speculative), 'Not Rated'."
         }
       },
       "required": ["tenant_id", "name"]
     },
     "LeaseOption": {
       "type": "object",
-      "description": "An option embedded within a lease agreement",
+      "description": "An option embedded within a lease agreement that grants the tenant (or, rarely, the landlord) the right — but not the obligation — to take a specified action at or by a given date. Common options include renewal (extend the lease term), expansion (lease additional space), contraction (reduce leased space), and early termination (end the lease before expiration). Options are critical for lease roll and cash-flow forecasting.",
       "properties": {
         "option_type": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/LeaseOptionType" }],
-          "description": "Type of lease option"
+          "description": "Classification of the lease option by the action it permits. Always required. Common values: RENEWAL (extend the lease for an additional term at specified or market rent), EXPANSION (right to lease additional contiguous or non-contiguous space), TERMINATION (right to end the lease early, often with a penalty), CONTRACTION (right to reduce leased square footage), PURCHASE (right to buy the property). Example: 'RENEWAL'."
         },
         "exercise_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date by which the option must be exercised"
+          "description": "Deadline by which the option holder must exercise (or notify intent to exercise) the option. After this date, the option typically expires unexercised. For renewal options, this is usually 6-12 months before the lease end date. Always required. Format: ISO 8601 date, e.g., '2027-06-30'. The exercise_date should fall before or on the lease end_date."
         },
         "terms": {
           "type": "string",
-          "description": "Free-text description of option terms"
+          "description": "Free-text description of the option's terms and conditions as stated in the lease agreement. Should include renewal term length, rent reset mechanism, any penalties for exercise, and notice requirements. Omit if terms are not specified or are standard. Examples: 'Two 5-year renewal options at 95% of then-prevailing market rent with 9 months prior written notice', 'Early termination permitted after month 36 with payment of 6 months unamortized TI and commissions', 'Right to expand into Suite 400 (5,000 sqft) at the same per-sqft rate as the base lease'."
         }
       },
       "required": ["option_type", "exercise_date"]
     },
     "Lease": {
-      "description": "A lease agreement for space within a property",
+      "description": "A lease agreement for space within a property, representing the contractual arrangement between landlord and tenant. Captures the full economic terms including base rent, escalation schedule, concessions (free rent, TI allowance), and any embedded options. Each Lease corresponds to one tenant in one space within one property.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" },
         {
@@ -57,56 +57,56 @@
             "property_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to the Property being leased"
+              "description": "UUID foreign key referencing the Property in which the leased space is located. A single property may have many leases (one per tenant/unit combination). Always required. Example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'."
             },
             "tenant": {
               "$ref": "#/$defs/Tenant",
-              "description": "Tenant information"
+              "description": "Embedded Tenant object containing the identity, industry, and credit rating of the lessee. Always required — every lease must have a tenant. For subleases, this should reflect the subtenant, not the master tenant."
             },
             "suite_unit": {
               "type": "string",
-              "description": "Suite or unit identifier within the property"
+              "description": "Suite number, unit designation, or floor identifier within the property that specifies the exact space being leased. Used to distinguish multiple leases within the same building. Omit for single-tenant properties or ground leases where the entire property is leased. Examples: 'Suite 1200', 'Unit 4B', 'Floor 15', 'Bay 3', 'Pad A'."
             },
             "leased_sqft": {
               "type": "number",
               "minimum": 0,
-              "description": "Square footage leased to the tenant"
+              "description": "Total square footage leased to the tenant under this lease agreement. For office leases, this is typically the rentable square footage (RSF) which includes a pro-rata share of common areas. For industrial leases, this is the usable warehouse space. Always required. Used to calculate rent per square foot and occupancy metrics. Example: 25000 for a 25,000 sqft lease."
             },
             "lease_type": {
               "$ref": "enums.schema.json#/$defs/LeaseType",
-              "description": "Type of lease structure"
+              "description": "Classification of the lease structure, which determines how operating expenses, taxes, and insurance are allocated between landlord and tenant. Always required. Common values: GROSS (landlord pays all operating expenses), NET (tenant pays base rent plus some or all operating expenses), TRIPLE_NET (NNN — tenant pays base rent plus taxes, insurance, and maintenance), MODIFIED_GROSS (landlord pays some expenses, tenant pays others), GROUND (long-term lease of land only). Example: 'TRIPLE_NET'."
             },
             "start_date": {
               "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-              "description": "Lease commencement date"
+              "description": "Lease commencement date — the date on which the tenant's obligation to pay rent begins and the tenant takes possession of the space. May differ from the lease execution (signing) date. For leases with a free-rent period at the start, the start_date is still the commencement date (free rent is captured separately in free_rent_months). Always required. Format: ISO 8601 date, e.g., '2023-01-01'."
             },
             "end_date": {
               "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-              "description": "Lease expiration date"
+              "description": "Lease expiration date — the last day of the lease term, after which the tenant must vacate unless a renewal option is exercised. The lease term in months or years is derived from start_date to end_date. Always required. Format: ISO 8601 date, e.g., '2033-12-31'. For month-to-month holdover tenants, set end_date to the current period end and update as needed."
             },
             "base_rent_monthly": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Monthly base rent amount"
+              "description": "Monthly base rent amount payable by the tenant, before any escalations, concessions, or operating expense pass-throughs. This is the starting rent at lease commencement (or the current base rent if updated post-escalation). Always required. Used to calculate annual rent, rent per square foot, and aggregate property rent roll. Example: {\"amount\": 62500, \"currency\": \"USD\"} for $62,500/month ($750K/year)."
             },
             "annual_escalation": {
               "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-              "description": "Annual rent escalation rate"
+              "description": "Annual percentage increase applied to the base rent, typically on each lease anniversary. Escalations may be fixed (e.g., 3.00% per year), CPI-linked, or based on a predetermined schedule. Populate with the fixed annual rate; for CPI-linked or variable escalations, use the estimated or most recent rate. Omit if the lease has no rent escalation (flat rent for the entire term). Example: 3.00 for a 3% annual increase."
             },
             "free_rent_months": {
               "type": "integer",
               "minimum": 0,
-              "description": "Number of rent-free months granted"
+              "description": "Number of months at the beginning of the lease term during which the tenant pays no base rent, granted as a concession to attract the tenant. Free rent typically ranges from 1 to 12 months depending on market conditions and lease term. Omit or set to 0 if no free rent was granted. Example: 3 for three months of free rent on a 10-year lease."
             },
             "tenant_improvement_allowance": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Landlord contribution for tenant build-out"
+              "description": "Total dollar amount the landlord contributes toward the tenant's build-out, customization, or improvement of the leased space (TI allowance). Typically expressed as a total amount or a per-square-foot figure multiplied by leased_sqft. Represents a landlord capital outlay that is amortized over the lease term. Omit if no TI allowance was provided. Example: {\"amount\": 1250000, \"currency\": \"USD\"} for $50/sqft TI on a 25,000 sqft lease."
             },
             "options": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/LeaseOption"
               },
-              "description": "Lease options (renewal, expansion, etc.)"
+              "description": "Array of embedded lease options (renewal, expansion, termination, etc.) available to the tenant or landlord. Critical for lease roll analysis and forecasting future occupancy and revenue. Omit or leave empty if the lease contains no options. Options should be listed in chronological order by exercise_date."
             }
           },
           "required": [
@@ -118,16 +118,16 @@
     },
     "RentRoll": {
       "type": "object",
-      "description": "A point-in-time snapshot of all leases for a property",
+      "description": "A point-in-time snapshot of all active leases for a property, summarizing occupancy and rental income as of a specific date. The rent roll is a key asset management and underwriting deliverable — it aggregates individual lease data into property-level metrics (total rent, occupied sqft, occupancy rate). Typically produced monthly or quarterly for investor reporting.",
       "properties": {
         "property_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the Property"
+          "description": "UUID foreign key referencing the Property for which this rent roll is compiled. Each rent roll belongs to exactly one property. Always required. Example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'."
         },
         "as_of_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date of the rent roll snapshot"
+          "description": "The effective date of the rent roll snapshot — all lease data (active leases, occupancy, rents) is stated as of this date. Always required. Typically a month-end or quarter-end date. Format: ISO 8601 date, e.g., '2024-06-30'."
         },
         "leases": {
           "type": "array",
@@ -135,25 +135,25 @@
             "type": "string",
             "format": "uuid"
           },
-          "description": "References to active Lease entities"
+          "description": "Array of UUID foreign keys referencing the Lease entities that are active (commenced and not yet expired) as of the as_of_date. Defines the set of leases contributing to the rent roll's financial and occupancy metrics. Always required (may be empty for a fully vacant property). Example: ['lease-uuid-1', 'lease-uuid-2', 'lease-uuid-3']."
         },
         "total_monthly_rent": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Sum of all monthly base rents"
+          "description": "Aggregate monthly base rent across all active leases as of the as_of_date. Calculated as the sum of base_rent_monthly for all leases in the leases array. Does not include operating expense recoveries, percentage rent, or other ancillary income. Always required. Example: {\"amount\": 425000, \"currency\": \"USD\"} for $425K total monthly rent."
         },
         "occupied_sqft": {
           "type": "number",
           "minimum": 0,
-          "description": "Total occupied square footage"
+          "description": "Total square footage currently occupied by tenants with active leases as of the as_of_date. Calculated as the sum of leased_sqft across all active leases. Always required. Example: 135000 for 135,000 sqft occupied out of a 150,000 sqft building."
         },
         "total_sqft": {
           "type": "number",
           "minimum": 0,
-          "description": "Total leasable square footage"
+          "description": "Total leasable square footage of the property — the denominator for occupancy rate calculations. Should match the property's square_footage field (or net leasable area if different from gross area). Always required. Example: 150000 for a 150,000 sqft building."
         },
         "occupancy_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Occupancy rate (occupied_sqft / total_sqft)"
+          "description": "Physical occupancy rate as of the as_of_date, expressed as a decimal percentage. Calculated as (occupied_sqft / total_sqft) * 100. Always required. Example: 90.0 for 90% occupancy (135,000 sqft occupied out of 150,000 sqft total)."
         }
       },
       "required": [

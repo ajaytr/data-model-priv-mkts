@@ -2,38 +2,39 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "borrower.schema.json",
   "title": "Borrower",
-  "description": "Borrower entity extending the core Party with credit-specific attributes",
+  "description": "Borrower entity extending the core Party with credit-specific attributes. Represents the obligor on one or more credit facilities, capturing financial profile data (revenue, EBITDA, leverage) and credit quality indicators used for underwriting, monitoring, and portfolio analytics.",
   "$defs": {
     "Borrower": {
       "allOf": [
         { "$ref": "../core/party.schema.json#/$defs/Party" },
         {
           "type": "object",
+          "description": "A borrower entity in the credit domain, extending the core Party with financial metrics and credit profile attributes. The Borrower holds the latest-available financial snapshot used for credit analysis — revenue, EBITDA, total debt, and credit rating. For sponsor-backed borrowers, the sponsor_id links to the private equity firm. Update financial fields as new reporting periods become available.",
           "properties": {
             "industry": {
               "type": "string",
-              "description": "Primary industry classification"
+              "description": "Primary industry classification of the borrower's business, used for sector concentration analysis and benchmarking. Populate with a standardized classification such as GICS sub-industry, NAICS code, or an internal taxonomy. Always required. Examples: 'Healthcare Services', 'Enterprise Software', 'Specialty Chemicals', 'Consumer Products', 'Oil & Gas Exploration'."
             },
             "revenue": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Most recent annual revenue"
+              "description": "Most recent annual (trailing twelve months) revenue for the borrower, used for size-tiering and leverage calculations. Update when new financial statements are received. Omit if the borrower has not yet reported financials or if revenue is not applicable (e.g., pre-revenue startups, SPVs). Example: {\"amount\": 150000000, \"currency\": \"USD\"} for $150M in annual revenue."
             },
             "ebitda": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Most recent EBITDA"
+              "description": "Most recent annual (trailing twelve months) EBITDA — earnings before interest, taxes, depreciation, and amortization. This is the primary cash-flow proxy used for leverage ratio calculations (total_debt / ebitda) and interest coverage analysis. Should reflect the same period as revenue and may include credit-agreement-defined adjustments (add-backs). Omit if not yet reported. Example: {\"amount\": 30000000, \"currency\": \"USD\"} for $30M EBITDA."
             },
             "total_debt": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Total outstanding debt"
+              "description": "Total outstanding funded debt across all credit facilities, bonds, and other debt instruments as of the most recent reporting date. Used to compute leverage ratios (total_debt / ebitda) and assess overall indebtedness. Should include all on-balance-sheet debt but exclude undrawn commitments. Update as new borrowings or repayments occur. Omit if not yet reported. Example: {\"amount\": 120000000, \"currency\": \"USD\"} for $120M total debt."
             },
             "credit_rating": {
               "type": "string",
-              "description": "External or internal credit rating"
+              "description": "External credit rating from a recognized agency (S&P, Moody's, Fitch) or an internal credit rating assigned by the lender's credit team. For external ratings, use the standard notation (e.g., 'BB+', 'Ba1', 'BB'). For internal ratings, use the firm's internal scale. Omit if the borrower is unrated. Update when a rating action occurs. Examples: 'BB+' (S&P), 'Ba1' (Moody's), 'Internal-4' (internal scale)."
             },
             "sponsor_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to the PE sponsor party, if sponsor-backed"
+              "description": "UUID foreign key referencing the private equity sponsor Party entity, for borrowers that are portfolio companies of a PE fund. Enables sponsor-level aggregation and concentration analysis. Omit for non-sponsor-backed borrowers (e.g., publicly traded companies, founder-owned businesses). Example: 'c4d5e6f7-8901-2345-abcd-ef6789012345'."
             }
           },
           "required": ["industry"]

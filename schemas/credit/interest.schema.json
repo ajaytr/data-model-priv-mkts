@@ -2,81 +2,88 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "interest.schema.json",
   "title": "Interest",
-  "description": "Rate definitions and interest period calculations for credit facilities",
+  "description": "Rate definitions and interest period calculations for credit facilities. Covers both the contractual rate structure (RateDefinition) and the period-by-period accrual records (InterestPeriod) used for interest income tracking and payment reconciliation.",
   "$defs": {
     "RateDefinition": {
       "type": "object",
-      "description": "Defines the interest rate structure for a facility or tranche",
+      "description": "Defines the contractual interest rate structure for a facility or tranche, including the rate type (fixed, floating, or hybrid), benchmark index, credit spread, floor/cap bounds, and day-count convention. A single RateDefinition applies to one tranche or facility — if pricing resets or is renegotiated, create a new version with an updated audit trail.",
       "properties": {
         "rate_type": {
-          "$ref": "enums.schema.json#/$defs/RateType"
+          "$ref": "enums.schema.json#/$defs/RateType",
+          "description": "Classification of the interest rate mechanism. FIXED means the rate is locked for the life of the facility; FLOATING means the rate resets periodically based on a reference index plus spread; HYBRID or FIXED_TO_FLOAT indicates a fixed period followed by a floating period. Always required. Common values: FIXED, FLOATING, FIXED_TO_FLOAT."
         },
         "fixed_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Fixed interest rate component"
+          "description": "The fixed coupon rate applied when rate_type is FIXED, or the fixed-period rate for FIXED_TO_FLOAT structures. Expressed as a decimal percentage (e.g., 5.25 for 5.25%). Populate only when the facility has a fixed-rate component. Omit for purely floating-rate facilities. Example: 5.25."
         },
         "spread": {
           "$ref": "../core/percentage.schema.json#/$defs/BasisPoints",
-          "description": "Spread over the reference index in basis points"
+          "description": "Credit spread added to the reference index for floating-rate facilities, expressed in basis points. The all-in rate is index + spread, subject to any floor or cap. Populate when rate_type is FLOATING or for the floating leg of FIXED_TO_FLOAT structures. Omit for purely fixed-rate facilities. Example: 350 for 350 bps (3.50%) over SOFR."
         },
         "index": {
-          "$ref": "enums.schema.json#/$defs/RateIndex"
+          "$ref": "enums.schema.json#/$defs/RateIndex",
+          "description": "The reference interest rate benchmark used for floating-rate pricing. Determines which published rate is observed at each reset date to calculate the all-in coupon. Populate when rate_type is FLOATING or FIXED_TO_FLOAT. Omit for fixed-rate facilities. Common values: SOFR, EURIBOR, SONIA, PRIME, LIBOR_3M (legacy)."
         },
         "floor": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Minimum rate floor"
+          "description": "Minimum interest rate that applies regardless of index movements, protecting the lender from very low base rates. Expressed as a decimal percentage. If the index rate falls below the floor, the floor is used instead. Commonly set at 0.00% or 1.00% in leveraged loan markets. Omit if no floor applies. Example: 1.00."
         },
         "cap": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Maximum rate cap"
+          "description": "Maximum interest rate ceiling that limits the borrower's exposure to rising rates. Expressed as a decimal percentage. If the index rate exceeds the cap, the cap is used instead. Less common than floors in private credit; omit if no cap applies. Example: 8.00."
         },
         "day_count": {
-          "$ref": "../core/enums.schema.json#/$defs/DayCount"
+          "$ref": "../core/enums.schema.json#/$defs/DayCount",
+          "description": "Day-count convention used to calculate accrued interest for fractional periods. Determines how the number of days in an interest period is computed relative to the assumed year length. Always required. Common values: ACT_360 (typical for USD SOFR/LIBOR loans), ACT_365 (typical for GBP SONIA loans), 30_360 (typical for fixed-rate bonds)."
         },
         "pik_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Payment-in-kind interest rate component"
+          "description": "Payment-in-kind (PIK) interest rate component, expressed as a decimal percentage. PIK interest is not paid in cash but instead capitalizes — it is added to the outstanding principal balance at each interest payment date. Used in mezzanine, subordinated, or highly leveraged structures. Omit if no PIK component exists. Example: 2.00 for 2.00% PIK on top of a cash coupon."
         }
       },
       "required": ["rate_type", "day_count"]
     },
     "InterestPeriod": {
       "type": "object",
-      "description": "A single interest accrual period with calculated amounts",
+      "description": "A single interest accrual period with calculated amounts, representing one payment cycle's worth of interest on a facility or tranche. Typically generated monthly or quarterly in alignment with the facility's interest payment schedule. Used for interest income recognition, cash-flow forecasting, and payment reconciliation.",
       "properties": {
         "facility_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the parent facility"
+          "description": "UUID foreign key referencing the Facility to which this interest period belongs. Always required — every interest period must be linked to exactly one facility. Example: '3e7a1b9c-5d2f-4a8e-b6c1-9f0e8d7c6b5a'."
         },
         "tranche_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to a specific tranche, if applicable"
+          "description": "UUID foreign key referencing the specific Tranche within the facility, if the facility is multi-tranche. Allows interest accrual to be tracked at the tranche level with tranche-specific rates. Omit for single-tranche facilities or when interest is tracked at the facility level only. Example: '7f3a9c2e-4b1d-4e8a-b5f6-1a2b3c4d5e6f'."
         },
         "period_start": {
-          "$ref": "../core/dates.schema.json#/$defs/Date"
+          "$ref": "../core/dates.schema.json#/$defs/Date",
+          "description": "First day of the interest accrual period (inclusive). For the first period after closing, this is typically the closing date or first business day thereafter. For subsequent periods, this is the day after the prior period's end date. Always required. Format: ISO 8601 date, e.g., '2024-04-01'."
         },
         "period_end": {
-          "$ref": "../core/dates.schema.json#/$defs/Date"
+          "$ref": "../core/dates.schema.json#/$defs/Date",
+          "description": "Last day of the interest accrual period (inclusive). Typically aligns with the interest payment date specified in the credit agreement — monthly, quarterly, or semi-annually. Always required. Format: ISO 8601 date, e.g., '2024-06-30'."
         },
         "principal_balance": {
-          "$ref": "../core/money.schema.json#/$defs/Money"
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Outstanding principal balance on which interest is calculated for this period. For facilities with PIK, this includes any previously capitalized PIK amounts. For amortizing facilities, this reflects the balance after any scheduled principal payments prior to this period. Always required. Example: {\"amount\": 50000000, \"currency\": \"USD\"}."
         },
         "applicable_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "All-in rate applied for this period"
+          "description": "All-in interest rate applied for this accrual period, expressed as a decimal percentage. For floating-rate facilities, this is the observed index rate plus the spread, subject to floor and cap constraints. For fixed-rate facilities, this is the fixed coupon. Always required. Example: 7.75 for a 7.75% all-in rate."
         },
         "interest_amount": {
-          "$ref": "../core/money.schema.json#/$defs/Money"
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total cash interest accrued for this period, calculated as principal_balance * applicable_rate * day_count_fraction. This is the amount due to be paid in cash on the payment date (excludes any PIK component). Always required. Example: {\"amount\": 972222.22, \"currency\": \"USD\"}."
         },
         "pik_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Payment-in-kind interest capitalized to principal"
+          "description": "Payment-in-kind interest amount that capitalizes (adds to principal) rather than being paid in cash for this period. Calculated as principal_balance * pik_rate * day_count_fraction. Omit if the facility has no PIK component. When present, the next period's principal_balance should include this capitalized amount. Example: {\"amount\": 250000, \"currency\": \"USD\"}."
         },
         "paid": {
           "type": "boolean",
-          "description": "Whether the cash interest for this period has been paid"
+          "description": "Indicates whether the cash interest for this period has been received/paid. Set to true once payment is confirmed; false while the payment is still outstanding or scheduled. Always required. Used for cash-flow tracking, aged receivables analysis, and payment reconciliation."
         }
       },
       "required": [

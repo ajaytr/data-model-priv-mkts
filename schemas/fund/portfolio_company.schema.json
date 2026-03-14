@@ -2,54 +2,56 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "portfolio_company.schema.json",
   "title": "Portfolio company",
-  "description": "Portfolio companies, investments, and realizations",
+  "description": "Portfolio companies, investments, and realizations. This schema covers the full investment lifecycle: the company being invested in (PortfolioCompany), the fund's specific position in that company (Investment), and any exit or liquidity events (Realization). Together these entities track how deployed capital flows into companies and is ultimately returned as proceeds.",
   "$defs": {
     "PortfolioCompany": {
       "type": "object",
-      "description": "A company in which one or more funds have invested",
+      "description": "A company in which one or more funds have invested. Represents the target entity itself — independent of any specific fund's position. Multiple funds may hold investments in the same PortfolioCompany, and each fund's position is tracked via a separate Investment record. Inherits id, created_at, and updated_at from Auditable.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
       "properties": {
         "name": {
           "type": "string",
-          "description": "Legal name of the portfolio company"
+          "description": "Legal name of the portfolio company as registered in its jurisdiction of incorporation. Used as the primary display name in reports, statements, and dashboards. Should be the full corporate name, not a trade name or DBA. Example: 'Acme Technologies Inc.'"
         },
         "sector": {
           "type": "string",
-          "description": "Primary industry sector"
+          "description": "Primary industry sector of the portfolio company, used for portfolio diversification analysis, sector allocation reporting, and benchmarking. Use a consistent sector taxonomy across all portfolio companies (e.g., GICS, NAICS, or an internal classification). Example: 'Technology', 'Healthcare', 'Financial Services', 'Industrials'"
         },
         "subsector": {
           "type": "string",
-          "description": "Industry subsector"
+          "description": "More granular industry classification within the primary sector. Provides additional detail for portfolio analysis and peer comparison. Omit if the company's activities do not warrant a subsector distinction or if the fund does not track at this level of granularity. Example: 'Enterprise SaaS', 'Medical Devices', 'Specialty Chemicals'"
         },
         "region": {
-          "$ref": "../core/enums.schema.json#/$defs/Region"
+          "$ref": "../core/enums.schema.json#/$defs/Region",
+          "description": "The primary geographic region where the portfolio company operates or is headquartered. Used for geographic diversification analysis and regional exposure reporting. Example: 'NORTH_AMERICA', 'EUROPE', 'ASIA_PACIFIC'. Omit if unknown or if the company operates globally with no dominant region."
         },
         "country": {
-          "$ref": "../core/enums.schema.json#/$defs/Country"
+          "$ref": "../core/enums.schema.json#/$defs/Country",
+          "description": "The country where the portfolio company is headquartered or incorporated. Provides more specific geographic classification than region. Uses ISO 3166-1 alpha-2 country codes. Example: 'US', 'GB', 'DE'. Omit if the country is unknown or not yet determined."
         },
         "description": {
           "type": "string",
-          "description": "Brief description of the company"
+          "description": "Brief free-text summary of the company's business, products, and market position. Should provide enough context for someone unfamiliar with the company to understand what it does. Typically 1-3 sentences. Omit if no description is available. Example: 'Enterprise SaaS platform providing AI-powered supply chain optimization for Fortune 500 manufacturers.'"
         },
         "website": {
           "type": "string",
           "format": "uri",
-          "description": "Company website URL"
+          "description": "URL of the company's primary website. Must be a fully qualified URI including the scheme (https://). Used for reference and due diligence. Omit if the company does not have a public website or if the URL is unknown. Example: 'https://www.acmetech.com'"
         },
         "founding_year": {
           "type": "integer",
           "minimum": 1800,
           "maximum": 2100,
-          "description": "Year the company was founded"
+          "description": "The calendar year in which the portfolio company was founded or incorporated. Used to calculate company age at time of investment and for vintage analysis. Omit if the founding year is unknown. Example: 2015"
         },
         "external_ids": {
           "type": "array",
           "items": {
             "$ref": "../core/identifiers.schema.json#/$defs/ExternalId"
           },
-          "description": "External system identifiers"
+          "description": "Identifiers assigned to this portfolio company by external systems such as data vendors (PitchBook, Crunchbase, Capital IQ), registries (LEI, DUNS), or internal deal management systems. Used for cross-system reconciliation and data enrichment. Each entry includes a system name and identifier value. Omit or leave as an empty array if no external identifiers exist."
         }
       },
       "required": [
@@ -59,7 +61,7 @@
     },
     "Investment": {
       "type": "object",
-      "description": "A fund's investment in a portfolio company",
+      "description": "A fund's specific investment position in a portfolio company. Represents the deployed capital — the instrument used, the cost basis, current fair value, ownership stake, and lifecycle status. A single fund may have multiple Investment records in the same company (e.g., initial equity plus a follow-on convertible note). Each Investment links exactly one Fund to exactly one PortfolioCompany. Inherits id, created_at, and updated_at from Auditable.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
@@ -67,40 +69,40 @@
         "fund_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the fund"
+          "description": "Foreign key referencing the fund that made this investment. Links the position to the Fund entity deploying the capital. Every investment must belong to exactly one fund. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "portfolio_company_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the portfolio company"
+          "description": "Foreign key referencing the PortfolioCompany entity that is the target of this investment. Links the position to the company receiving the capital. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
         },
         "investment_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date of the investment"
+          "description": "The date the investment was made — typically the closing date when capital was transferred and securities were issued. For multi-tranche investments, this is the date of this specific tranche. Used as the starting point for holding period calculations and time-weighted return analysis. Format: YYYY-MM-DD. Example: '2023-09-15'"
         },
         "instrument_type": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/InstrumentType" }],
-          "description": "Type of investment instrument"
+          "description": "The type of financial instrument used for this investment. Determines the rights, seniority, and economics of the position. Example: 'EQUITY', 'PREFERRED_EQUITY', 'CONVERTIBLE_NOTE', 'WARRANT', 'MEZZANINE'. See InstrumentType enum for all valid values and their detailed definitions."
         },
         "cost_basis": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total cost basis of the investment"
+          "description": "Total acquisition cost of this investment, including the purchase price and any capitalized transaction costs (legal fees, due diligence expenses). This is the amount of fund capital deployed into this position. Used as the baseline for calculating unrealized gains/losses and investment multiples (MOIC). Adjusted proportionally if a partial realization occurs. Example: {\"amount\": \"15000000.00\", \"currency\": \"USD\"}"
         },
         "fair_value": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Current fair value"
+          "description": "Current estimated fair value of this investment as of the most recent valuation date. Updated periodically (typically quarterly) based on the valuation methodology appropriate for the instrument type. For ACTIVE investments, this represents the unrealized value still held by the fund. For FULLY_REALIZED or WRITTEN_OFF investments, this should be zero. Example: {\"amount\": \"22000000.00\", \"currency\": \"USD\"}"
         },
         "ownership_percentage": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Ownership stake in the company"
+          "description": "The fund's ownership stake in the portfolio company, expressed as a percentage of the company's fully diluted equity. Used for consolidation analysis, control assessments, and regulatory reporting. May change over time due to follow-on investments, dilution from new financing rounds, or partial realizations. Omit for debt instruments (convertible notes, mezzanine) where ownership is contingent on conversion. Example: '15.50' for a 15.5% stake."
         },
         "board_seat": {
           "type": "boolean",
-          "description": "Whether the fund holds a board seat"
+          "description": "Indicates whether the fund (or its GP representative) holds a seat on the portfolio company's board of directors. Board representation provides governance rights and influence over company strategy. Set to true if the fund currently holds a board seat, false if it does not. Omit if board seat status is unknown or not applicable. Example: true"
         },
         "status": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/InvestmentStatus" }],
-          "description": "Current status of the investment"
+          "description": "Current lifecycle status of the investment, reflecting whether it is actively held, partially exited, fully exited, or written off. Example: 'ACTIVE', 'PARTIALLY_REALIZED', 'FULLY_REALIZED', 'WRITTEN_OFF'. See InvestmentStatus enum for all valid values and their detailed definitions."
         }
       },
       "required": [
@@ -110,7 +112,7 @@
     },
     "Realization": {
       "type": "object",
-      "description": "A realization event (exit) for an investment",
+      "description": "A realization event (exit or liquidity event) for a fund's investment in a portfolio company. Records the proceeds received and the method of exit. A single Investment may have multiple Realization records for partial exits (e.g., selling a portion of shares in a secondary transaction followed by a full exit via trade sale). Each Realization links to exactly one Investment. Inherits id, created_at, and updated_at from Auditable.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
@@ -118,19 +120,19 @@
         "investment_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the investment"
+          "description": "Foreign key referencing the Investment record being realized (fully or partially). Links this exit event to the specific fund position in a portfolio company. The investment's status should be updated to PARTIALLY_REALIZED or FULLY_REALIZED when a realization is recorded. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "realization_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date of the realization event"
+          "description": "The date the realization event closed — when proceeds were received or contractually due. For IPOs, this is typically the date of the offering or the date shares were sold (not the lockup expiry). Used to calculate the holding period (investment_date to realization_date) and for time-based return metrics. Format: YYYY-MM-DD. Example: '2025-06-30'"
         },
         "proceeds": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total proceeds from the realization"
+          "description": "Total gross proceeds received from this realization event, before any transaction costs, taxes, or waterfall allocations. For partial exits, this reflects only the proceeds from the portion being realized (not the total investment value). The ratio of proceeds to cost_basis (or the proportional cost basis for partial exits) determines the gross MOIC for this realization. Example: {\"amount\": \"40000000.00\", \"currency\": \"USD\"}"
         },
         "realization_type": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/RealizationType" }],
-          "description": "Type of exit or realization"
+          "description": "The method by which the investment was realized or exited. Determines how the exit is classified in performance attribution and reporting. Example: 'IPO', 'TRADE_SALE', 'SECONDARY', 'RECAPITALIZATION', 'WRITE_OFF', 'DIVIDEND_RECAP'. See RealizationType enum for all valid values and their detailed definitions."
         }
       },
       "required": [

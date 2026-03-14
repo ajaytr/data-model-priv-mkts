@@ -2,41 +2,41 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "property.schema.json",
   "title": "Property",
-  "description": "Real estate property and valuation definitions",
+  "description": "Real estate property and valuation definitions. A Property represents a physical real estate asset — a building or land parcel — with its physical characteristics, acquisition details, and current valuation. Properties are the foundational asset entity in the real estate domain, referenced by leases, NOI statements, appraisals, and investment vehicles.",
   "$defs": {
     "PropertyValuation": {
       "type": "object",
-      "description": "A point-in-time valuation of a property",
+      "description": "A point-in-time valuation of a property, capturing the appraised value, capitalization rate, price per square foot, and the methodology used. Multiple PropertyValuation records may exist for a property over time; the most recent is typically referenced as the current_valuation on the Property entity. Valuations may be based on third-party appraisals, broker opinions of value, or internal models.",
       "properties": {
         "valuation_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date of the valuation"
+          "description": "Date on which the property was valued — the 'as-of' date for the appraised value. Always required. For third-party appraisals, this is the effective date stated in the appraisal report. For internal valuations, this is the date the model was run. Format: ISO 8601 date, e.g., '2024-06-30'."
         },
         "appraised_value": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Appraised market value"
+          "description": "Estimated fair market value of the property as of valuation_date. This is the headline valuation figure used for NAV calculations, LTV ratios, and portfolio reporting. Always required. Example: {\"amount\": 25000000, \"currency\": \"USD\"} for a property valued at $25M."
         },
         "cap_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Capitalization rate"
+          "description": "Capitalization rate used in or implied by the valuation, expressed as a decimal percentage. Calculated as net operating income divided by appraised value (NOI / Value). Lower cap rates indicate higher relative valuations. Omit if the valuation method does not produce a cap rate (e.g., comparable sales approach for land). Example: 5.75 for a 5.75% cap rate."
         },
         "price_per_sqft": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Price per square foot"
+          "description": "Appraised value per square foot of gross or net leasable area, calculated as appraised_value / square_footage. Used for benchmarking against comparable properties and market averages. Omit if square footage is not available or not meaningful (e.g., land parcels valued by acreage). Example: {\"amount\": 350, \"currency\": \"USD\"} for $350/sqft."
         },
         "valuation_method": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/ValuationMethod" }],
-          "description": "Methodology used for the valuation"
+          "description": "Methodology used to arrive at the appraised value. Always required. Common values: INCOME_APPROACH (DCF or direct capitalization of NOI), COMPARABLE_SALES (market comp analysis), COST_APPROACH (replacement cost less depreciation), BROKER_OPINION (informal market estimate). The method impacts the reliability and comparability of the valuation."
         },
         "appraiser": {
           "type": "string",
-          "description": "Name of the appraiser or appraisal firm"
+          "description": "Name of the appraisal firm or individual appraiser who performed the valuation. For third-party appraisals, use the firm name (e.g., 'CBRE', 'Cushman & Wakefield', 'JLL'). For internal valuations, use 'Internal' or the team name. Omit if the appraiser is unknown. Examples: 'CBRE Valuation & Advisory', 'Internal Asset Management', 'Jones Lang LaSalle'."
         }
       },
       "required": ["valuation_date", "appraised_value", "valuation_method"]
     },
     "Property": {
-      "description": "A real estate property asset",
+      "description": "A real estate property asset representing a physical building, complex, or land parcel held within an investment portfolio. Captures physical characteristics (size, age, unit count), acquisition history, current valuation, and lifecycle status. Properties are referenced by Lease, NOI, and Appraisal records.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" },
         {
@@ -44,69 +44,69 @@
           "properties": {
             "name": {
               "type": "string",
-              "description": "Name or title of the property"
+              "description": "Display name or title of the property, typically the building or complex name as commonly known. Should be descriptive enough for identification in portfolio reports. Always required. Examples: 'One Liberty Plaza', 'Sunset Industrial Park', 'Harbor View Apartments', '123 Main Street Office Building'."
             },
             "property_type": {
               "$ref": "enums.schema.json#/$defs/PropertyType",
-              "description": "Classification of the property"
+              "description": "Classification of the property by its primary use. Determines applicable benchmarks, lease structures, and valuation approaches. Always required. Common values: OFFICE, RETAIL, INDUSTRIAL, MULTIFAMILY, HOSPITALITY, MIXED_USE, LAND. For properties with multiple uses, select the dominant use or MIXED_USE."
             },
             "status": {
               "$ref": "enums.schema.json#/$defs/PropertyStatus",
-              "description": "Current lifecycle status"
+              "description": "Current lifecycle status of the property within the portfolio. Always required. Common values: OPERATING (stabilized, generating income), UNDER_DEVELOPMENT (construction or major renovation in progress), LEASE_UP (recently completed, actively seeking tenants), HELD_FOR_SALE (marketed for disposition), DISPOSED (sold, no longer in portfolio). Example: 'OPERATING'."
             },
             "address": {
               "$ref": "../core/party.schema.json#/$defs/Address",
-              "description": "Physical address of the property"
+              "description": "Physical street address and location of the property, using the core Address schema. Includes street, city, state/province, postal code, and country. Always required — every property must have a physical location. Used for geographic analysis, market comparisons, and tax jurisdiction determination."
             },
             "square_footage": {
               "type": "number",
               "minimum": 0,
-              "description": "Total square footage of the property"
+              "description": "Total square footage of the property, representing gross leasable area (GLA) for commercial properties or gross building area (GBA) where GLA is not applicable. For multi-building complexes, this is the aggregate across all buildings. Always required. Used as the denominator for occupancy rate, price per sqft, and rent per sqft calculations. Example: 150000 for a 150,000 sqft office building."
             },
             "year_built": {
               "type": "integer",
               "minimum": 1800,
               "maximum": 2100,
-              "description": "Year the property was originally constructed"
+              "description": "Calendar year in which the property was originally constructed. Used to assess building age, remaining useful life, and potential capital expenditure needs. For phased developments, use the year the primary structure was completed. Omit if the construction year is unknown. Example: 1998."
             },
             "year_renovated": {
               "type": "integer",
               "minimum": 1800,
               "maximum": 2100,
-              "description": "Year of last major renovation"
+              "description": "Calendar year of the most recent major renovation, repositioning, or significant capital improvement to the property. Minor repairs and routine maintenance do not qualify — this reflects substantial work such as lobby renovations, MEP system replacements, or full-floor build-outs. Omit if the property has never been significantly renovated. Example: 2019."
             },
             "num_units": {
               "type": "integer",
               "minimum": 0,
-              "description": "Number of units (e.g., apartments, suites)"
+              "description": "Number of discrete rentable units within the property. For multifamily properties, this is the apartment count. For office buildings, this may be the number of suites or floors. For industrial properties, this is the number of warehouse bays or units. Omit if units are not a meaningful metric for the property type (e.g., single-tenant net lease). Example: 250 for a 250-unit apartment complex."
             },
             "num_floors": {
               "type": "integer",
               "minimum": 0,
-              "description": "Number of floors in the building"
+              "description": "Number of above-grade floors in the building. For multi-building complexes, use the floor count of the tallest building or the most representative structure. Does not include below-grade levels (basements, parking garages). Omit if not applicable (e.g., land parcels). Example: 12 for a twelve-story office tower."
             },
             "occupancy_rate": {
               "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-              "description": "Current occupancy rate"
+              "description": "Current physical or economic occupancy rate of the property, expressed as a decimal percentage. Physical occupancy is occupied_sqft / total_sqft; economic occupancy factors in rent concessions and free-rent periods. Omit for properties under development or land parcels. Example: 92.5 for 92.5% occupancy. Typically updated quarterly or when lease changes occur."
             },
             "acquisition_date": {
               "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-              "description": "Date the property was acquired"
+              "description": "Date on which the property was acquired (closing date of the purchase transaction). Used to calculate hold period, track vintage, and determine cost basis. Omit for properties under contract but not yet closed, or for properties developed (rather than acquired) by the vehicle. Format: ISO 8601 date, e.g., '2020-06-15'."
             },
             "acquisition_price": {
               "$ref": "../core/money.schema.json#/$defs/Money",
-              "description": "Purchase price at acquisition"
+              "description": "Total purchase price paid to acquire the property, excluding transaction costs, closing fees, and capital improvements made after acquisition. Used as the cost basis for return calculations (e.g., appreciation, IRR). Omit for developed properties where cost basis is tracked via development budgets. Example: {\"amount\": 22000000, \"currency\": \"USD\"} for a $22M acquisition."
             },
             "current_valuation": {
               "$ref": "#/$defs/PropertyValuation",
-              "description": "Most recent property valuation"
+              "description": "Most recent property valuation, representing the current estimated fair market value. Should be updated whenever a new appraisal, broker opinion, or internal valuation is performed. Used for portfolio NAV, LTV calculations, and unrealized gain/loss analysis. Omit if the property has not yet been valued post-acquisition."
             },
             "external_ids": {
               "type": "array",
               "items": {
                 "$ref": "../core/identifiers.schema.json#/$defs/ExternalId"
               },
-              "description": "External system identifiers"
+              "description": "Cross-references to identifiers in external systems such as property management software, tax parcel databases, or investor reporting platforms. Each entry specifies the system name and the identifier within that system. Omit if no external system mappings exist. Example: [{\"system\": \"Yardi\", \"id\": \"PROP-2024-0456\"}, {\"system\": \"CoStar\", \"id\": \"CS-789012\"}]."
             }
           },
           "required": [

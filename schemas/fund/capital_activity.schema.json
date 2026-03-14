@@ -2,11 +2,11 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "capital_activity.schema.json",
   "title": "Capital activity",
-  "description": "Capital calls, distributions, and their per-investor allocations",
+  "description": "Capital calls, distributions, and their per-investor allocations. Capital activity represents the movement of cash between the fund and its investors — capital calls draw money in from LPs to fund investments and expenses, while distributions return capital and profits back to LPs. Each activity record includes the fund-level totals and an array of per-investor allocations.",
   "$defs": {
     "CapitalCall": {
       "type": "object",
-      "description": "A capital call issued by the fund to its investors",
+      "description": "A capital call (also known as a 'drawdown notice') issued by the fund's GP to its investors, requesting that LPs contribute a specified portion of their unfunded commitments. Capital calls are the mechanism by which committed capital is actually transferred from LPs to the fund for deployment. Each call has a sequential number, a due date, a stated purpose, and may include per-investor allocation breakdowns. Inherits id, created_at, and updated_at from Auditable.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
@@ -14,35 +14,35 @@
         "fund_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the fund"
+          "description": "Foreign key referencing the fund issuing this capital call. Links the call to a specific Fund entity. Every capital call must be associated with exactly one fund. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "call_number": {
           "type": "integer",
           "minimum": 1,
-          "description": "Sequential capital call number"
+          "description": "Sequential number identifying this capital call within the fund, starting at 1 for the first call and incrementing by 1 for each subsequent call. Used for ordering, referencing in investor communications, and audit trail purposes. Must be unique within a fund. Example: 3"
         },
         "call_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date the capital call was issued"
+          "description": "The date the capital call notice was issued to investors. This is when the GP formally notifies LPs of the drawdown request. The call_date is typically 10-15 business days before the due_date, per LPA terms. Format: YYYY-MM-DD. Example: '2024-01-15'"
         },
         "due_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date payment is due"
+          "description": "The date by which investors must remit payment for this capital call. Failure to pay by this date may trigger default provisions in the LPA, including penalty interest or forfeiture of the LP's interest. Typically 10-15 business days after the call_date. Format: YYYY-MM-DD. Example: '2024-02-01'"
         },
         "total_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total amount called"
+          "description": "The total aggregate amount of capital being called from all investors in this notice. Should equal the sum of all individual CallAllocation.called_amount values when allocations are provided. Example: {\"amount\": \"25000000.00\", \"currency\": \"USD\"}"
         },
         "purpose": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/CapitalCallPurpose" }],
-          "description": "Purpose of the capital call"
+          "description": "The intended use of the capital being called. Determines how the drawn capital is classified in fund accounting and investor reporting. A single call typically has one purpose; if capital is drawn for multiple purposes, separate capital calls should be issued. Example: 'INVESTMENT', 'FEES', 'FOLLOW_ON'. See CapitalCallPurpose enum for all valid values."
         },
         "allocations": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/CallAllocation"
           },
-          "description": "Per-investor call allocations"
+          "description": "Per-investor breakdown of the capital call, showing each LP's share of the total call amount based on their pro-rata commitment percentage. The sum of all allocation amounts should equal total_amount. Omit or leave as an empty array if individual allocations are not yet determined or are tracked separately."
         }
       },
       "required": [
@@ -52,32 +52,32 @@
     },
     "CallAllocation": {
       "type": "object",
-      "description": "A single investor's share of a capital call",
+      "description": "A single investor's allocated share of a capital call. Each allocation ties a specific LP's commitment to the amount they owe for this call, along with their ownership percentage at the time of the call. Created as a child record of a CapitalCall.",
       "properties": {
         "commitment_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the commitment"
+          "description": "Foreign key referencing the Commitment record that this allocation draws against. The called_amount reduces the commitment's unfunded_amount. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "investor_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the investor (Party)"
+          "description": "Foreign key referencing the investor (Party) who owes this portion of the capital call. Denormalized from the Commitment for easier querying and reporting. Must match the investor_id on the referenced Commitment. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
         },
         "called_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Amount called from this investor"
+          "description": "The monetary amount being called from this specific investor for this capital call. Calculated as the investor's pro-rata share of the total call amount based on their ownership_percentage. Must be a positive value. Example: {\"amount\": \"2500000.00\", \"currency\": \"USD\"}"
         },
         "ownership_percentage": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Investor's ownership percentage at time of call"
+          "description": "The investor's pro-rata ownership percentage of the fund at the time this capital call is issued. Used to calculate the called_amount. May differ from the investor's original commitment percentage if transfers, defaults, or subsequent closes have occurred. Expressed as a decimal percentage value. Example: '10.00' for a 10% ownership stake."
         }
       },
       "required": ["commitment_id", "investor_id", "called_amount", "ownership_percentage"]
     },
     "Distribution": {
       "type": "object",
-      "description": "A distribution from the fund to its investors",
+      "description": "A distribution from the fund to its investors — the return of capital and/or profits to LPs. Distributions occur when the fund realizes proceeds from portfolio company exits (sales, IPOs, recapitalizations), receives dividends or interest, or returns unused capital. Each distribution has a sequential number, a classification type, and may include per-investor allocation breakdowns. Inherits id, created_at, and updated_at from Auditable.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
@@ -85,31 +85,31 @@
         "fund_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the fund"
+          "description": "Foreign key referencing the fund making this distribution. Links the distribution to a specific Fund entity. Every distribution must be associated with exactly one fund. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "distribution_number": {
           "type": "integer",
           "minimum": 1,
-          "description": "Sequential distribution number"
+          "description": "Sequential number identifying this distribution within the fund, starting at 1 for the first distribution and incrementing by 1 for each subsequent distribution. Used for ordering, referencing in investor statements, and audit trail. Must be unique within a fund. Example: 5"
         },
         "distribution_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date of distribution"
+          "description": "The date on which the distribution is paid out to investors. This is when funds are actually transferred to LP accounts. Format: YYYY-MM-DD. Example: '2024-09-30'"
         },
         "total_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total amount distributed"
+          "description": "The total aggregate amount being distributed to all investors in this event. Should equal the sum of all individual DistributionAllocation.amount values when allocations are provided. Example: {\"amount\": \"50000000.00\", \"currency\": \"USD\"}"
         },
         "distribution_type": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/DistributionType" }],
-          "description": "Type of distribution"
+          "description": "Classification of this distribution, which determines tax treatment and how it is reported in investor capital account statements. Example: 'RETURN_OF_CAPITAL', 'REALIZED_GAIN', 'DIVIDEND'. See DistributionType enum for all valid values and their definitions."
         },
         "allocations": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/DistributionAllocation"
           },
-          "description": "Per-investor distribution allocations"
+          "description": "Per-investor breakdown of the distribution, showing each LP's share of the total distribution amount. The sum of all allocation amounts should equal total_amount (before withholding taxes). Omit or leave as an empty array if individual allocations are not yet determined or are tracked separately."
         }
       },
       "required": [
@@ -119,25 +119,25 @@
     },
     "DistributionAllocation": {
       "type": "object",
-      "description": "A single investor's share of a distribution",
+      "description": "A single investor's allocated share of a distribution event. Each allocation specifies the gross amount the LP is entitled to receive and any withholding tax deducted before payment. Created as a child record of a Distribution.",
       "properties": {
         "commitment_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the commitment"
+          "description": "Foreign key referencing the Commitment record that this distribution allocation corresponds to. Links the distribution to the investor's capital account for accurate tracking of contributed vs. distributed capital. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "investor_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the investor (Party)"
+          "description": "Foreign key referencing the investor (Party) receiving this portion of the distribution. Denormalized from the Commitment for easier querying and reporting. Must match the investor_id on the referenced Commitment. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
         },
         "amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Amount distributed to this investor"
+          "description": "The gross monetary amount being distributed to this specific investor before any withholding tax deductions. Calculated as the investor's pro-rata share of the total distribution amount. The net amount received by the investor equals this amount minus withholding_tax (if any). Example: {\"amount\": \"5000000.00\", \"currency\": \"USD\"}"
         },
         "withholding_tax": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Tax withheld from this distribution"
+          "description": "The amount of tax withheld from this investor's distribution, typically required for foreign investors or where tax treaties mandate withholding at source. Deducted from the gross amount before payment. The net payment to the investor equals amount minus withholding_tax. Omit or set to zero if no withholding applies (e.g., domestic tax-exempt investors). Example: {\"amount\": \"500000.00\", \"currency\": \"USD\"}"
         }
       },
       "required": ["commitment_id", "investor_id", "amount"]

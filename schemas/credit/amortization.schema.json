@@ -2,28 +2,31 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "amortization.schema.json",
   "title": "Amortization",
-  "description": "Amortization schedules and scheduled payments for credit facilities",
+  "description": "Amortization schedules and scheduled payments for credit facilities. Captures the contractual repayment plan including principal, interest, and total payment amounts over the life of the facility, along with the payment status for reconciliation.",
   "$defs": {
     "ScheduledPayment": {
       "type": "object",
-      "description": "A single scheduled principal and/or interest payment",
+      "description": "A single scheduled principal and/or interest payment within an amortization schedule. Each row represents one payment date with the expected principal reduction, estimated interest, and total payment. Payments are typically monthly, quarterly, or semi-annual depending on the credit agreement terms.",
       "properties": {
         "payment_date": {
-          "$ref": "../core/dates.schema.json#/$defs/Date"
+          "$ref": "../core/dates.schema.json#/$defs/Date",
+          "description": "The contractual due date for this scheduled payment, as specified in the credit agreement's amortization table. For business-day adjustments, record the adjusted date (the date payment is actually expected). Always required. Format: ISO 8601 date, e.g., '2024-09-30'."
         },
         "principal_amount": {
-          "$ref": "../core/money.schema.json#/$defs/Money"
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Scheduled principal repayment for this payment date. For bullet/interest-only facilities, this is zero for all dates except maturity. For amortizing facilities, this follows the contractual amortization schedule (e.g., 1% of original principal per quarter). Always required. Example: {\"amount\": 500000, \"currency\": \"USD\"} for a $500K principal payment."
         },
         "interest_amount": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Estimated or actual interest component"
+          "description": "Estimated or actual interest payment component for this date. For fixed-rate facilities, this can be computed exactly at schedule creation. For floating-rate facilities, this is an estimate based on the forward curve or current rate at the time the schedule was generated, and will be trued up when the actual InterestPeriod is calculated. Omit if interest is tracked separately via InterestPeriod records and not included in the amortization schedule. Example: {\"amount\": 750000, \"currency\": \"USD\"}."
         },
         "total_amount": {
-          "$ref": "../core/money.schema.json#/$defs/Money"
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Total payment amount due on this date, representing principal_amount plus interest_amount (and any fees, if bundled). Always required. For interest-only periods, this equals the interest_amount. For bullet maturity, this includes the full remaining principal. Example: {\"amount\": 1250000, \"currency\": \"USD\"}."
         },
         "status": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/PaymentStatus" }],
-          "description": "Current status of this payment. Example: 'SCHEDULED'"
+          "description": "Current status of this scheduled payment in the payment lifecycle. Always required. Common values: SCHEDULED (future payment not yet due), PAID (payment received and reconciled), OVERDUE (payment date has passed without receipt), WAIVED (lender has waived this payment). Example: 'SCHEDULED' for an upcoming payment, 'PAID' for a completed one."
         }
       },
       "required": [
@@ -38,19 +41,21 @@
         { "$ref": "../core/base.schema.json#/$defs/Auditable" },
         {
           "type": "object",
+          "description": "The complete amortization schedule for a credit facility, containing the ordered sequence of all scheduled payments from first payment date through maturity. Versioned via the Auditable base — when a facility is amended or restructured, a new AmortizationSchedule is created with an updated audit trail while the prior version is retained for historical reference.",
           "properties": {
             "facility_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to the parent facility"
+              "description": "UUID foreign key referencing the Facility whose repayment this schedule governs. Each facility has exactly one active amortization schedule at any point in time (though historical versions may exist). Always required. Example: '3e7a1b9c-5d2f-4a8e-b6c1-9f0e8d7c6b5a'."
             },
             "schedule_type": {
               "allOf": [{ "$ref": "enums.schema.json#/$defs/ScheduleType" }],
-              "description": "Repayment structure type. Example: 'AMORTIZING'"
+              "description": "Classification of the repayment structure, which determines how principal is returned over the life of the facility. Always required. Common values: AMORTIZING (scheduled periodic principal payments, e.g., 1% per quarter), BULLET (full principal due at maturity with interest-only payments before), INTEREST_ONLY (no scheduled principal payments; principal due at maturity), CUSTOM (non-standard schedule with varying principal amounts). Example: 'AMORTIZING'."
             },
             "payments": {
               "type": "array",
-              "items": { "$ref": "#/$defs/ScheduledPayment" }
+              "items": { "$ref": "#/$defs/ScheduledPayment" },
+              "description": "Ordered array of all scheduled payments from the first payment date through maturity, sorted by payment_date ascending. Always required and must contain at least one payment (the maturity payment). The last entry typically includes any remaining principal balance (balloon payment for amortizing facilities, or full principal for bullet facilities)."
             }
           },
           "required": [

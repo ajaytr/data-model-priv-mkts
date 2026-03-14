@@ -2,32 +2,36 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "facility.schema.json",
   "title": "Facility",
-  "description": "Credit facility and tranche definitions",
+  "description": "Credit facility and tranche definitions. A facility represents a lending arrangement between a borrower and one or more lenders, potentially subdivided into tranches with distinct commitment sizes, pricing, and seniority levels.",
   "$defs": {
     "Tranche": {
       "type": "object",
-      "description": "A sub-division of a facility with its own commitment and rate terms",
+      "description": "A sub-division of a credit facility with its own commitment size, pricing, and seniority. Tranches allow a single facility to be structured with multiple layers of debt — for example, a Term Loan A with tighter pricing alongside a Term Loan B with wider spreads. Each tranche tracks its own funded vs. committed amounts independently.",
       "properties": {
         "tranche_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Unique identifier for this tranche"
+          "description": "System-generated UUID that uniquely identifies this tranche within the facility. Used as a foreign key when linking interest periods, amortization schedules, or other tranche-level records. Example: '7f3a9c2e-4b1d-4e8a-b5f6-1a2b3c4d5e6f'."
         },
         "tranche_name": {
           "type": "string",
-          "description": "Descriptive name (e.g., Term Loan A, Revolver)"
+          "description": "Human-readable label for the tranche, typically reflecting its position in the capital structure or repayment profile. Populate with the name used in the credit agreement. Examples: 'Term Loan A', 'Term Loan B', 'Delayed Draw Term Loan', 'Revolver'. Should be unique within a facility for clarity."
         },
         "commitment_amount": {
-          "$ref": "../core/money.schema.json#/$defs/Money"
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Maximum amount the lenders have committed to make available under this tranche, as specified in the credit agreement. For revolving tranches, this is the revolver capacity; for term loans, it is the total term loan size. Always populate for every tranche. Example: {\"amount\": 50000000, \"currency\": \"USD\"} for a $50M commitment."
         },
         "funded_amount": {
-          "$ref": "../core/money.schema.json#/$defs/Money"
+          "$ref": "../core/money.schema.json#/$defs/Money",
+          "description": "Amount currently drawn and outstanding under this tranche as of the latest reporting date. For fully-drawn term loans, this equals the commitment_amount (less any principal repayments). For revolving tranches, this reflects the current draw. Omit if no funds have been drawn or if tracking is only at the facility level. Example: {\"amount\": 45000000, \"currency\": \"USD\"}."
         },
         "rate_definition": {
-          "$ref": "interest.schema.json#/$defs/RateDefinition"
+          "$ref": "interest.schema.json#/$defs/RateDefinition",
+          "description": "Interest rate structure governing this tranche, including rate type (fixed vs. floating), benchmark index, spread, floor, and day-count convention. Each tranche may have different pricing — for instance, a Term Loan A at SOFR + 200 bps and a Term Loan B at SOFR + 350 bps. Always populate; use the RateDefinition schema for full details."
         },
         "seniority": {
-          "$ref": "enums.schema.json#/$defs/SeniorityLevel"
+          "$ref": "enums.schema.json#/$defs/SeniorityLevel",
+          "description": "Position of this tranche in the capital structure priority waterfall — determines repayment and recovery order in the event of default. Typical values include SENIOR_SECURED, SENIOR_UNSECURED, SUBORDINATED, and MEZZANINE. Must reflect the terms in the credit agreement. Always required."
         }
       },
       "required": [
@@ -43,51 +47,62 @@
         { "$ref": "../core/base.schema.json#/$defs/Auditable" },
         {
           "type": "object",
+          "description": "A credit facility representing a lending arrangement. Facilities may be single-tranche (e.g., a standalone term loan) or multi-tranche (e.g., a term loan plus a revolver). The facility-level fields capture aggregate commitment, status, and key dates, while tranche-level detail is in the tranches array.",
           "properties": {
             "name": {
               "type": "string",
-              "description": "Facility name"
+              "description": "Display name for the credit facility, typically derived from the borrower name and facility type or the deal name used in the credit agreement. Should be descriptive enough for portfolio reporting. Examples: 'Acme Corp Senior Secured Credit Facility', 'Project Alpha Term Loan', '2024 Refinancing Facility'."
             },
             "borrower_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to the borrower party"
+              "description": "UUID foreign key referencing the Borrower entity (borrower.schema.json) that is the primary obligor on this facility. For club deals or syndications, this should reference the lead borrower. Always required. Example: '3e7a1b9c-5d2f-4a8e-b6c1-9f0e8d7c6b5a'."
             },
             "facility_type": {
-              "$ref": "enums.schema.json#/$defs/FacilityType"
+              "$ref": "enums.schema.json#/$defs/FacilityType",
+              "description": "Classification of the credit facility structure. Determines the repayment and draw mechanics — for example, TERM_LOAN is fully drawn at close with scheduled repayment, while REVOLVER allows repeated draw and repay within a commitment. Always required. Common values: TERM_LOAN, REVOLVER, DELAYED_DRAW, BRIDGE_LOAN."
             },
             "total_commitment": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Aggregate maximum amount that lenders have committed across all tranches. For a single-tranche facility, this equals the tranche commitment. For multi-tranche facilities, this is the sum of all tranche commitments. Always required. Example: {\"amount\": 100000000, \"currency\": \"USD\"} for a $100M total commitment."
             },
             "funded_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Total principal currently outstanding (drawn and not yet repaid) across all tranches as of the latest reporting date. For a fully drawn term loan with no repayments, this equals total_commitment. Omit if no amounts have been drawn. Example: {\"amount\": 75000000, \"currency\": \"USD\"}."
             },
             "unfunded_amount": {
-              "$ref": "../core/money.schema.json#/$defs/Money"
+              "$ref": "../core/money.schema.json#/$defs/Money",
+              "description": "Total undrawn commitment available for future draws, calculated as total_commitment minus funded_amount. Relevant primarily for revolving and delayed-draw facilities. For fully drawn term loans, this is zero. Omit if not tracked or if the facility is fully drawn. Example: {\"amount\": 25000000, \"currency\": \"USD\"}."
             },
             "currency": {
-              "$ref": "../core/enums.schema.json#/$defs/Currency"
+              "$ref": "../core/enums.schema.json#/$defs/Currency",
+              "description": "ISO 4217 currency code for the facility's denomination. All monetary amounts within the facility (commitment, funded, unfunded) should be denominated in this currency. For multi-currency facilities, use the base currency of the credit agreement. Always required. Examples: 'USD', 'EUR', 'GBP'."
             },
             "seniority": {
-              "$ref": "enums.schema.json#/$defs/SeniorityLevel"
+              "$ref": "enums.schema.json#/$defs/SeniorityLevel",
+              "description": "Overall seniority of the facility in the borrower's capital structure. For multi-tranche facilities where all tranches share the same seniority, this reflects that level. If tranches differ, this should represent the most senior level or the facility-level classification per the credit agreement. Always required. Common values: SENIOR_SECURED, SENIOR_UNSECURED, SUBORDINATED, MEZZANINE."
             },
             "closing_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "Date on which the credit agreement was executed and the facility became effective. This is when initial funding may occur (for term loans) or when the commitment becomes available (for revolvers). Always required. Format: ISO 8601 date string, e.g., '2024-03-15'."
             },
             "maturity_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "Contractual date on which all outstanding principal and accrued interest must be repaid in full and the commitment terminates. For amortizing facilities, scheduled payments occur before this date but any remaining balance is due at maturity. Always required. Format: ISO 8601 date string, e.g., '2029-03-15'."
             },
             "tranches": {
               "type": "array",
-              "items": { "$ref": "#/$defs/Tranche" }
+              "items": { "$ref": "#/$defs/Tranche" },
+              "description": "Ordered list of tranches within this facility. Each tranche has its own commitment, pricing, and seniority. For single-tranche facilities, this array contains one element. Omit or leave empty if the facility is not subdivided into tranches and all terms are captured at the facility level."
             },
             "status": {
               "allOf": [{ "$ref": "enums.schema.json#/$defs/FacilityStatus" }],
-              "description": "Current status of the facility. Example: 'ACTIVE'"
+              "description": "Current lifecycle status of the facility. Tracks whether the facility is being negotiated, has closed and is actively drawn, has been fully repaid, or has defaulted. Always required. Common values: ACTIVE, CLOSED, DEFAULTED, MATURED. Example: 'ACTIVE' for a facility that has closed and has outstanding balances."
             },
             "external_ids": {
               "type": "array",
-              "items": { "$ref": "../core/identifiers.schema.json#/$defs/ExternalId" }
+              "items": { "$ref": "../core/identifiers.schema.json#/$defs/ExternalId" },
+              "description": "Cross-references to identifiers in external systems such as loan servicing platforms, agent bank systems, or portfolio management tools. Each entry specifies a system name and the identifier within that system. Omit if no external system mappings exist. Example: [{\"system\": \"LoanIQ\", \"id\": \"LIQ-2024-001\"}]."
             }
           },
           "required": [

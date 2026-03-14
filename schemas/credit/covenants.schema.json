@@ -2,47 +2,48 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "covenants.schema.json",
   "title": "Covenants",
-  "description": "Financial and operational covenants attached to credit facilities",
+  "description": "Financial and operational covenants attached to credit facilities, along with periodic compliance test results. Covenants define borrower obligations and financial thresholds that, if breached, may trigger default or require remedial action.",
   "$defs": {
     "Covenant": {
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" },
         {
           "type": "object",
-          "description": "A covenant condition attached to a credit facility",
+          "description": "A covenant condition attached to a credit facility, defining a measurable obligation the borrower must satisfy on an ongoing basis. Financial covenants (e.g., leverage ratio, interest coverage) enforce balance-sheet or income-statement thresholds, while operational covenants (e.g., reporting requirements, asset maintenance) enforce behavioral obligations. Each covenant specifies a threshold, comparison operator, and testing frequency.",
           "properties": {
             "facility_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to the parent facility"
+              "description": "UUID foreign key referencing the Facility to which this covenant is attached. A single facility may have multiple covenants (e.g., leverage ratio, interest coverage ratio, fixed charge coverage). Always required. Example: '3e7a1b9c-5d2f-4a8e-b6c1-9f0e8d7c6b5a'."
             },
             "covenant_type": {
-              "$ref": "enums.schema.json#/$defs/CovenantType"
+              "$ref": "enums.schema.json#/$defs/CovenantType",
+              "description": "Classification of the covenant by the financial or operational metric it governs. Determines what actual_value represents in compliance testing. Always required. Common values: LEVERAGE_RATIO (total debt / EBITDA), INTEREST_COVERAGE (EBITDA / interest expense), FIXED_CHARGE_COVERAGE, MINIMUM_LIQUIDITY, MAXIMUM_CAPEX."
             },
             "description": {
               "type": "string",
-              "description": "Human-readable description of the covenant"
+              "description": "Human-readable description of the covenant obligation as stated or paraphrased from the credit agreement. Should clearly explain what the borrower must maintain, achieve, or avoid. Always required. Examples: 'Total Net Leverage Ratio shall not exceed 5.50x at any test date', 'Minimum Interest Coverage Ratio of 2.00x tested quarterly', 'Annual capital expenditures shall not exceed $10M without lender consent'."
             },
             "threshold_value": {
               "type": "number",
-              "description": "Numeric threshold for compliance testing"
+              "description": "Numeric threshold against which the borrower's actual performance is compared during compliance testing. The unit and scale depend on covenant_type — for ratio covenants (e.g., leverage), this is a multiple (e.g., 5.50); for monetary covenants (e.g., minimum liquidity), this may be an absolute amount (e.g., 10000000). Always required. Examples: 5.50 for a 5.50x leverage ceiling, 2.00 for a 2.00x coverage floor."
             },
             "threshold_operator": {
               "allOf": [{ "$ref": "enums.schema.json#/$defs/ThresholdOperator" }],
-              "description": "Comparison operator applied to actual vs threshold. Example: 'GTE'"
+              "description": "Comparison operator that defines how actual_value is evaluated against threshold_value for compliance. GTE means the actual value must be greater than or equal to the threshold (used for coverage and liquidity floors). LTE means the actual value must be less than or equal (used for leverage ceilings and capex limits). Always required. Values: GTE, LTE, GT, LT, EQ. Example: 'LTE' for a maximum leverage ratio covenant."
             },
             "testing_frequency": {
               "allOf": [{ "$ref": "enums.schema.json#/$defs/TestingFrequency" }],
-              "description": "How often the covenant is tested. Example: 'QUARTERLY'"
+              "description": "How often the covenant is measured and compliance is evaluated. Aligns with the borrower's financial reporting cadence. Always required. Common values: QUARTERLY (most common for financial covenants), SEMI_ANNUALLY, ANNUALLY. Example: 'QUARTERLY' for a leverage ratio tested each fiscal quarter-end."
             },
             "cure_period_days": {
               "type": "integer",
               "minimum": 0,
-              "description": "Days allowed to cure a breach"
+              "description": "Number of calendar days the borrower has after a covenant breach is identified to cure (remedy) the violation before it escalates to an event of default. A value of 0 means no cure period — breach immediately constitutes default. Omit if the credit agreement does not specify a cure period. Typical values range from 10 to 30 days. Example: 30."
             },
             "springing_trigger": {
               "type": "string",
-              "description": "Condition that activates a springing covenant"
+              "description": "Condition that activates a springing (conditional) covenant. Springing covenants are dormant unless a trigger event occurs — for example, a leverage ratio covenant that only activates when the revolver is drawn beyond a certain threshold. Omit if the covenant is always in effect (non-springing). Examples: 'Revolver utilization exceeds 35% of total commitment', 'Total net leverage exceeds 4.00x for two consecutive quarters'."
             }
           },
           "required": [
@@ -61,31 +62,32 @@
         { "$ref": "../core/base.schema.json#/$defs/Auditable" },
         {
           "type": "object",
-          "description": "Result of a single covenant compliance test",
+          "description": "Result of a single covenant compliance test performed on a specific test date. Records the actual measured value, the applicable threshold, and whether the borrower passed. One CovenantTest record is created per covenant per testing period (e.g., quarterly for quarterly-tested covenants). Used for compliance monitoring, trend analysis, and early warning on deteriorating credit.",
           "properties": {
             "covenant_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to the covenant being tested"
+              "description": "UUID foreign key referencing the Covenant being tested. Links this test result back to the specific covenant definition (type, threshold, operator). Always required. Example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'."
             },
             "test_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "Date on which the covenant compliance was measured, typically aligned with a fiscal quarter-end, semi-annual, or annual reporting date. Always required. Format: ISO 8601 date, e.g., '2024-06-30' for Q2 2024 quarter-end testing."
             },
             "actual_value": {
               "type": "number",
-              "description": "Measured value at the test date"
+              "description": "The borrower's measured performance metric on the test_date, in the same units as threshold_value. For ratio covenants, this is the computed ratio (e.g., 4.85 for 4.85x leverage). For monetary covenants, this is the observed amount. Always required. Example: 4.85 for a leverage ratio of 4.85x."
             },
             "threshold_value": {
               "type": "number",
-              "description": "Threshold in effect at the test date"
+              "description": "The covenant threshold in effect on the test_date, which may differ from the threshold on the Covenant record if step-downs or step-ups apply over time. Records the specific threshold used for this test. Always required. Example: 5.50 for a 5.50x leverage ceiling that applies in this period."
             },
             "in_compliance": {
               "type": "boolean",
-              "description": "Whether the borrower is in compliance"
+              "description": "Whether the borrower satisfied the covenant on this test_date by comparing actual_value against threshold_value using the covenant's threshold_operator. True means the borrower passed; false means a breach occurred. Always required. Derived from the comparison, e.g., if operator is LTE and actual_value (4.85) <= threshold_value (5.50), then in_compliance is true."
             },
             "notes": {
               "type": "string",
-              "description": "Additional context or commentary"
+              "description": "Free-text commentary providing context on the test result. Use for explanations of unusual values, cure actions taken, waivers obtained, or adjustments made to the calculation. Omit if no additional context is needed. Examples: 'EBITDA adjusted for one-time restructuring charges per amendment 3', 'Borrower obtained waiver for Q2 breach; cure equity contributed on 2024-07-15', 'Pro forma for acquisition of TargetCo completed 2024-05-01'."
             }
           },
           "required": [

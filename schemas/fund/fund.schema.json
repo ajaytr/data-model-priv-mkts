@@ -2,75 +2,81 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "fund.schema.json",
   "title": "Fund",
-  "description": "Fund entity and fund terms for private market funds",
+  "description": "Fund entity and fund terms for private market funds. Represents the top-level vehicle through which capital is raised, deployed into portfolio companies, and returned to investors. Each fund record captures identifying information, strategy, lifecycle status, legal structure, and the economic terms governing GP/LP relationships.",
   "$defs": {
     "Fund": {
       "type": "object",
-      "description": "A private markets fund vehicle",
+      "description": "A private markets fund vehicle — the legal entity that pools capital from limited partners and deploys it according to a defined investment strategy. This is the central entity in the fund domain: commitments, capital calls, distributions, NAV statements, and waterfall structures all reference a Fund by its id. Inherits id, created_at, and updated_at from Auditable.",
       "allOf": [
         { "$ref": "../core/base.schema.json#/$defs/Auditable" }
       ],
       "properties": {
         "name": {
           "type": "string",
-          "description": "Full legal name of the fund"
+          "description": "Full legal name of the fund as registered in its formation documents (e.g., the Limited Partnership Agreement). Must be the official name used in regulatory filings and capital account statements. Example: 'Acme Capital Partners Fund IV, L.P.'"
         },
         "short_name": {
           "type": "string",
-          "description": "Abbreviated or marketing name"
+          "description": "Abbreviated or marketing name used for informal references, dashboards, and reports where the full legal name is too long. Not required to be legally precise. Omit if the fund has no commonly used abbreviation. Example: 'Acme IV'"
         },
         "strategy": {
-          "$ref": "enums.schema.json#/$defs/FundStrategy"
+          "$ref": "enums.schema.json#/$defs/FundStrategy",
+          "description": "The primary investment strategy that defines how the fund deploys capital. Determines the risk/return profile, deal sourcing approach, and typical holding period. Example: 'BUYOUT', 'VENTURE_CAPITAL', 'GROWTH_EQUITY'. See FundStrategy enum for all valid values."
         },
         "status": {
-          "$ref": "enums.schema.json#/$defs/FundStatus"
+          "$ref": "enums.schema.json#/$defs/FundStatus",
+          "description": "Current lifecycle status of the fund, reflecting where it stands in the fundraising-investing-harvesting progression. Transitions are one-directional: FUNDRAISING -> FIRST_CLOSE -> FINAL_CLOSE -> INVESTING -> HARVESTING -> FULLY_REALIZED -> LIQUIDATED. Example: 'INVESTING'. See FundStatus enum for all valid values."
         },
         "structure": {
-          "$ref": "enums.schema.json#/$defs/FundStructure"
+          "$ref": "enums.schema.json#/$defs/FundStructure",
+          "description": "Legal structure of the fund vehicle. Determines tax treatment, governance rules, and regulatory obligations. Most private equity and venture capital funds use LIMITED_PARTNERSHIP. Example: 'LIMITED_PARTNERSHIP', 'LLC', 'OFFSHORE_FEEDER'. See FundStructure enum for all valid values."
         },
         "vintage_year": {
           "type": "integer",
           "minimum": 1900,
           "maximum": 2100,
-          "description": "Year of first capital call or fund inception"
+          "description": "The year the fund began deploying capital, used as the primary vintage classification for benchmarking and performance comparison across the industry. Typically the year of the first capital call or the year the fund held its final close. Populate with the calendar year as a four-digit integer. Example: 2023"
         },
         "target_size": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Target fundraising size"
+          "description": "Target fundraising size — the amount of total commitments the GP aims to raise from LPs. Set during the fundraising phase and used as a benchmark for fundraising progress. May differ from final_close_size if the fund is over- or under-subscribed. Omit if not yet determined or if the fund does not have a stated target. Example: {\"amount\": \"500000000.00\", \"currency\": \"USD\"}"
         },
         "final_close_size": {
           "$ref": "../core/money.schema.json#/$defs/Money",
-          "description": "Total commitments at final close"
+          "description": "Total aggregate commitments accepted at the final close of fundraising. This is the definitive fund size and determines each LP's pro-rata share for capital calls and distributions. Populate only after the final close has occurred; omit while the fund is still in fundraising. Example: {\"amount\": \"525000000.00\", \"currency\": \"USD\"}"
         },
         "gp_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the general partner (Party)"
+          "description": "Foreign key referencing the general partner entity (Party) responsible for managing the fund, making investment decisions, and executing the fund's strategy. Every fund must have exactly one GP. The referenced Party record should have a role indicating it is a general partner or fund manager. Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "fund_admin_id": {
           "type": "string",
           "format": "uuid",
-          "description": "Reference to the fund administrator (Party)"
+          "description": "Foreign key referencing the fund administrator entity (Party) responsible for accounting, NAV calculations, investor reporting, and capital call/distribution processing. Omit if the fund self-administers or if the administrator has not yet been engaged. Example: '7c9e6679-7425-40de-944b-e07fc1f90ae7'"
         },
         "terms": {
-          "$ref": "#/$defs/FundTerms"
+          "$ref": "#/$defs/FundTerms",
+          "description": "The economic and governance terms of the fund as defined in the Limited Partnership Agreement (LPA). Includes fee structures, carried interest provisions, fund life, and investor protection clauses. Omit if terms have not yet been finalized (e.g., during early fundraising)."
         },
         "domicile": {
-          "$ref": "../core/enums.schema.json#/$defs/Country"
+          "$ref": "../core/enums.schema.json#/$defs/Country",
+          "description": "The country in which the fund vehicle is legally domiciled and registered. Determines the regulatory regime, tax treatment, and reporting obligations. Common domiciles include US, GB, KY (Cayman Islands), and LU (Luxembourg). Example: 'US'. Omit if the domicile has not yet been established."
         },
         "region": {
-          "$ref": "../core/enums.schema.json#/$defs/Region"
+          "$ref": "../core/enums.schema.json#/$defs/Region",
+          "description": "The primary geographic region in which the fund targets investments. Used for portfolio diversification analysis and regional benchmarking. May differ from the fund's domicile (e.g., a Cayman-domiciled fund investing in North America). Example: 'NORTH_AMERICA'. Omit if the fund has a global mandate with no primary region."
         },
         "inception_date": {
           "allOf": [{ "$ref": "../core/dates.schema.json#/$defs/Date" }],
-          "description": "Date the fund was established"
+          "description": "The date the fund was legally established or formed, typically when the Limited Partnership Agreement was executed. This may differ from the vintage_year or the first close date. Used as the starting point for fund life calculations and time-based performance metrics. Format: YYYY-MM-DD. Example: '2023-03-15'"
         },
         "external_ids": {
           "type": "array",
           "items": {
             "$ref": "../core/identifiers.schema.json#/$defs/ExternalId"
           },
-          "description": "External system identifiers"
+          "description": "Identifiers assigned to this fund by external systems such as custodians, fund administrators, data vendors (e.g., Preqin, PitchBook), or internal legacy systems. Used for cross-system reconciliation and data integration. Each entry includes a system name and identifier value. Omit or leave as an empty array if no external identifiers exist."
         }
       },
       "required": [
@@ -80,45 +86,45 @@
     },
     "FundTerms": {
       "type": "object",
-      "description": "Economic and governance terms of a fund",
+      "description": "Economic and governance terms of a fund as specified in the Limited Partnership Agreement (LPA). These terms define the financial relationship between the GP and LPs, including fee arrangements, profit-sharing mechanics, and structural protections. All fields are optional because terms may be partially defined during fundraising and finalized at close.",
       "properties": {
         "fund_life_years": {
           "type": "integer",
           "minimum": 1,
-          "description": "Total fund life in years (typically 10-12)"
+          "description": "Total expected life of the fund in years from inception to final liquidation. Covers both the investment period and the harvesting/wind-down period. Typically 10-12 years for buyout and growth equity funds, and up to 12-15 years for infrastructure or real asset funds. Extensions beyond this term usually require LP advisory committee approval. Example: 10"
         },
         "investment_period_years": {
           "type": "integer",
           "minimum": 1,
-          "description": "Investment period in years (typically 4-6)"
+          "description": "The number of years from inception during which the GP is permitted to make new investments (also called the 'commitment period'). After this period expires, capital calls are generally limited to follow-on investments, fees, and expenses. Typically 4-6 years. Example: 5"
         },
         "management_fee_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Annual management fee rate"
+          "description": "Annual management fee rate charged by the GP to cover fund operations, salaries, and overhead. Expressed as a percentage of committed capital during the investment period and often steps down to a percentage of invested capital thereafter. Typically 1.5% to 2.0% for institutional funds. Example: '2.00'"
         },
         "carried_interest_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Carried interest rate (typically 20%)"
+          "description": "The percentage of fund profits allocated to the GP as performance compensation (carried interest or 'carry'). Applied to net profits after all contributed capital and the preferred return have been returned to LPs. The industry standard is 20%, though first-time or emerging managers may offer lower rates and top-tier managers may charge higher rates. Example: '20.00'"
         },
         "preferred_return": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Preferred return (hurdle) rate"
+          "description": "The minimum annualized rate of return (hurdle rate) that LPs must receive on their contributed capital before the GP is entitled to any carried interest. Typically compounded annually. The standard rate is 8% for most private equity funds. If the fund does not offer a preferred return, omit this field. Example: '8.00'"
         },
         "gp_commitment_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "GP commitment as a percentage of fund size"
+          "description": "The GP's own capital commitment expressed as a percentage of the total fund size. Demonstrates the GP's alignment of interest with LPs ('skin in the game'). Typically 1% to 5% of the fund's total commitments. Example: '2.00'"
         },
         "hurdle_rate": {
           "$ref": "../core/percentage.schema.json#/$defs/Percentage",
-          "description": "Hurdle rate for carried interest calculation"
+          "description": "The rate of return threshold used in the distribution waterfall to determine when the GP begins earning carried interest. Often equal to the preferred_return rate, but may differ in structures where the waterfall hurdle and LP preferred return are distinct. If the fund uses the same rate for both, populate both preferred_return and hurdle_rate with the same value. Omit if the fund has no hurdle. Example: '8.00'"
         },
         "clawback": {
           "type": "boolean",
-          "description": "Whether a GP clawback provision exists"
+          "description": "Indicates whether the LPA includes a GP clawback provision. When true, the GP is obligated to return excess carried interest at the end of the fund's life if the aggregate fund performance does not justify the carry already distributed. Protects LPs in American (deal-by-deal) waterfall structures where early profitable exits may trigger carry payments that exceed the GP's entitlement on a whole-fund basis. Example: true"
         },
         "key_person_clause": {
           "type": "boolean",
-          "description": "Whether a key person clause exists"
+          "description": "Indicates whether the LPA includes a key person provision. When true, the departure or incapacity of designated key individuals (typically named senior partners or portfolio managers) triggers a suspension of the fund's investment period until the GP resolves the situation or LPs vote to continue. Serves as an LP protection mechanism ensuring the fund is managed by the specific professionals they evaluated. Example: true"
         }
       }
     }

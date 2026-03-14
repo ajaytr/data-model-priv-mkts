@@ -2,23 +2,28 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "transaction.schema.json",
   "title": "Transaction",
-  "description": "Secondary transaction lifecycle",
+  "description": "Tracks the full lifecycle of a secondary market transaction from marketing through settlement or cancellation. A Transaction wraps a SecondaryTrade and adds operational tracking: milestone progression, GP consent workflow, legal counsel assignments, document management, and closing/effective dates.",
   "$defs": {
     "TransactionMilestone": {
       "type": "object",
+      "description": "A discrete checkpoint in the secondary transaction lifecycle. Each milestone records whether a particular stage has been reached and when. Used to build a timeline of transaction progress and identify bottlenecks or delays.",
       "properties": {
         "stage": {
-          "$ref": "enums.schema.json#/$defs/TransactionStage"
+          "$ref": "enums.schema.json#/$defs/TransactionStage",
+          "description": "The transaction stage this milestone represents (e.g., MARKETING, BIDDING, GP_CONSENT). Each stage should appear at most once in the milestones array."
         },
         "date": {
-          "$ref": "../core/dates.schema.json#/$defs/Date"
+          "$ref": "../core/dates.schema.json#/$defs/Date",
+          "description": "The date this stage was entered or is expected to be entered. For completed milestones, this is the actual date the stage was reached. For future milestones, this is the target or estimated date. Example: '2024-08-15'"
         },
         "completed": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Whether this milestone has been completed. Set to true when the stage has been fully satisfied and the transaction has progressed past it. Defaults to false for planned or in-progress milestones. Example: true"
         },
         "notes": {
-          "type": "string"
+          "type": "string",
+          "description": "Free-text notes about this milestone, such as reasons for delays, conditions that were met, or issues encountered. Useful for audit trail and deal team communication. Omit if no additional context is needed. Example: 'GP consent delayed pending LPAC meeting scheduled for Q4'"
         }
       },
       "required": [
@@ -27,6 +32,7 @@
       ]
     },
     "Transaction": {
+      "description": "The operational wrapper around a SecondaryTrade that tracks the transaction through its full lifecycle. Extends Auditable for identity and audit trail. Manages the progression from trade agreement through GP consent, documentation, closing, and settlement.",
       "allOf": [
         {
           "$ref": "../core/base.schema.json#/$defs/Auditable"
@@ -37,40 +43,47 @@
             "trade_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to SecondaryTrade"
+              "description": "UUID reference to the SecondaryTrade entity that this transaction is executing. Links back to the agreed commercial terms, counterparties, and pricing. Each transaction corresponds to exactly one trade. Example: '550e8400-e29b-41d4-a716-446655440000'"
             },
             "stage": {
-              "$ref": "enums.schema.json#/$defs/TransactionStage"
+              "$ref": "enums.schema.json#/$defs/TransactionStage",
+              "description": "The current stage of the transaction lifecycle (e.g., DUE_DILIGENCE, GP_CONSENT, CLOSING). Updated as the transaction progresses through milestones. Determines what actions are available and what information is needed next."
             },
             "milestones": {
               "type": "array",
               "items": {
                 "$ref": "#/$defs/TransactionMilestone"
-              }
+              },
+              "description": "Ordered list of milestones tracking the transaction's progression through each stage. Provides a complete timeline of the deal's lifecycle. Sorted chronologically by date. New milestones are appended as stages are reached."
             },
             "gp_consent_required": {
               "type": "boolean",
-              "default": true
+              "default": true,
+              "description": "Whether the GP's consent is required for this LP interest transfer. Most LPAs require GP consent for transfers, but some fund structures (e.g., listed vehicles, certain continuation funds) may not. Defaults to true. Set to false only when the LPA explicitly permits transfers without consent. Example: true"
             },
             "gp_consent_received": {
               "type": "boolean",
-              "default": false
+              "default": false,
+              "description": "Whether the GP has provided their consent for the transfer. Set to true once formal written consent is received. Remains false until consent is confirmed, even if verbally indicated. A prerequisite for closing in most transactions. Example: false"
             },
             "gp_consent_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The date on which the GP formally granted consent for the LP interest transfer. Populate only when gp_consent_received is true. Omit if consent has not yet been granted or is not required. Example: '2024-09-10'"
             },
             "transfer_agent_id": {
               "type": "string",
               "format": "uuid",
-              "description": "Reference to Party handling the transfer"
+              "description": "UUID reference to the Party entity acting as the transfer agent — the firm responsible for processing the LP interest transfer on the fund's register. Typically the fund administrator. Omit if no transfer agent is involved or not yet assigned. Example: '1b9d6bcd-bbfd-4b2d-9b5d-ab8dfbbd4bed'"
             },
             "legal_counsel_buyer_id": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "UUID reference to the Party entity representing the buyer's legal counsel. The law firm advising the buyer on the transaction, reviewing documents, and conducting legal due diligence. Omit if not yet engaged or if the buyer is handling legal matters in-house. Example: '6ba7b810-9dad-11d1-80b4-00c04fd430c8'"
             },
             "legal_counsel_seller_id": {
               "type": "string",
-              "format": "uuid"
+              "format": "uuid",
+              "description": "UUID reference to the Party entity representing the seller's legal counsel. The law firm advising the seller on the transaction and negotiating documentation on their behalf. Omit if not yet engaged or if the seller is handling legal matters in-house. Example: '6ba7b811-9dad-11d1-80b4-00c04fd430c8'"
             },
             "documents": {
               "type": "array",
@@ -78,10 +91,11 @@
                 "type": "string",
                 "format": "uuid"
               },
-              "description": "References to Document entities"
+              "description": "Array of UUID references to Document entities associated with this transaction. Includes purchase and sale agreements, transfer instruments, GP consent letters, side letters, legal opinions, and closing checklists. Populated as documents are generated or uploaded during the transaction lifecycle."
             },
             "closing_date": {
-              "$ref": "../core/dates.schema.json#/$defs/Date"
+              "$ref": "../core/dates.schema.json#/$defs/Date",
+              "description": "The date on which the transaction formally closed — all conditions precedent were satisfied, documents were executed, and funds were released. Distinct from effective_date (when the transfer takes effect on the fund's books) and settlement_date (when cash actually settles). Omit until the transaction reaches the CLOSING stage. Example: '2024-10-15'"
             },
             "effective_date": {
               "allOf": [
@@ -89,7 +103,7 @@
                   "$ref": "../core/dates.schema.json#/$defs/Date"
                 }
               ],
-              "description": "Date the transfer becomes effective on the fund's books"
+              "description": "The date the LP interest transfer becomes effective on the fund's books. After this date, the buyer is recognized as the LP of record and receives all capital calls, distributions, and reporting. May differ from closing_date (e.g., effective as of quarter-end). Critical for determining economic cut-off — cash flows before this date belong to the seller, after to the buyer. Example: '2024-09-30'"
             }
           },
           "required": [

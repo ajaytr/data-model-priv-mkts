@@ -6,7 +6,8 @@
   "$defs": {
     "TradeDirection": {
       "type": "string",
-      "enum": ["BUY", "SELL"]
+      "enum": ["BUY", "SELL"],
+      "description": "Direction of a secondary market trade from the perspective of the reporting party. BUY: the reporting party is acquiring the LP interest or asset — they are the buyer. SELL: the reporting party is disposing of the LP interest or asset — they are the seller. Populate based on whose perspective the trade record represents. In a single transaction, the buyer's record has direction BUY and the seller's record has direction SELL. Example: 'BUY'"
     },
     "SecondaryTradeType": {
       "type": "string",
@@ -18,7 +19,8 @@
         "STRIP_SALE",
         "STAPLED_SECONDARY",
         "PREFERRED_EQUITY"
-      ]
+      ],
+      "description": "Classification of the secondary market transaction structure. LP_INTEREST_TRANSFER: Traditional secondary sale where an existing LP sells their fund interest to a new buyer. The most common secondary transaction type. Requires GP consent and transfer of commitment, NAV, and unfunded obligations. DIRECT_SECONDARY: Sale of a direct co-investment or direct asset interest rather than a fund LP stake. Typically involves a single underlying asset or a small portfolio of assets. GP_LED_SECONDARY: A continuation fund or restructuring led by the GP, where the GP facilitates the transaction by creating a new vehicle. LPs can choose to roll over or cash out. Also known as a GP-led continuation vehicle. TENDER_OFFER: A formal offer extended to multiple LPs to purchase their interests at a stated price, often initiated by a buyer or intermediary. Governed by specific regulatory requirements and typically has a fixed acceptance window. STRIP_SALE: Sale of a partial interest across multiple funds or positions bundled together, rather than a single fund LP stake. The buyer acquires a proportional 'strip' across a portfolio. STAPLED_SECONDARY: A secondary transaction that is 'stapled' (linked) to a primary commitment in a new fund managed by the same GP. The buyer must commit to the new fund as a condition of acquiring the secondary interest. PREFERRED_EQUITY: A secondary transaction structured as preferred equity rather than a direct LP interest transfer. The buyer provides capital in exchange for a preferred return, with the underlying LP interest as collateral. Example: 'LP_INTEREST_TRANSFER'"
     },
     "TransactionStage": {
       "type": "string",
@@ -32,7 +34,8 @@
         "CLOSING",
         "SETTLED",
         "CANCELLED"
-      ]
+      ],
+      "description": "Stage of a secondary transaction's lifecycle from initiation through settlement. Stages progress sequentially, though a transaction can move to CANCELLED from any prior stage. MARKETING: The interest is being marketed to potential buyers, data rooms are being set up, and teasers or offering memoranda are being distributed. BIDDING: Active bid solicitation phase where potential buyers submit indicative or binding bids based on available information. EXCLUSIVITY: A preferred bidder has been selected and granted an exclusive negotiation window. Other bidders are on standby. DUE_DILIGENCE: The buyer is conducting detailed review of fund documents, financial statements, portfolio company data, and legal materials. DOCUMENTATION: Legal documents (purchase and sale agreement, transfer instruments, side letters) are being drafted, negotiated, and finalized. GP_CONSENT: Formal request for the GP's consent to the transfer has been submitted and is awaiting approval. Most LPAs require GP consent for LP interest transfers. CLOSING: All conditions precedent have been satisfied; parties are executing final documents and initiating fund transfers. SETTLED: The transaction is fully complete — funds have been exchanged, the LP interest has been transferred on the fund's books, and the buyer is recognized as the new LP. CANCELLED: The transaction has been terminated prior to settlement. May occur at any stage due to failed diligence, GP consent denial, pricing disagreements, or other deal-breaking events. Example: 'DUE_DILIGENCE'"
     },
     "BidStatus": {
       "type": "string",
