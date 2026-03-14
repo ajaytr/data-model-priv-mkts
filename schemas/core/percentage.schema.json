@@ -2,18 +2,18 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "percentage.schema.json",
   "title": "Percentage types",
-  "description": "Percentage and basis-point representations",
+  "description": "Percentage and basis-point representations used for rates, fees, ownership stakes, and other proportional values",
   "$defs": {
     "Percentage": {
       "type": "number",
       "minimum": 0,
       "maximum": 1,
-      "description": "Decimal percentage (0.08 = 8%). Soft max of 1 (100%); some values may exceed."
+      "description": "A proportional value expressed as a decimal between 0 and 1, where 1 = 100%. Used for management fees, carried interest rates, ownership percentages, discount rates, and LP allocation shares. The maximum of 1 is a soft constraint — values like 1.5 (150%) are valid in some contexts (e.g., overcollateralization ratios) but should be exceptional. Examples: 0.02 = 2% management fee, 0.20 = 20% carried interest, 0.0825 = 8.25% preferred return"
     },
     "BasisPoints": {
       "type": "integer",
       "minimum": 0,
-      "description": "Rate in basis points (100 = 1%)"
+      "description": "A rate expressed in basis points, where 100 bps = 1% and 10000 bps = 100%. Used for spreads, margins, and fee rates in credit facilities where basis-point precision is standard market convention. Integer type avoids floating-point issues. Examples: 250 = 2.50% (SOFR + 250bps), 50 = 0.50% (commitment fee), 15 = 0.15% (agency fee)"
     }
   }
 }

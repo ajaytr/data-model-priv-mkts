@@ -2,19 +2,19 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "identifiers.schema.json",
   "title": "Identifiers",
-  "description": "External identifier types",
+  "description": "External identifier types for cross-referencing entities with outside systems",
   "$defs": {
     "ExternalId": {
       "type": "object",
-      "description": "Reference to an identifier in an external system",
+      "description": "A reference to an identifier assigned by an external system. Used to link internal entities to records in CRMs, regulatory databases, market data providers, and other platforms. Multiple ExternalIds can be attached to a single entity. Example: {\"system\": \"LEI\", \"value\": \"5493001KJTIIGC8Y1R12\"}",
       "properties": {
         "system": {
           "type": "string",
-          "description": "Name of the external system (e.g., LEI, CUSIP, Bloomberg)"
+          "description": "Name of the external system or identifier scheme. Use well-known abbreviations where standards exist. Common values: 'LEI' (Legal Entity Identifier), 'CUSIP' (US/Canada securities), 'ISIN' (international securities), 'BLOOMBERG' (Bloomberg ticker), 'PITCHBOOK' (PitchBook ID), 'PREQIN' (Preqin ID), 'CRD' (FINRA Central Registration Depository). For internal systems, use a consistent name like 'INTERNAL_CRM'. Example: 'LEI'"
         },
         "value": {
           "type": "string",
-          "description": "The identifier value in the external system"
+          "description": "The identifier value as assigned by the external system. Format depends on the system — preserve exactly as issued (including leading zeros, hyphens, check digits). Examples: '5493001KJTIIGC8Y1R12' (LEI), '037833100' (CUSIP for Apple), 'US0378331005' (ISIN)"
         }
       },
       "required": ["system", "value"]

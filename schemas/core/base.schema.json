@@ -2,24 +2,24 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "base.schema.json",
   "title": "Base definitions",
-  "description": "Auditable base type for all domain entities",
+  "description": "Auditable base type composed into all persistent domain entities via allOf",
   "$defs": {
     "Auditable": {
       "type": "object",
-      "description": "Common fields for all persistent entities",
+      "description": "Common fields inherited by all persistent entities (Fund, Party, Trade, etc.) via allOf composition. Provides identity and audit trail. Every entity that is stored and retrieved must include these fields.",
       "properties": {
         "id": {
           "type": "string",
           "format": "uuid",
-          "description": "Unique identifier"
+          "description": "Universally unique identifier (UUID v4) for this entity. Assigned at creation and immutable thereafter. Used as the primary key and for all cross-entity references (e.g., buyer_id, fund_id). Example: '550e8400-e29b-41d4-a716-446655440000'"
         },
         "created_at": {
           "allOf": [{ "$ref": "dates.schema.json#/$defs/UtcDateTime" }],
-          "description": "UTC timestamp when the record was created. Example: '2024-06-15T14:30:00Z'"
+          "description": "UTC timestamp when the record was first created in the system. Immutable — never updated after initial insert. Set by the system, not user-supplied. Example: '2024-06-15T14:30:00Z'"
         },
         "updated_at": {
           "allOf": [{ "$ref": "dates.schema.json#/$defs/UtcDateTime" }],
-          "description": "UTC timestamp when the record was last updated. Example: '2024-06-15T14:30:00Z'"
+          "description": "UTC timestamp of the most recent modification to this record. Updated automatically on every write. Null or absent if the record has never been modified after creation. Useful for sync, caching, and conflict detection. Example: '2024-09-01T09:15:00Z'"
         }
       },
       "required": ["id", "created_at"]

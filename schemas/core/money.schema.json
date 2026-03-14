@@ -2,19 +2,22 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "money.schema.json",
   "title": "Money",
-  "description": "Monetary amount with currency",
+  "description": "Monetary amount with currency. Used for all financial values across the data model — prices, commitments, NAV, distributions, interest payments, etc.",
   "$defs": {
     "Money": {
       "type": "object",
-      "description": "A monetary value represented as a decimal string to avoid floating-point issues",
+      "description": "A monetary value with currency. Amount is a decimal string to avoid IEEE 754 floating-point precision loss (e.g., 0.1 + 0.2 ≠ 0.3 in float). Consumers should parse amount into a fixed-precision decimal type (Python Decimal, Java BigDecimal, etc.). Example: {\"amount\": \"50000000.00\", \"currency\": \"USD\"}",
       "properties": {
         "amount": {
           "type": "string",
           "pattern": "^-?\\d+(\\.\\d+)?$",
-          "description": "Decimal amount as string to preserve precision"
+          "description": "The monetary value as a decimal string. Use negative values for debits, reductions, or losses. No thousands separators. Decimal point is optional for whole amounts. Examples: '50000000.00', '-1250000.50', '0.01', '1000000'"
         },
         "currency": {
-          "$ref": "enums.schema.json#/$defs/Currency"
+          "allOf": [
+            { "$ref": "enums.schema.json#/$defs/Currency" }
+          ],
+          "description": "ISO 4217 three-letter currency code. Must match the currency of the fund, facility, or deal this amount belongs to. Example: 'USD'"
         }
       },
       "required": ["amount", "currency"]

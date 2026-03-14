@@ -2,27 +2,27 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "enums.schema.json",
   "title": "Core enumerations",
-  "description": "Shared enumerations used across all domains",
+  "description": "Shared enumerations used across all domains in the private markets data model",
   "$defs": {
     "Currency": {
       "type": "string",
       "enum": ["USD", "EUR", "GBP", "CHF", "JPY", "CAD", "AUD", "SGD", "HKD", "CNY", "KRW", "SEK", "NOK", "DKK", "NZD", "BRL", "INR"],
-      "description": "ISO 4217 currency codes commonly used in private markets"
+      "description": "ISO 4217 three-letter currency code. Restricted to currencies commonly encountered in private markets transactions. Used in all Money fields to denominate amounts. If a required currency is missing, extend this enum. Example: 'USD'"
     },
     "Region": {
       "type": "string",
       "enum": ["NORTH_AMERICA", "EUROPE", "ASIA_PACIFIC", "LATIN_AMERICA", "MIDDLE_EAST", "AFRICA", "GLOBAL"],
-      "description": "Geographic region"
+      "description": "Geographic region for classifying funds, deals, and assets by investment geography. Use 'GLOBAL' for multi-region strategies that are not concentrated in a single area. Aligns with common LP reporting and ILPA standards. Example: 'NORTH_AMERICA'"
     },
     "Country": {
       "type": "string",
       "pattern": "^[A-Z]{2}$",
-      "description": "ISO 3166-1 alpha-2 country code"
+      "description": "ISO 3166-1 alpha-2 country code (two uppercase letters). Used in addresses and for jurisdiction classification. Not restricted to an enum — any valid two-letter code is accepted. Examples: 'US', 'GB', 'KY' (Cayman Islands), 'LU' (Luxembourg)"
     },
     "DayCount": {
       "type": "string",
       "enum": ["ACT_360", "ACT_365", "ACT_ACT", "30_360", "30E_360"],
-      "description": "Day-count convention for interest calculations"
+      "description": "Day-count convention for calculating accrued interest on credit facilities and fixed-income instruments. Determines how the number of days in an interest period maps to the annual rate. ACT_360: actual days / 360 (common for SOFR/LIBOR loans). ACT_365: actual days / 365 (common in GBP markets). ACT_ACT: actual days / actual days in year. 30_360: assumes 30-day months / 360-day year (US convention). 30E_360: European 30/360 variant. Example: 'ACT_360'"
     },
     "DocumentType": {
       "type": "string",
@@ -42,7 +42,7 @@
         "PURCHASE_AGREEMENT",
         "OTHER"
       ],
-      "description": "Type of legal or operational document"
+      "description": "Type of legal or operational document associated with a deal, fund, or trade. LPA: Limited Partnership Agreement (governing document of a fund). SIDE_LETTER: Supplemental terms negotiated by an individual LP. SUBSCRIPTION_AGREEMENT: LP's commitment to invest in a fund. CAPITAL_CALL_NOTICE: Notice to LPs to fund a portion of their commitment. DISTRIBUTION_NOTICE: Notice of proceeds returned to LPs. FINANCIAL_STATEMENT: Audited or unaudited financial statements. VALUATION_REPORT: Third-party or GP valuation of assets. TAX_DOCUMENT: K-1s, tax certificates, withholding forms. CREDIT_AGREEMENT: Loan or facility agreement. AMENDMENT: Modification to an existing agreement. WAIVER: Waiver of a covenant or contractual term. TRANSFER_AGREEMENT: Agreement to transfer an LP interest or asset. PURCHASE_AGREEMENT: Asset or equity purchase agreement. OTHER: Any document not covered above. Example: 'LPA'"
     }
   }
 }

@@ -2,61 +2,78 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dates.schema.json",
   "title": "Date types",
-  "description": "Quarter, reporting period, date range, and UTC date-time types",
+  "description": "Quarter, reporting period, date range, and UTC date-time types. All date and timestamp fields across the data model reference these definitions.",
   "$defs": {
     "Date": {
       "type": "string",
       "format": "date",
-      "description": "ISO 8601 calendar date. Example: '2024-06-15'"
+      "description": "ISO 8601 calendar date (YYYY-MM-DD). Used for business dates such as trade dates, settlement dates, close dates, and due dates. Time-zone-agnostic — represents a calendar day, not a point in time. Example: '2024-06-15'"
     },
     "UtcDateTime": {
       "type": "string",
       "format": "date-time",
       "pattern": "Z$",
-      "description": "ISO 8601 date-time in UTC. Must end with 'Z'. Example: '2024-06-15T14:30:00Z'"
+      "description": "ISO 8601 date-time in UTC. MUST end with 'Z' (Zulu time) — offsets like '+05:30' are rejected. Used for system timestamps (created_at, updated_at, settled_at) where a precise point in time is needed. Consumers should convert to local time for display. Example: '2024-06-15T14:30:00Z'"
     },
     "Quarter": {
       "type": "object",
-      "description": "A fiscal quarter",
+      "description": "A fiscal quarter. Used to identify reporting periods, fund vintages, and performance windows. Example: {\"year\": 2024, \"quarter\": 2} represents Q2 2024 (April–June for calendar-year filers).",
       "properties": {
         "year": {
           "type": "integer",
           "minimum": 1900,
-          "maximum": 2100
+          "maximum": 2100,
+          "description": "Four-digit calendar year. Range limited to 1900–2100 for data integrity. Example: 2024"
         },
         "quarter": {
           "type": "integer",
           "minimum": 1,
-          "maximum": 4
+          "maximum": 4,
+          "description": "Quarter number (1–4). Q1 = Jan–Mar, Q2 = Apr–Jun, Q3 = Jul–Sep, Q4 = Oct–Dec for calendar-year filers. For non-calendar fiscal years, quarter boundaries follow the entity's fiscal year-end. Example: 2"
         }
       },
       "required": ["year", "quarter"]
     },
     "ReportingPeriod": {
       "type": "object",
-      "description": "A reporting period with start/end dates and optional quarter",
+      "description": "A reporting period defined by explicit start and end dates, with an optional quarter reference. Used for NAV statements, financial reports, and performance calculations where the exact date boundaries matter. Example: {\"start_date\": \"2024-04-01\", \"end_date\": \"2024-06-30\", \"quarter\": {\"year\": 2024, \"quarter\": 2}}",
       "properties": {
         "start_date": {
-          "$ref": "#/$defs/Date"
+          "allOf": [
+            { "$ref": "#/$defs/Date" }
+          ],
+          "description": "First day of the reporting period (inclusive). Example: '2024-04-01'"
         },
         "end_date": {
-          "$ref": "#/$defs/Date"
+          "allOf": [
+            { "$ref": "#/$defs/Date" }
+          ],
+          "description": "Last day of the reporting period (inclusive). Must be on or after start_date. Example: '2024-06-30'"
         },
         "quarter": {
-          "$ref": "#/$defs/Quarter"
+          "allOf": [
+            { "$ref": "#/$defs/Quarter" }
+          ],
+          "description": "The fiscal quarter this period corresponds to, if applicable. Omit for non-quarterly periods (e.g., annual reports, stub periods)."
         }
       },
       "required": ["start_date", "end_date"]
     },
     "DateRange": {
       "type": "object",
-      "description": "An arbitrary date range",
+      "description": "An arbitrary date range for filtering, queries, or specifying validity windows. Unlike ReportingPeriod, this has no fiscal/reporting semantics — it is purely a start/end date pair. Example: {\"start_date\": \"2024-01-01\", \"end_date\": \"2024-12-31\"}",
       "properties": {
         "start_date": {
-          "$ref": "#/$defs/Date"
+          "allOf": [
+            { "$ref": "#/$defs/Date" }
+          ],
+          "description": "Start of the range (inclusive). Example: '2024-01-01'"
         },
         "end_date": {
-          "$ref": "#/$defs/Date"
+          "allOf": [
+            { "$ref": "#/$defs/Date" }
+          ],
+          "description": "End of the range (inclusive). Must be on or after start_date. Example: '2024-12-31'"
         }
       },
       "required": ["start_date", "end_date"]

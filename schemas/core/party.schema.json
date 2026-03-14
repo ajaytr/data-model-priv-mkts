@@ -2,33 +2,69 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "party.schema.json",
   "title": "Party",
-  "description": "Parties, addresses, and contact information",
+  "description": "Parties, addresses, and contact information. A Party is any legal entity or individual that participates in the private markets ecosystem — GPs, LPs, fund administrators, borrowers, lenders, brokers, and service providers.",
   "$defs": {
     "Address": {
       "type": "object",
+      "description": "Physical or mailing address of a party. Used for legal correspondence, tax jurisdiction determination, and regulatory reporting. Example: {\"line1\": \"345 Park Avenue\", \"city\": \"New York\", \"state_province\": \"NY\", \"postal_code\": \"10154\", \"country\": \"US\"}",
       "properties": {
-        "line1": { "type": "string" },
-        "line2": { "type": "string" },
-        "city": { "type": "string" },
-        "state_province": { "type": "string" },
-        "postal_code": { "type": "string" },
-        "country": { "$ref": "enums.schema.json#/$defs/Country" }
+        "line1": {
+          "type": "string",
+          "description": "Primary street address including building number. Example: '345 Park Avenue'"
+        },
+        "line2": {
+          "type": "string",
+          "description": "Secondary address line for suite, floor, unit, or c/o information. Omit if not applicable. Example: 'Suite 3200'"
+        },
+        "city": {
+          "type": "string",
+          "description": "City or municipality name. Example: 'New York'"
+        },
+        "state_province": {
+          "type": "string",
+          "description": "State, province, or administrative region. Use standard abbreviations where available (e.g., 'NY' for New York, 'ON' for Ontario). Omit for countries without sub-national divisions. Example: 'NY'"
+        },
+        "postal_code": {
+          "type": "string",
+          "description": "Postal or ZIP code in the format used by the country. Examples: '10154' (US), 'EC2N 1HQ' (UK), '100-0005' (Japan)"
+        },
+        "country": {
+          "allOf": [
+            { "$ref": "enums.schema.json#/$defs/Country" }
+          ],
+          "description": "ISO 3166-1 alpha-2 country code. Determines tax jurisdiction and regulatory regime. Example: 'US'"
+        }
       },
       "required": ["line1", "city", "country"]
     },
     "ContactInfo": {
       "type": "object",
+      "description": "Contact details for an individual associated with a party. Used for investor relations, deal correspondence, capital call notifications, and operational communications. Example: {\"name\": \"Jane Smith\", \"email\": \"jane.smith@apollo.com\", \"phone\": \"+1-212-555-0100\", \"title\": \"Managing Director, Investor Relations\"}",
       "properties": {
-        "name": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "title": { "type": "string", "description": "Job title" }
+        "name": {
+          "type": "string",
+          "description": "Full name of the contact person. Use the name they go by professionally. Example: 'Jane Smith'"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Business email address. Must be a valid email format (RFC 5322). This is the primary channel for official communications including capital call notices and reporting. Example: 'jane.smith@apollo.com'"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number in E.164 international format preferred ('+' followed by country code and number, no spaces). Domestic formats are accepted but discouraged for cross-border operations. Example: '+12125550100'"
+        },
+        "title": {
+          "type": "string",
+          "description": "Professional job title or role at the organization. Helps identify the appropriate contact for different types of communication (e.g., IR vs. legal vs. operations). Example: 'Managing Director, Investor Relations'"
+        }
       },
       "required": ["name", "email"]
     },
     "PartyType": {
       "type": "string",
-      "enum": ["GP", "LP", "FUND_ADMIN", "CUSTODIAN", "PLACEMENT_AGENT", "LEGAL_COUNSEL", "AUDITOR", "BORROWER", "LENDER", "BROKER", "OTHER"]
+      "enum": ["GP", "LP", "FUND_ADMIN", "CUSTODIAN", "PLACEMENT_AGENT", "LEGAL_COUNSEL", "AUDITOR", "BORROWER", "LENDER", "BROKER", "OTHER"],
+      "description": "Classification of a party's role in the private markets ecosystem. GP: General Partner — manages the fund and makes investment decisions. LP: Limited Partner — passive investor who commits capital. FUND_ADMIN: Fund Administrator — handles NAV calculations, investor reporting, capital call processing. CUSTODIAN: Holds and safeguards assets on behalf of investors. PLACEMENT_AGENT: Intermediary that helps raise capital from LPs. LEGAL_COUNSEL: Law firm providing legal advisory services. AUDITOR: Firm performing financial audits. BORROWER: Entity that borrows under a credit facility. LENDER: Entity that provides credit. BROKER: Intermediary in secondary market transactions. OTHER: Any role not covered above. Example: 'GP'"
     },
     "Party": {
       "allOf": [
@@ -38,25 +74,33 @@
           "properties": {
             "name": {
               "type": "string",
-              "description": "Legal name of the party"
+              "description": "Full legal name of the entity as registered. This should match the name on legal documents (LPAs, credit agreements, etc.). Example: 'Apollo Global Management, Inc.'"
             },
             "short_name": {
               "type": "string",
-              "description": "Short or common name"
+              "description": "Abbreviated or commonly known name used in day-to-day communication and UI display. Example: 'Apollo'"
             },
             "party_type": {
-              "$ref": "#/$defs/PartyType"
+              "allOf": [
+                { "$ref": "#/$defs/PartyType" }
+              ],
+              "description": "The primary role this party plays. A single legal entity may appear as multiple Party records if it operates in different capacities (e.g., a firm that is both a GP and an LP in different funds). Example: 'GP'"
             },
             "external_ids": {
               "type": "array",
-              "items": { "$ref": "identifiers.schema.json#/$defs/ExternalId" }
+              "items": { "$ref": "identifiers.schema.json#/$defs/ExternalId" },
+              "description": "References to this party in external systems. Use for cross-referencing with LEI registries, CRM systems, compliance databases, or portfolio management platforms. Example: [{\"system\": \"LEI\", \"value\": \"5493001KJTIIGC8Y1R12\"}]"
             },
             "address": {
-              "$ref": "#/$defs/Address"
+              "allOf": [
+                { "$ref": "#/$defs/Address" }
+              ],
+              "description": "Primary business or registered address. Used for legal notices, tax jurisdiction, and regulatory filings."
             },
             "contacts": {
               "type": "array",
-              "items": { "$ref": "#/$defs/ContactInfo" }
+              "items": { "$ref": "#/$defs/ContactInfo" },
+              "description": "Key contact persons at this organization. Include at minimum the primary relationship contact. For LPs, include the person who handles capital call funding and the one who receives reporting."
             }
           },
           "required": ["name", "party_type"]
