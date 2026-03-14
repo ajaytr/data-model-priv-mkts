@@ -31,27 +31,9 @@
     }
   ],
   "assets": [
-    {
-      "asset_type": "FACILITY",
-      "asset_class": "PRIVATE_CREDIT",
-      "label": "Senior Term Loan",
-      "facility_id": "fa112233-4455-6677-8899-aabbccdde001",
-      "notional_amount": { "amount": "500000000", "currency": "USD" }
-    },
-    {
-      "asset_type": "FACILITY",
-      "asset_class": "PRIVATE_CREDIT",
-      "label": "Mezzanine Tranche",
-      "facility_id": "fa112233-4455-6677-8899-aabbccdde002",
-      "notional_amount": { "amount": "100000000", "currency": "USD" }
-    },
-    {
-      "asset_type": "INVESTMENT",
-      "asset_class": "PRIVATE_EQUITY",
-      "label": "Equity Co-Invest",
-      "investment_id": "in112233-4455-6677-8899-aabbccdde001",
-      "notional_amount": { "amount": "150000000", "currency": "USD" }
-    }
+    "da112233-4455-6677-8899-aabbccdde001",
+    "da112233-4455-6677-8899-aabbccdde002",
+    "da112233-4455-6677-8899-aabbccdde003"
   ],
   "milestones": [
     { "stage": "SOURCING", "date": "2024-01-10", "completed": true },

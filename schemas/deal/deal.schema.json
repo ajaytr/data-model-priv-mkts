@@ -135,9 +135,10 @@
             "assets": {
               "type": "array",
               "items": {
-                "$ref": "deal_asset.schema.json#/$defs/DealAsset"
+                "type": "string",
+                "format": "uuid"
               },
-              "description": "The individual asset components that make up this deal. Each asset has its own asset_class and references a domain entity (Facility, Investment, Property, or LPInterest). A deal typically has one or more assets — e.g., an LBO might have a senior term loan, a mezz tranche, and an equity co-invest."
+              "description": "UUID references to DealAsset entities that make up this deal. DealAssets are independent, persistent entities — each has its own identity, asset_class, and reference to a domain entity (Facility, Investment, Property, or LPInterest). A deal typically has one or more assets — e.g., an LBO might have a senior term loan, a mezz tranche, and an equity co-invest as separate DealAsset records. Example: ['da112233-4455-6677-8899-aabbccdde001', 'da112233-4455-6677-8899-aabbccdde002']"
             },
             "milestones": {
               "type": "array",
