@@ -270,10 +270,11 @@ tr:hover td { background: var(--bg3); }
   <div id="detail-content">
     <div id="welcome">
       <h2>Schema Explorer</h2>
-      <p>Navigate the private markets data model using the tree on the left. Two entry points:</p>
+      <p>Navigate the private markets data model using the tree on the left:</p>
       <ul>
         <li><strong>Deal</strong> — cross-asset deal structuring with participants and linked assets</li>
         <li><strong>Fund</strong> — PE/VC fund lifecycle from commitments through realizations</li>
+        <li><strong>Types</strong> — base types (Money, Date, UtcDateTime), identity schemas, and all enums</li>
       </ul>
       <p>Click any entity to see its properties. Click linked entity names to navigate between schemas.</p>
       <p style="margin-top:12px;font-size:12px;color:var(--text2)">All data loaded dynamically from the JSON Schema source files.</p>
@@ -611,6 +612,83 @@ const FUND_TREE = {
   ]
 };
 
+// Types tree — built dynamically after schemas load
+function buildTypesTree() {
+  return {
+    name: "Types", entity: null, children: [
+      { name: "Value Types", entity: null, children: [
+        { name: "Money", entity: "Money", children: [
+          { name: "Currency", entity: "Currency", children: [] },
+        ]},
+        { name: "Percentage", entity: "Percentage", children: [] },
+        { name: "BasisPoints", entity: "BasisPoints", children: [] },
+        { name: "ExternalId", entity: "ExternalId", children: [] },
+      ]},
+      { name: "Date & Time", entity: null, children: [
+        { name: "Date", entity: "Date", children: [] },
+        { name: "UtcDateTime", entity: "UtcDateTime", children: [] },
+        { name: "Quarter", entity: "Quarter", children: [] },
+        { name: "ReportingPeriod", entity: "ReportingPeriod", children: [
+          { name: "Quarter", entity: "Quarter", children: [] },
+        ]},
+        { name: "DateRange", entity: "DateRange", children: [] },
+      ]},
+      { name: "Identity", entity: null, children: [
+        { name: "Auditable", entity: "Auditable", children: [] },
+        { name: "Party", entity: "Party", children: [
+          { name: "Address", entity: "Address", children: [] },
+          { name: "ContactInfo", entity: "ContactInfo", arr: true, children: [] },
+          { name: "PartyType", entity: "PartyType", children: [] },
+        ]},
+        { name: "Borrower", entity: "Borrower", children: [] },
+      ]},
+      { name: "Enums — Core", entity: null, children: [
+        { name: "Currency", entity: "Currency", children: [] },
+        { name: "Region", entity: "Region", children: [] },
+        { name: "Country", entity: "Country", children: [] },
+        { name: "DayCount", entity: "DayCount", children: [] },
+        { name: "DocumentType", entity: "DocumentType", children: [] },
+        { name: "PartyType", entity: "PartyType", children: [] },
+      ]},
+      { name: "Enums — Fund", entity: null, children: [
+        { name: "FundStrategy", entity: "FundStrategy", children: [] },
+        { name: "FundStatus", entity: "FundStatus", children: [] },
+        { name: "FundStructure", entity: "FundStructure", children: [] },
+        { name: "FeeType", entity: "FeeType", children: [] },
+      ]},
+      { name: "Enums — Credit", entity: null, children: [
+        { name: "FacilityType", entity: "FacilityType", children: [] },
+        { name: "RateType", entity: "RateType", children: [] },
+        { name: "RateIndex", entity: "RateIndex", children: [] },
+        { name: "SeniorityLevel", entity: "SeniorityLevel", children: [] },
+        { name: "CovenantType", entity: "CovenantType", children: [] },
+      ]},
+      { name: "Enums — Real Estate", entity: null, children: [
+        { name: "PropertyType", entity: "PropertyType", children: [] },
+        { name: "PropertyStatus", entity: "PropertyStatus", children: [] },
+        { name: "LeaseType", entity: "LeaseType", children: [] },
+      ]},
+      { name: "Enums — Deal", entity: null, children: [
+        { name: "DealStage", entity: "DealStage", children: [] },
+        { name: "DealRole", entity: "DealRole", children: [] },
+        { name: "AssetClass", entity: "AssetClass", children: [] },
+        { name: "DealAssetType", entity: "DealAssetType", children: [] },
+      ]},
+      { name: "Enums — Secondaries", entity: null, children: [
+        { name: "TradeDirection", entity: "TradeDirection", children: [] },
+        { name: "SecondaryTradeType", entity: "SecondaryTradeType", children: [] },
+        { name: "TransactionStage", entity: "TransactionStage", children: [] },
+      ]},
+      { name: "Enums — Portfolio", entity: null, children: [
+        { name: "CashFlowType", entity: "CashFlowType", children: [] },
+      ]},
+      { name: "Enums — Trade Lifecycle", entity: null, children: [
+        { name: "TradeStatus", entity: "TradeStatus", children: [] },
+      ]},
+    ]
+  };
+}
+
 // ── State ───
 let breadcrumb = [];
 let selectedEl = null;
@@ -661,29 +739,35 @@ function buildSidebar() {
   const tc = document.getElementById("tree-container");
   tc.innerHTML = "";
 
-  [{ label:"Deal", tree:DEAL_TREE, color:"var(--deal)" },
-   { label:"Fund", tree:FUND_TREE, color:"var(--fund)" }].forEach(root => {
+  const TYPES_TREE = buildTypesTree();
+
+  [{ label:"Deal", tree:DEAL_TREE, color:"var(--deal)", hasRoot:true },
+   { label:"Fund", tree:FUND_TREE, color:"var(--fund)", hasRoot:true },
+   { label:"Types", tree:TYPES_TREE, color:"var(--core)", hasRoot:false },
+  ].forEach(root => {
     const section = document.createElement("div");
     section.className = "tree-root";
 
     const label = document.createElement("div");
     label.className = "tree-root-label";
-    label.innerHTML = `<span class="arrow open">▶</span><span class="dot" style="background:${root.color};width:10px;height:10px;border-radius:50%;margin:0 8px 0 4px;flex-shrink:0"></span>${root.label}`;
+    label.innerHTML = `<span class="arrow${root.label !== "Types" ? " open" : ""}">▶</span><span class="dot" style="background:${root.color};width:10px;height:10px;border-radius:50%;margin:0 8px 0 4px;flex-shrink:0"></span>${root.label}`;
 
     const children = document.createElement("div");
-    children.className = "tree-children open";
+    children.className = "tree-children" + (root.label !== "Types" ? " open" : "");
 
-    const rootItem = document.createElement("div");
-    rootItem.className = "tree-item";
-    rootItem.style.paddingLeft = "20px";
-    rootItem.innerHTML = `<span style="width:14px;display:inline-block"></span><span class="dot" style="background:${root.color}"></span><span class="entity-name">${root.tree.name} (root)</span>`;
-    rootItem.addEventListener("click", (e) => {
-      e.stopPropagation();
-      selectEntity(root.tree.entity, root.tree.name, rootItem);
-    });
-    rootItem.dataset.entity = root.tree.entity;
-    rootItem.dataset.name = root.tree.name.toLowerCase();
-    children.appendChild(rootItem);
+    if (root.hasRoot) {
+      const rootItem = document.createElement("div");
+      rootItem.className = "tree-item";
+      rootItem.style.paddingLeft = "20px";
+      rootItem.innerHTML = `<span style="width:14px;display:inline-block"></span><span class="dot" style="background:${root.color}"></span><span class="entity-name">${root.tree.name} (root)</span>`;
+      rootItem.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selectEntity(root.tree.entity, root.tree.name, rootItem);
+      });
+      rootItem.dataset.entity = root.tree.entity;
+      rootItem.dataset.name = root.tree.name.toLowerCase();
+      children.appendChild(rootItem);
+    }
 
     root.tree.children.forEach(c => renderTree(c, children));
 
@@ -700,6 +784,7 @@ function buildSidebar() {
 
 // ── Detail Panel ────────────────────────────────────────────
 function selectEntity(entityKey, displayName, treeEl) {
+  if (!entityKey) return; // category headers (null entity) only toggle expand
   if (selectedEl) selectedEl.classList.remove("selected");
   if (treeEl) { treeEl.classList.add("selected"); selectedEl = treeEl; }
 
