@@ -617,9 +617,7 @@ function buildTypesTree() {
   return {
     name: "Types", entity: null, children: [
       { name: "Value Types", entity: null, children: [
-        { name: "Money", entity: "Money", children: [
-          { name: "Currency", entity: "Currency", children: [] },
-        ]},
+        { name: "Money", entity: "Money", children: [] },
         { name: "Percentage", entity: "Percentage", children: [] },
         { name: "BasisPoints", entity: "BasisPoints", children: [] },
         { name: "ExternalId", entity: "ExternalId", children: [] },
@@ -628,18 +626,14 @@ function buildTypesTree() {
         { name: "Date", entity: "Date", children: [] },
         { name: "UtcDateTime", entity: "UtcDateTime", children: [] },
         { name: "Quarter", entity: "Quarter", children: [] },
-        { name: "ReportingPeriod", entity: "ReportingPeriod", children: [
-          { name: "Quarter", entity: "Quarter", children: [] },
-        ]},
+        { name: "ReportingPeriod", entity: "ReportingPeriod", children: [] },
         { name: "DateRange", entity: "DateRange", children: [] },
       ]},
       { name: "Identity", entity: null, children: [
         { name: "Auditable", entity: "Auditable", children: [] },
-        { name: "Party", entity: "Party", children: [
-          { name: "Address", entity: "Address", children: [] },
-          { name: "ContactInfo", entity: "ContactInfo", arr: true, children: [] },
-          { name: "PartyType", entity: "PartyType", children: [] },
-        ]},
+        { name: "Party", entity: "Party", children: [] },
+        { name: "Address", entity: "Address", children: [] },
+        { name: "ContactInfo", entity: "ContactInfo", children: [] },
         { name: "Borrower", entity: "Borrower", children: [] },
       ]},
       { name: "Enums — Core", entity: null, children: [
