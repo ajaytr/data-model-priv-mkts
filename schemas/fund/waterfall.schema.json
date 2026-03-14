@@ -29,7 +29,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "fund_id", "model", "tiers"
       ]
     },

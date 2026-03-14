@@ -43,7 +43,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "fund_id", "investor_id", "commitment_amount", "unfunded_amount", "commitment_date", "status"
       ]
     },

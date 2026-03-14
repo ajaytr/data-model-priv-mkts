@@ -80,7 +80,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "name", "strategy", "status", "structure", "vintage_year", "gp_id"
       ]
     },

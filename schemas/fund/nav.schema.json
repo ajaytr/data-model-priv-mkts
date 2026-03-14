@@ -48,7 +48,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "fund_id", "reporting_period", "total_nav", "total_contributions", "total_distributions"
       ]
     },

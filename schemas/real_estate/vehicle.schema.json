@@ -56,7 +56,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "name", "vehicle_type", "strategy", "gp_id", "region", "status"
       ]
     }

@@ -46,7 +46,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "fund_id", "call_number", "call_date", "due_date", "total_amount", "purpose"
       ]
     },
@@ -113,7 +112,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "fund_id", "distribution_number", "distribution_date", "total_amount", "distribution_type"
       ]
     },

@@ -55,7 +55,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "name", "sector"
       ]
     },
@@ -106,7 +105,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "fund_id", "portfolio_company_id", "investment_date", "instrument_type", "cost_basis", "fair_value", "status"
       ]
     },
@@ -136,7 +134,6 @@
         }
       },
       "required": [
-        "id", "created_at",
         "investment_id", "realization_date", "proceeds", "realization_type"
       ]
     }
