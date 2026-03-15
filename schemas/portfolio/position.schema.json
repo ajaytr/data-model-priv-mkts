@@ -62,6 +62,11 @@
             "irr": {
               "$ref": "../core/percentage.schema.json#/$defs/Percentage",
               "description": "Net internal rate of return for this position, calculated using the time-weighted cash flow series (capital calls as outflows, distributions and current NAV as inflows). Net of management fees and carried interest. Expressed as a decimal (e.g., 0.15 = 15% IRR). Omit if insufficient cash flow history for a meaningful calculation. Example: 0.15"
+            },
+            "deal_asset_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID reference to the DealAsset entity that this fund position originated from. Links fund portfolio holdings back to their deal origination context for provenance tracking and cross-domain reporting. Optional — omit for holdings that were not sourced through the deal pipeline (e.g., secondary market purchases without a formal deal record). Example: 'da112233-4455-6677-8899-aabbccdde001'"
             }
           },
           "required": [
@@ -119,6 +124,11 @@
             "price": {
               "type": "number",
               "description": "Current market price of the credit position expressed as a percentage of par value. A price of 98.5 means the position is trading at 98.5% of its face value (a 1.5% discount to par). Prices above 100 indicate a premium. Used to derive market_value (par_amount * price / 100). Example: 98.5"
+            },
+            "deal_asset_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID reference to the DealAsset entity that this credit position originated from. Links fund portfolio holdings back to their deal origination context for provenance tracking and cross-domain reporting. Optional — omit for holdings that were not sourced through the deal pipeline (e.g., secondary market purchases without a formal deal record). Example: 'da112233-4455-6677-8899-aabbccdde001'"
             }
           },
           "required": [
@@ -176,6 +186,11 @@
             "cap_rate": {
               "$ref": "../core/percentage.schema.json#/$defs/Percentage",
               "description": "Capitalization rate — the ratio of NOI to current property value (noi_annual / current_valuation), expressed as a decimal. A cap rate of 0.065 means the property yields 6.5% of its value in net operating income annually. Lower cap rates generally indicate lower-risk, higher-value properties. Omit if NOI or valuation is not available. Example: 0.065"
+            },
+            "deal_asset_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID reference to the DealAsset entity that this real estate position originated from. Links fund portfolio holdings back to their deal origination context for provenance tracking and cross-domain reporting. Optional — omit for holdings that were not sourced through the deal pipeline (e.g., secondary market purchases without a formal deal record). Example: 'da112233-4455-6677-8899-aabbccdde001'"
             }
           },
           "required": [

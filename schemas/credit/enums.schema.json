@@ -17,7 +17,7 @@
         "MEZZANINE",
         "PIK"
       ],
-      "description": "Type of credit facility"
+      "description": "Type of credit facility. TERM_LOAN — a fully funded loan with a fixed repayment schedule and maturity date. REVOLVING_CREDIT — a committed line of credit that can be drawn, repaid, and redrawn during the availability period. DELAYED_DRAW — a commitment that allows the borrower to draw funds in tranches within a specified draw period after closing. BRIDGE_LOAN — short-term financing intended to bridge the gap until permanent financing or an exit event is secured. UNITRANCHE — a single-tranche facility that blends senior and subordinated debt into one instrument with a blended interest rate. FIRST_LIEN — a loan secured by a first-priority claim on the borrower's assets, offering the highest recovery in default. SECOND_LIEN — a loan secured by a subordinate claim on collateral, ranking behind first-lien holders in recovery priority. MEZZANINE — subordinated debt that sits between senior debt and equity, often with equity participation features such as warrants. PIK — payment-in-kind facility where interest is capitalized and added to the principal balance rather than paid in cash."
     },
     "FacilityStatus": {
       "type": "string",
@@ -96,7 +96,7 @@
         "FIXED_PLUS_PIK",
         "FLOATING_PLUS_PIK"
       ],
-      "description": "Interest rate structure type"
+      "description": "Interest rate structure type. FIXED — interest rate is set at origination and remains constant for the life of the facility. FLOATING — interest rate resets periodically based on a reference index (e.g., SOFR) plus a credit spread. PIK — all interest is paid in kind by capitalizing it onto the outstanding principal balance. FIXED_PLUS_PIK — a portion of interest is paid in cash at a fixed rate and the remainder is capitalized as PIK. FLOATING_PLUS_PIK — a portion of interest is paid in cash at a floating rate and the remainder is capitalized as PIK."
     },
     "RateIndex": {
       "type": "string",
@@ -121,7 +121,7 @@
         "JUNIOR",
         "EQUITY"
       ],
-      "description": "Position in the capital structure"
+      "description": "Position in the capital structure determining priority of claim and expected recovery. SUPER_SENIOR — highest-priority tranche, typically a revolving credit facility that ranks ahead of all other debt in payment and recovery. SENIOR_SECURED — debt backed by a perfected security interest in the borrower's assets, with first claim on collateral proceeds. SENIOR_UNSECURED — debt that ranks equally with other senior obligations but has no collateral backing, relying on the borrower's general creditworthiness. SUBORDINATED — debt that contractually ranks below senior obligations; paid only after senior claims are satisfied in full. MEZZANINE — deeply subordinated debt, often with equity-like features such as warrants or conversion rights, offering higher yield in exchange for lower recovery expectations. JUNIOR — the lowest-ranking debt tranche, absorbing losses before any other debt class and recovering only after all senior and subordinated claims are paid. EQUITY — ownership interest in the capital structure with no contractual right to repayment; bears first loss and captures residual upside."
     }
   }
 }

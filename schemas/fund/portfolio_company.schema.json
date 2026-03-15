@@ -102,6 +102,11 @@
         "status": {
           "allOf": [{ "$ref": "enums.schema.json#/$defs/InvestmentStatus" }],
           "description": "Current lifecycle status of the investment, reflecting whether it is actively held, partially exited, fully exited, or written off. Example: 'ACTIVE', 'PARTIALLY_REALIZED', 'FULLY_REALIZED', 'WRITTEN_OFF'. See InvestmentStatus enum for all valid values and their detailed definitions."
+        },
+        "deal_asset_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID reference to the DealAsset entity that this investment originated from. Links fund portfolio holdings back to their deal origination context for provenance tracking and cross-domain reporting. Optional — omit for holdings that were not sourced through the deal pipeline (e.g., secondary market purchases without a formal deal record). Example: 'da112233-4455-6677-8899-aabbccdde001'"
         }
       },
       "required": [

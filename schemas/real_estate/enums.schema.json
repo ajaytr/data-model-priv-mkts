@@ -20,7 +20,7 @@
         "SENIOR_LIVING",
         "HEALTHCARE"
       ],
-      "description": "Classification of the real estate property"
+      "description": "Classification of the real estate property. OFFICE: commercial space leased to businesses for professional and administrative use. RETAIL: properties leased to tenants for consumer-facing sales and services, such as shopping centers and storefronts. INDUSTRIAL: warehouses, distribution centers, and manufacturing facilities used for production, storage, or logistics. MULTIFAMILY: residential buildings with multiple dwelling units leased to individual tenants. HOSPITALITY: hotels, resorts, and other lodging properties generating revenue primarily from nightly room rates. MIXED_USE: properties combining two or more uses (e.g., retail, office, residential) within a single development. DATA_CENTER: facilities designed to house computing infrastructure, servers, and networking equipment with specialized power and cooling. LIFE_SCIENCE: laboratory and research space purpose-built for biotech, pharmaceutical, or medical device companies. SELF_STORAGE: facilities offering individual storage units rented to consumers and businesses on flexible terms. STUDENT_HOUSING: purpose-built residential properties catering to college and university students, often leased by the bed. SENIOR_LIVING: residential communities providing housing and varying levels of care for elderly residents. HEALTHCARE: medical offices, outpatient clinics, hospitals, and other facilities used for the delivery of healthcare services."
     },
     "PropertyStatus": {
       "type": "string",
@@ -33,7 +33,7 @@
         "DISPOSITION",
         "SOLD"
       ],
-      "description": "Current lifecycle status of the property"
+      "description": "Current lifecycle status of the property. ACQUISITION: property has been identified or is under contract for purchase but not yet operationally managed. DEVELOPMENT: property is under construction or undergoing major ground-up development. STABILIZED: property is substantially leased and generating steady-state income at or near market occupancy. VALUE_ADD: property is undergoing improvements, lease-up, or repositioning to increase cash flow and value. REPOSITIONING: property is being fundamentally transformed in use, tenant mix, or market positioning to capture higher returns. DISPOSITION: property is actively being marketed for sale or is under contract to be sold. SOLD: property has been divested and the transaction has closed."
     },
     "LeaseType": {
       "type": "string",
@@ -45,7 +45,7 @@
         "MODIFIED_GROSS",
         "PERCENTAGE"
       ],
-      "description": "Classification of the lease structure"
+      "description": "Classification of the lease structure determining how operating expenses are allocated between landlord and tenant. GROSS: landlord pays all operating expenses (taxes, insurance, maintenance); tenant pays a single gross rent. NET: tenant pays base rent plus one category of operating expense, typically property taxes. DOUBLE_NET: tenant pays base rent plus property taxes and building insurance; landlord retains responsibility for structural maintenance. TRIPLE_NET: tenant pays base rent plus all three major operating expenses — property taxes, insurance, and maintenance — giving the landlord a net-of-expenses income stream. MODIFIED_GROSS: a hybrid structure where landlord and tenant negotiate a custom split of operating expenses, often with the tenant covering increases above a base-year amount. PERCENTAGE: tenant pays a base rent plus a percentage of gross sales revenue above a specified breakpoint, commonly used in retail leases."
     },
     "ValuationMethod": {
       "type": "string",
