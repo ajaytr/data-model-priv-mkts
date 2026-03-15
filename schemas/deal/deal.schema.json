@@ -4,9 +4,27 @@
   "title": "Deal",
   "description": "Central deal entity that ties together participants, assets, milestones, and documents across asset classes. A single deal can span multiple asset classes — e.g., an LBO with both credit facilities and equity co-investments.",
   "$defs": {
+    "DealParticipantAllocation": {
+      "type": "object",
+      "description": "A single allocation of capital from a deal participant to a specific DealAsset. Represents the participant's committed amount to one component of the deal. The sum of a participant's allocations across all DealAssets equals their total deal commitment. Example: {\"deal_asset_id\": \"da112233-...\", \"amount\": {\"amount\": \"300000000\", \"currency\": \"USD\"}}",
+      "properties": {
+        "deal_asset_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID reference to the DealAsset this allocation targets. Must reference a DealAsset that is part of the same deal. Example: 'da112233-4455-6677-8899-aabbccdde001'"
+        },
+        "amount": {
+          "allOf": [
+            { "$ref": "../core/money.schema.json#/$defs/Money" }
+          ],
+          "description": "Capital amount this participant has committed to the specified DealAsset. A participant may allocate different amounts to different assets within the same deal. Always populated. Example: {\"amount\": \"300000000\", \"currency\": \"USD\"}"
+        }
+      },
+      "required": ["deal_asset_id", "amount"]
+    },
     "DealParticipant": {
       "type": "object",
-      "description": "A party participating in a deal, with their role, investment vehicle, and economic terms. A single party may appear multiple times if they participate through different funds or in different capacities. Example: {\"party_id\": \"...\", \"role\": \"LEAD\", \"fund_id\": \"...\", \"commitment_amount\": {\"amount\": \"50000000\", \"currency\": \"USD\"}, \"ownership_percentage\": 0.60}",
+      "description": "A party participating in a deal, with their role, investment vehicle, target commitment, and per-asset capital allocations. A single party may appear multiple times if they participate through different funds or in different capacities. Early in the deal lifecycle, only target_commitment may be known; allocations are populated as the deal matures and asset-level breakdowns are finalized. Example: {\"party_id\": \"...\", \"role\": \"LEAD\", \"fund_id\": \"...\", \"target_commitment\": {\"amount\": \"500000000\", \"currency\": \"USD\"}, \"allocations\": [{\"deal_asset_id\": \"da112233-...\", \"amount\": {\"amount\": \"300000000\", \"currency\": \"USD\"}}]}",
       "properties": {
         "party_id": {
           "type": "string",
@@ -24,17 +42,18 @@
           "format": "uuid",
           "description": "UUID of the Fund entity through which this party is investing, if applicable. Omit for advisors, arrangers, and other non-investing participants. Links the deal participation to a specific fund vehicle for allocation and reporting purposes. Example: 'f1a2b3c4-d5e6-7890-abcd-ef1234560001'"
         },
-        "commitment_amount": {
+        "target_commitment": {
           "allOf": [
             { "$ref": "../core/money.schema.json#/$defs/Money" }
           ],
-          "description": "Total capital this participant has committed to the deal. May differ from funded amount if capital is called over time. Omit for non-investing participants (advisors, agents). Example: {\"amount\": \"50000000\", \"currency\": \"USD\"}"
+          "description": "The participant's desired total capital commitment to the deal. This is an indicative figure set early in the deal lifecycle, before asset-level allocations are finalized. In oversubscribed deals, the actual allocated total (sum of allocations) may be less than the target. Useful for pipeline reporting, capacity planning, and tracking demand vs. available deal size. Omit for non-investing participants (advisors, agents). Example: {\"amount\": \"500000000\", \"currency\": \"USD\"}"
         },
-        "ownership_percentage": {
-          "allOf": [
-            { "$ref": "../core/percentage.schema.json#/$defs/Percentage" }
-          ],
-          "description": "This participant's share of the deal's total equity or economics, as a decimal (0.60 = 60%). Should sum to approximately 1.0 across all equity participants. Omit for non-investing participants. Example: 0.60"
+        "allocations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DealParticipantAllocation"
+          },
+          "description": "Per-asset capital allocations for this participant, populated as the deal matures. Each entry specifies how much capital the participant commits to a specific DealAsset. The sum of all allocation amounts represents the participant's actual committed capital — which may differ from target_commitment in oversubscribed or restructured deals. Omit for non-investing participants or when allocations have not yet been determined. Example: [{\"deal_asset_id\": \"da112233-...\", \"amount\": {\"amount\": \"300000000\", \"currency\": \"USD\"}}]"
         }
       },
       "required": [
